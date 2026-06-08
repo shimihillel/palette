@@ -1,31 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <!-- bg cream -->
-  <rect width="1024" height="1024" rx="230" fill="#F5EDD8"/>
-  
-  <!-- olive top wave -->
-  <path d="M0,0 L1024,0 L1024,520 Q900,620 800,570 Q680,515 560,580 Q430,648 310,585 Q190,522 80,580 Q40,600 0,570 Z" fill="#4E6020"/>
+  <!-- bg off-white -->
+  <rect width="1024" height="1024" rx="230" fill="#FAFAF8"/>
 
-  <!-- 4 big circles with black borders -->
-  <circle cx="290" cy="370" r="115" fill="#A83828" stroke="#1C1208" stroke-width="18"/>
-  <circle cx="290" cy="370" r="115" fill="none" stroke="#1C1208" stroke-width="18"/>
-  <!-- shine -->
-  <circle cx="255" cy="330" r="28" fill="rgba(255,255,255,0.22)"/>
+  <!-- accent bar top — like issue bar -->
+  <rect x="0" y="0" width="1024" height="180" rx="0" fill="#B85C38"/>
+  <rect x="0" y="0" width="1024" height="180" rx="230" fill="#B85C38"/>
 
-  <circle cx="580" cy="310" r="90" fill="#2E3A6B" stroke="#1C1208" stroke-width="18"/>
-  <circle cx="553" cy="278" r="22" fill="rgba(255,255,255,0.2)"/>
+  <!-- PALETTE text — Bebas style bold -->
+  <text x="512" y="560"
+    font-family="'Arial Black', 'Impact', sans-serif"
+    font-size="200" font-weight="900"
+    fill="#1A1410" text-anchor="middle"
+    letter-spacing="8">PAL</text>
+  <text x="512" y="740"
+    font-family="'Arial Black', 'Impact', sans-serif"
+    font-size="200" font-weight="900"
+    fill="#1A1410" text-anchor="middle"
+    letter-spacing="8">ETTE</text>
 
-  <circle cx="760" cy="430" r="75" fill="#C8A030" stroke="#1C1208" stroke-width="18"/>
-  <circle cx="738" cy="408" r="18" fill="rgba(255,255,255,0.22)"/>
+  <!-- thin line under text -->
+  <rect x="120" y="780" width="784" height="4" fill="#1A1410"/>
 
-  <circle cx="200" cy="600" r="65" fill="#7A9A7E" stroke="#1C1208" stroke-width="18"/>
-  <circle cx="182" cy="582" r="16" fill="rgba(255,255,255,0.2)"/>
+  <!-- issue text -->
+  <text x="512" y="860"
+    font-family="Arial, sans-serif"
+    font-size="42" font-weight="400"
+    fill="#AAAAAA" text-anchor="middle"
+    letter-spacing="8">DAILY LOOK EDITION</text>
 
-  <!-- "P" letter bold italic bottom -->
-  <text x="512" y="900" 
-    font-family="Georgia, serif" font-size="280" font-weight="900" font-style="italic"
-    fill="#F5EDD8" stroke="#1C1208" stroke-width="12"
-    text-anchor="middle" dominant-baseline="auto">P</text>
-
-  <!-- small decorative dot -->
-  <circle cx="820" cy="680" r="30" fill="#E8527A" stroke="#1C1208" stroke-width="10"/>
+  <!-- 4 color dots top right in accent bar -->
+  <circle cx="700" cy="90" r="22" fill="rgba(250,250,248,0.3)"/>
+  <circle cx="760" cy="90" r="22" fill="rgba(250,250,248,0.5)"/>
+  <circle cx="820" cy="90" r="22" fill="rgba(250,250,248,0.7)"/>
+  <circle cx="880" cy="90" r="22" fill="rgba(250,250,248,0.9)"/>
 </svg>
