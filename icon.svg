@@ -2,35 +2,39 @@
   <!-- bg off-white -->
   <rect width="1024" height="1024" rx="230" fill="#FAFAF8"/>
 
-  <!-- accent bar top — like issue bar -->
-  <rect x="0" y="0" width="1024" height="180" rx="0" fill="#B85C38"/>
-  <rect x="0" y="0" width="1024" height="180" rx="230" fill="#B85C38"/>
+  <!-- dark top bar — like issue bar -->
+  <rect x="0" y="0" width="1024" height="280" rx="0" fill="#1A1410"/>
+  <rect x="0" y="0" width="1024" height="280" rx="230" fill="#1A1410"/>
 
-  <!-- PALETTE text — Bebas style bold -->
-  <text x="512" y="560"
-    font-family="'Arial Black', 'Impact', sans-serif"
-    font-size="200" font-weight="900"
-    fill="#1A1410" text-anchor="middle"
-    letter-spacing="8">PAL</text>
-  <text x="512" y="740"
-    font-family="'Arial Black', 'Impact', sans-serif"
-    font-size="200" font-weight="900"
-    fill="#1A1410" text-anchor="middle"
-    letter-spacing="8">ETTE</text>
+  <!-- PALETTE in Bebas style -->
+  <text x="512" y="210"
+    font-family="'Arial Black','Impact',sans-serif"
+    font-size="160" font-weight="900"
+    fill="#FAFAF8" text-anchor="middle"
+    letter-spacing="6">PALETTE</text>
 
-  <!-- thin line under text -->
-  <rect x="120" y="780" width="784" height="4" fill="#1A1410"/>
+  <!-- divider line -->
+  <rect x="100" y="320" width="824" height="3" fill="#1A1410"/>
 
-  <!-- issue text -->
+  <!-- 4 large color circles — the pieces -->
+  <circle cx="200" cy="580" r="130" fill="#B85C38" stroke="#1A1410" stroke-width="8"/>
+  <circle cx="420" cy="580" r="130" fill="#1C2B3A" stroke="#1A1410" stroke-width="8"/>
+  <circle cx="640" cy="580" r="130" fill="#4A2040" stroke="#1A1410" stroke-width="8"/>
+  <circle cx="860" cy="580" r="130" fill="#C8A030" stroke="#1A1410" stroke-width="8"/>
+
+  <!-- shine on circles -->
+  <circle cx="165" cy="530" r="28" fill="rgba(255,255,255,0.18)"/>
+  <circle cx="385" cy="530" r="28" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="605" cy="530" r="28" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="825" cy="530" r="28" fill="rgba(255,255,255,0.15)"/>
+
+  <!-- divider line bottom -->
+  <rect x="100" y="750" width="824" height="2" fill="#1A1410" opacity="0.3"/>
+
+  <!-- Daily Look Edition -->
   <text x="512" y="860"
-    font-family="Arial, sans-serif"
-    font-size="42" font-weight="400"
+    font-family="Arial,sans-serif"
+    font-size="52" font-weight="400"
     fill="#AAAAAA" text-anchor="middle"
     letter-spacing="8">DAILY LOOK EDITION</text>
-
-  <!-- 4 color dots top right in accent bar -->
-  <circle cx="700" cy="90" r="22" fill="rgba(250,250,248,0.3)"/>
-  <circle cx="760" cy="90" r="22" fill="rgba(250,250,248,0.5)"/>
-  <circle cx="820" cy="90" r="22" fill="rgba(250,250,248,0.7)"/>
-  <circle cx="880" cy="90" r="22" fill="rgba(250,250,248,0.9)"/>
 </svg>
