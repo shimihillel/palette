@@ -1,0 +1,19 @@
+{
+  "name": "Palette",
+  "short_name": "Palette",
+  "description": "לוק צבעים יומי",
+  "start_url": "/palette/index.html",
+  "scope": "/palette/",
+  "display": "standalone",
+  "background_color": "#F7F3EE",
+  "theme_color": "#1E1A17",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

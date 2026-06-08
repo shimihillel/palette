@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- bg cream -->
+  <rect width="1024" height="1024" rx="230" fill="#F5EDD8"/>
+  
+  <!-- olive top wave -->
+  <path d="M0,0 L1024,0 L1024,520 Q900,620 800,570 Q680,515 560,580 Q430,648 310,585 Q190,522 80,580 Q40,600 0,570 Z" fill="#4E6020"/>
+
+  <!-- 4 big circles with black borders -->
+  <circle cx="290" cy="370" r="115" fill="#A83828" stroke="#1C1208" stroke-width="18"/>
+  <circle cx="290" cy="370" r="115" fill="none" stroke="#1C1208" stroke-width="18"/>
+  <!-- shine -->
+  <circle cx="255" cy="330" r="28" fill="rgba(255,255,255,0.22)"/>
+
+  <circle cx="580" cy="310" r="90" fill="#2E3A6B" stroke="#1C1208" stroke-width="18"/>
+  <circle cx="553" cy="278" r="22" fill="rgba(255,255,255,0.2)"/>
+
+  <circle cx="760" cy="430" r="75" fill="#C8A030" stroke="#1C1208" stroke-width="18"/>
+  <circle cx="738" cy="408" r="18" fill="rgba(255,255,255,0.22)"/>
+
+  <circle cx="200" cy="600" r="65" fill="#7A9A7E" stroke="#1C1208" stroke-width="18"/>
+  <circle cx="182" cy="582" r="16" fill="rgba(255,255,255,0.2)"/>
+
+  <!-- "P" letter bold italic bottom -->
+  <text x="512" y="900" 
+    font-family="Georgia, serif" font-size="280" font-weight="900" font-style="italic"
+    fill="#F5EDD8" stroke="#1C1208" stroke-width="12"
+    text-anchor="middle" dominant-baseline="auto">P</text>
+
+  <!-- small decorative dot -->
+  <circle cx="820" cy="680" r="30" fill="#E8527A" stroke="#1C1208" stroke-width="10"/>
+</svg>
