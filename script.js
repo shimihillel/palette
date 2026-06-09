@@ -1,7 +1,7 @@
 
 'use strict';
 
-const STORAGE_KEY = 'shimi-looks-v7';
+const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -42,7 +42,7 @@ const GROUPS = {
   light:['ivory','linen','oat'],
   warmLight:['oat','sand','linen'],
   warmNeutral:['sand','camel','cognac'],
-  darkNeutral:['cocoa','espresso','bark','charcoal','black'],
+  darkNeutral:['cocoa','espresso','bark','charcoal'],
   blue:['navy','cobalt','indigo','slate','teal'],
   green:['sage','eucalyptus','olive','moss'],
   soft:['blush','dustyrose','mauve','lavgray'],
@@ -52,15 +52,25 @@ const GROUPS = {
 };
 
 const RECIPES = [
-  {title:'שילוב מתוחכם עם עומק וצבע',roles:['light','blue','purple','warmAccent'],map:{top:0,bottom:1,shoes:2,accessory:3}},
-  {title:'ניטרלים חמים עם אקסנט קר',roles:['warmLight','warmNeutral','blue','darkNeutral'],map:{top:0,bottom:3,shoes:1,accessory:2}},
-  {title:'רך, בוגר ולא מתאמץ',roles:['light','green','soft','darkNeutral'],map:{top:0,bottom:1,shoes:3,accessory:2}},
-  {title:'בסיס רגוע עם עקיצה אמיתית',roles:['light','darkNeutral','warmAccent','purple'],map:{top:0,bottom:1,shoes:2,accessory:3}},
-  {title:'קלאסי עם אקסנט אופנתי',roles:['light','blue','warmNeutral','soft'],map:{top:0,bottom:1,shoes:2,accessory:3}},
-  {title:'עמוק, ארצי ומדויק',roles:['warmLight','green','warmAccent','darkNeutral'],map:{top:0,bottom:1,shoes:3,accessory:2}},
-  {title:'שיק שקט עם טוויסט קטן',roles:['light','soft','blue','warmNeutral'],map:{top:1,bottom:2,shoes:3,accessory:0}},
-  {title:'חם וקר עם איזון יפה',roles:['warmLight','warmAccent','blue','darkNeutral'],map:{top:0,bottom:2,shoes:3,accessory:1}},
-  {title:'קונטרסט מעניין אבל לביש',roles:['light','jewel','warmNeutral','darkNeutral'],map:{top:0,bottom:1,shoes:2,accessory:3}}
+  {title:'חום, ירוק ובורדו',roles:['warmNeutral','green','purple','darkNeutral'],map:{top:1,bottom:3,shoes:0,accessory:2}, weight:1.25},
+  {title:'כחול עמוק עם קוניאק',roles:['blue','warmNeutral','darkNeutral','warmAccent'],map:{top:0,bottom:2,shoes:1,accessory:3}, weight:1.20},
+  {title:'בורדו עם אדמה וכחול',roles:['purple','warmNeutral','blue','warmAccent'],map:{top:0,bottom:2,shoes:1,accessory:3}, weight:1.20},
+  {title:'ירוק בקבוק ושוקולד',roles:['green','darkNeutral','warmNeutral','soft'],map:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.15},
+  {title:'חלודה, קקאו וזית',roles:['warmAccent','darkNeutral','green','warmNeutral'],map:{top:0,bottom:1,shoes:3,accessory:2}, weight:1.15},
+  {title:'טיל, שזיף וחום',roles:['blue','purple','warmNeutral','green'],map:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.10},
+  {title:'אדמתי אבל צבעוני',roles:['warmNeutral','warmAccent','green','blue'],map:{top:2,bottom:0,shoes:1,accessory:3}, weight:1.10},
+  {title:'עמוק עם אקסנט חם',roles:['darkNeutral','blue','warmAccent','green'],map:{top:1,bottom:0,shoes:3,accessory:2}, weight:1.05},
+  {title:'בורדו, זית וקאמל',roles:['purple','green','warmNeutral','darkNeutral'],map:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.10},
+  {title:'כחול ירוק וחום',roles:['blue','green','warmNeutral','darkNeutral'],map:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.10},
+
+  // light appears, but as a rare balancing option — not every look.
+  {title:'שנהב כמרכך קטן',roles:['light','purple','green','warmNeutral'],map:{top:1,bottom:2,shoes:3,accessory:0}, weight:0.20},
+  {title:'שיבולת עם עומק',roles:['light','blue','warmAccent','darkNeutral'],map:{top:1,bottom:3,shoes:2,accessory:0}, weight:0.18},
+  {title:'בהיר עם חום ובורדו',roles:['light','warmNeutral','purple','green'],map:{top:2,bottom:3,shoes:1,accessory:0}, weight:0.18},
+
+  // pink/black are present, but reduced.
+  {title:'ורוד עתיק במינון',roles:['soft','green','warmNeutral','blue'],map:{top:1,bottom:2,shoes:3,accessory:0}, weight:0.28},
+  {title:'כהה דרמטי במינון',roles:['darkNeutral','purple','warmNeutral','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.32}
 ];
 
 const PIECES = [
@@ -349,18 +359,22 @@ function shuffleArray(arr){
 }
 
 function buildVariedMapping(colors){
-  const roles = ['top','bottom','shoes','accessory'];
+  const nonLight = colors.filter(c => c.family !== 'light');
+  const topPool = nonLight.length ? nonLight : colors;
 
-  // Every color can become the top. This fixes the old bias where top was almost always the first/light color.
-  const topColor = pick(colors);
+  // Earth/green/bordeaux/blue should often be the top.
+  const topPreferred = topPool.filter(c =>
+    ['warm-neutral','green','purple','blue','warm-accent','dark-neutral'].includes(c.family)
+  );
+  const topColor = pick(topPreferred.length ? topPreferred : topPool);
 
   const remaining = colors.filter(c => c.id !== topColor.id);
   const mapping = { top:{color:topColor, text:roleText('top', topColor)} };
 
   const preferred = {
-    bottom:['dark-neutral','blue','green','warm-neutral','purple','red-purple','warm-accent','light','soft'],
-    shoes:['warm-neutral','dark-neutral','light','blue','green','purple','soft','warm-accent'],
-    accessory:['warm-accent','purple','blue','green','soft','red-purple','dark-neutral','warm-neutral','light']
+    bottom:['dark-neutral','blue','green','warm-neutral','purple','warm-accent','soft','light'],
+    shoes:['warm-neutral','dark-neutral','green','blue','warm-accent','purple','light','soft'],
+    accessory:['warm-accent','purple','blue','green','warm-neutral','soft','light','dark-neutral']
   };
 
   ['bottom','shoes','accessory'].forEach(role => {
@@ -371,9 +385,7 @@ function buildVariedMapping(colors){
       const bi = pref.indexOf(b.family);
       return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
     });
-
-    // Most of the time follow styling preference, sometimes deliberately vary.
-    const color = Math.random() < 0.72 ? sorted[0] : pick(options);
+    const color = Math.random() < 0.78 ? sorted[0] : pick(options);
     mapping[role] = {color, text:roleText(role, color)};
     const idx = remaining.findIndex(c => c.id === color.id);
     if(idx >= 0) remaining.splice(idx, 1);
@@ -382,21 +394,82 @@ function buildVariedMapping(colors){
   return mapping;
 }
 
+
+function pickWeightedRecipe(recipes){
+  const total = recipes.reduce((sum, r) => sum + (r.weight || 1), 0);
+  let roll = Math.random() * total;
+  for(const recipe of recipes){
+    roll -= (recipe.weight || 1);
+    if(roll <= 0) return recipe;
+  }
+  return recipes[recipes.length - 1];
+}
+
 function generateBestLook(){
-  const candidates = Array.from({length:40}, () => generateLook());
-  candidates.sort((a,b) => score(b) - score(a));
+  const candidates = Array.from({length:70}, () => generateLook());
+  candidates.sort((a,b) => scoreLookWithTopVariety(b) - scoreLookWithTopVariety(a));
   return candidates[0];
 }
 
+function scoreLookWithTopVariety(look){
+  let s = score(look);
+  const families = look.colors ? look.colors.map(c => c.family) : [];
+  const ids = look.colors ? look.colors.map(c => c.id) : [];
+
+  // Preferred Shimi zone: earth, brown, green, bordeaux/purple, blues.
+  families.forEach(f => {
+    if(['warm-neutral','green','purple','blue','warm-accent'].includes(f)) s += 14;
+    if(f === 'light') s -= 22;
+    if(f === 'soft') s -= 12;
+  });
+
+  if(ids.includes('black')) s -= 24;
+  if(ids.includes('charcoal')) s -= 10;
+  if(families.filter(f => f === 'light').length > 1) s -= 80;
+  if(families.filter(f => f === 'soft').length > 1) s -= 40;
+
+  if(look.mapping && look.mapping.top && look.mapping.top.color){
+    const top = look.mapping.top.color;
+    if(top.family === 'light') s -= 70;
+    if(top.family === 'soft') s -= 22;
+    if(['green','purple','blue','warm-accent','warm-neutral'].includes(top.family)) s += 22;
+  }
+  return s;
+}
+
 function generateLook(){
-  const recipe = pick(RECIPES);
-  const colors = [];
+  const recipe = pickWeightedRecipe(RECIPES);
+  let colors = [];
   recipe.roles.forEach(role => colors.push(pickColor(role, colors)));
 
-  // v8 fix: mapping is varied instead of forcing the first/light color to be top.
+  // v11: light colors may exist, but are rare and never forced.
+  // If a palette accidentally has too much light/soft/black, rebuild a more Shimi-ish palette.
+  const lightCount = colors.filter(c => c.family === 'light').length;
+  const softCount = colors.filter(c => c.family === 'soft').length;
+  const blackishCount = colors.filter(c => c.id === 'black' || c.id === 'charcoal').length;
+
+  if(lightCount > 1 || softCount > 1 || blackishCount > 1){
+    const shimiGroups = ['warmNeutral','green','purple','blue','warmAccent','darkNeutral'];
+    colors = [];
+    while(colors.length < 4){
+      const c = pickColor(pick(shimiGroups), colors);
+      if(!colors.some(existing => existing.id === c.id)){
+        colors.push(c);
+      }
+    }
+  }
+
+  // keep max one light in regular mode, and if present, move it away from the first swatch
+  if(colors.filter(c => c.family === 'light').length > 1){
+    const firstLight = colors.find(c => c.family === 'light');
+    colors = colors.filter(c => c.family !== 'light');
+    colors.push(firstLight);
+  }
+
+  colors = colors.slice(0,4);
   const mapping = buildVariedMapping(colors);
 
-  const signature = `free|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
+  const signature = `free-v11|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
   return {
     title: buildTitle(colors),
     vibe: buildVibe(recipe, colors),
@@ -446,7 +519,7 @@ function generateAnchoredLook(piece, anchorColor){
 }
 
 function pickColor(groupName, previous){
-  const ids = GROUPS[groupName] || GROUPS.light;
+  const ids = GROUPS[groupName] || GROUPS.blue;
   const options = ids.map(id => COLORS[id]).filter(Boolean);
   const previousFamilies = previous.map(c => c.family);
   const recentIds = state.lookbook.slice(0,8).flatMap(look => look.colors.map(c => c.id));
