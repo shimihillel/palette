@@ -338,6 +338,50 @@ function remember(look){
   state.recent = state.recent.slice(0, 80);
 }
 
+
+function shuffleArray(arr){
+  const copy = [...arr];
+  for(let i = copy.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildVariedMapping(colors){
+  const roles = ['top','bottom','shoes','accessory'];
+
+  // Every color can become the top. This fixes the old bias where top was almost always the first/light color.
+  const topColor = pick(colors);
+
+  const remaining = colors.filter(c => c.id !== topColor.id);
+  const mapping = { top:{color:topColor, text:roleText('top', topColor)} };
+
+  const preferred = {
+    bottom:['dark-neutral','blue','green','warm-neutral','purple','red-purple','warm-accent','light','soft'],
+    shoes:['warm-neutral','dark-neutral','light','blue','green','purple','soft','warm-accent'],
+    accessory:['warm-accent','purple','blue','green','soft','red-purple','dark-neutral','warm-neutral','light']
+  };
+
+  ['bottom','shoes','accessory'].forEach(role => {
+    const options = remaining.length ? remaining : colors;
+    const pref = preferred[role] || [];
+    const sorted = [...options].sort((a,b) => {
+      const ai = pref.indexOf(a.family);
+      const bi = pref.indexOf(b.family);
+      return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+    });
+
+    // Most of the time follow styling preference, sometimes deliberately vary.
+    const color = Math.random() < 0.72 ? sorted[0] : pick(options);
+    mapping[role] = {color, text:roleText(role, color)};
+    const idx = remaining.findIndex(c => c.id === color.id);
+    if(idx >= 0) remaining.splice(idx, 1);
+  });
+
+  return mapping;
+}
+
 function generateBestLook(){
   const candidates = Array.from({length:40}, () => generateLook());
   candidates.sort((a,b) => score(b) - score(a));
@@ -348,8 +392,11 @@ function generateLook(){
   const recipe = pick(RECIPES);
   const colors = [];
   recipe.roles.forEach(role => colors.push(pickColor(role, colors)));
-  const mapping = mapByTemplate(colors, recipe.map);
-  const signature = `free|${colors.map(c => c.id).join('|')}|${Object.values(recipe.map).join('')}`;
+
+  // v8 fix: mapping is varied instead of forcing the first/light color to be top.
+  const mapping = buildVariedMapping(colors);
+
+  const signature = `free|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
   return {
     title: buildTitle(colors),
     vibe: buildVibe(recipe, colors),
@@ -445,10 +492,10 @@ function mapByTemplate(colors, map){
 }
 
 function roleText(role, color){
-  if(role === 'top') return `חולצה או סריג ב${color.he}`;
-  if(role === 'bottom') return `ג׳ינס או מכנסיים ב${color.he}`;
+  if(role === 'top') return `עליון ב${color.he}`;
+  if(role === 'bottom') return `תחתון ב${color.he}`;
   if(role === 'shoes') return `נעליים ב${color.he}`;
-  return `תיק או תכשיט ב${color.he}`;
+  return `אביזר ב${color.he}`;
 }
 
 function pieceLabel(piece){
@@ -468,7 +515,7 @@ function compatibleRoles(color){
 function bestForRole(role, colors){
   if(!colors.length) return COLORS.ivory;
   const pref = {
-    top:['light','soft','blue','green','warm-accent','warm-neutral','dark-neutral'],
+    top:['blue','green','purple','warm-accent','soft','dark-neutral','warm-neutral','light'],
     bottom:['dark-neutral','blue','green','warm-neutral','purple','light'],
     shoes:['warm-neutral','dark-neutral','light','blue','green','soft'],
     accessory:['warm-accent','purple','blue','soft','green','dark-neutral','warm-neutral','light']
