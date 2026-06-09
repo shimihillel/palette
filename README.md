@@ -1,37 +1,31 @@
-# 🎨 Palette
+# Shimi Looks ✨
 
-אפליקציית PWA אישית להגרלת לוק צבעים יומי.
+אפליקציית Web מעוצבת בעברית RTL לבחירת שילובי צבעים לבגדים, עם מנוע גיוון חכם בהשראת *A Dictionary of Color Combinations* של Sanzo Wada.
 
-## מה זה?
+## מה יש בפנים
+- מסך בית עם **השילוב של היום**
+- כפתור **תני עוד שילוב**
+- כפתור **תני לי עוד 3 שילובים**
+- **לוקבוק** – כל מה שנשמר נחשב ללוק שנבחר
+- הסבר **למה זה עובד?** לכל לוק
+- אייקון + manifest + service worker כדי שזה ירגיש כמו אפליקציה אמיתית
+- שמירה מקומית ב-`localStorage`
 
-Palette מציעה לך שילוב צבעים לארבעה פריטי לבוש — עליון, תחתון, נעליים, תיק — עם שמות צבעים בסגנון Sanzo Wada. שומרת רק לוקים שבחרת לשמור.
+## איך מעלים ל-GitHub Pages
+1. לפתוח Repository חדש ב-GitHub
+2. להעלות את כל הקבצים מהזיפ
+3. להיכנס ל-Settings → Pages
+4. לבחור **Deploy from a branch**
+5. Branch: `main` / folder: `/root`
+6. לשמור ולהמתין כמה דקות
 
-## פיצ'רים
-
-- 30 שילובי צבעים מוכנים עם שמות פואטיים
-- "זריקת צבע" — הצבע הבולט של כל לוק
-- היסטוריה עם תאריכים
-- חיפוש לפי שם, צבע, פריט
-- פילטר: נייטרל / צבע / כהה / בהיר
-- שמירה ידנית בלבד
-- עובד offline
-- ניתן להוסיף למסך הבית
-
-## התקנה — GitHub Pages
-
-1. צרי repo בשם `palette`
-2. העלי את כל הקבצים
-3. Settings → Pages → Branch: main → Save
-4. פתחי `yourusername.github.io/palette` בסאפארי
-5. שתפי ← "הוסף למסך הבית"
+## התקנה באייפון
+לפתוח את הלינק בספארי → Share → Add to Home Screen.
 
 ## קבצים
-
-```
-palette/
-├── index.html        ← האפליקציה כולה
-├── manifest.json     ← הגדרות PWA
-├── service-worker.js ← תמיכה offline
-├── icon.svg          ← אייקון
-└── README.md
-```
+- `index.html`
+- `style.css`
+- `script.js`
+- `manifest.webmanifest`
+- `sw.js`
+- `assets/`
