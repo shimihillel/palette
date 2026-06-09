@@ -99,3 +99,25 @@ button{cursor:pointer;border:0}
 .toast{position:fixed;top:18px;left:50%;transform:translate(-50%,-8px);background:#fffaf5;color:var(--ink);padding:12px 16px;border-radius:16px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.22s;z-index:100;font-weight:700}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 @media (max-width:390px){.topbar h1{font-size:48px}.hero-card h2,.section-header h2{font-size:28px}.swatch{width:52px;height:52px}.swatch-card strong{font-size:12px}}
+
+
+/* v6: anchor piece flow */
+.screen-note{margin:4px 0 0;color:var(--muted);line-height:1.4;font-size:15px}
+.anchor-card{padding:17px;margin-bottom:14px}
+.anchor-card h3{margin:0 0 12px;font-size:20px}
+.choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.choice-btn,.color-btn,.family-btn{border:1px solid rgba(79,52,39,.10);background:rgba(255,255,255,.62);color:var(--ink);border-radius:18px;font-weight:800;box-shadow:0 8px 20px rgba(79,52,39,.06)}
+.choice-btn{padding:16px 12px;display:grid;gap:5px;text-align:right}
+.choice-btn span{font-size:23px}
+.choice-btn.selected,.family-btn.selected,.color-btn.selected{background:linear-gradient(140deg,var(--brown),var(--brown2));color:#fff;border-color:transparent}
+.family-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:10px}
+.family-strip::-webkit-scrollbar{display:none}
+.family-btn{white-space:nowrap;padding:10px 14px;flex:0 0 auto}
+.color-choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.color-btn{padding:11px 10px;display:flex;align-items:center;gap:9px;text-align:right}
+.color-chip{width:28px;height:28px;border-radius:50%;border:1px solid rgba(0,0,0,.10);flex:0 0 auto}
+.anchor-build-btn{margin:2px 0 14px}
+.anchor-result-card[hidden]{display:none}
+.mapping-row.locked{background:rgba(200,113,63,.10);border-color:rgba(200,113,63,.20)}
+.mapping-row.locked small:after{content:' · הפריט שלך';color:var(--accent)}
+@media(max-width:390px){.choice-grid,.color-choice-grid{grid-template-columns:1fr}}

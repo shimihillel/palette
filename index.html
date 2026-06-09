@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
   <div class="app-shell">
@@ -53,8 +53,8 @@
           </div>
 
           <div class="cta-row">
-            <button class="secondary-btn" id="moreOptionsBtn">תני לי עוד 3 שילובים</button>
-            <button class="primary-btn" id="saveLookBtn">שמרי ללוקבוק ♡</button>
+            <button class="secondary-btn" id="anchorModeBtn">בחרתי משהו</button>
+            <button class="primary-btn" id="saveLookBtn">שומרת ♡</button>
           </div>
         </section>
 
@@ -68,15 +68,54 @@
         </section>
       </section>
 
-      <section class="screen" id="exploreScreen">
+      <section class="screen" id="anchorScreen">
         <div class="section-header">
           <div>
-            <p class="eyebrow soft">עוד אופציות</p>
-            <h2>תני לי השראה</h2>
+            <p class="eyebrow soft">BUILD AROUND ONE PIECE</p>
+            <h2>בחרתי משהו</h2>
+            <p class="screen-note">יש לך כבר פריט שבא לך ללבוש? בחרי מה הוא ובאיזה גוון, ואני אבנה סביבו שילוב מלא.</p>
           </div>
-          <button class="ghost-btn" id="refreshExploreBtn">רענני</button>
         </div>
-        <div class="explore-list" id="exploreList"></div>
+
+        <section class="card anchor-card">
+          <h3>מה הפריט?</h3>
+          <div class="choice-grid" id="pieceChoices"></div>
+        </section>
+
+        <section class="card anchor-card">
+          <h3>באיזה גוון?</h3>
+          <div class="family-strip" id="familyChoices"></div>
+          <div class="color-choice-grid" id="colorChoices"></div>
+        </section>
+
+        <button class="primary-btn full anchor-build-btn" id="buildAroundBtn">בני לי סביב זה ✨</button>
+
+        <section class="hero-card card anchor-result-card" id="anchorResultCard" hidden>
+          <div class="hero-head">
+            <div>
+              <p class="tiny-label">נבנה סביב הפריט שלך</p>
+              <h2 id="anchorLookTitle">—</h2>
+              <p id="anchorLookVibe" class="hero-copy"></p>
+            </div>
+          </div>
+
+          <div class="palette-row" id="anchorPaletteRow"></div>
+
+          <div class="mapping-card">
+            <h3>איך ללבוש את זה</h3>
+            <div class="mapping-list" id="anchorMappingList"></div>
+          </div>
+
+          <div class="why-card">
+            <h3>למה זה עובד?</h3>
+            <p id="anchorWhyWorks"></p>
+          </div>
+
+          <div class="cta-row">
+            <button class="secondary-btn" id="anchorNextBtn">הבא בתור</button>
+            <button class="primary-btn" id="anchorSaveBtn">שומרת ♡</button>
+          </div>
+        </section>
       </section>
 
       <section class="screen" id="lookbookScreen">
@@ -101,9 +140,9 @@
         <span>☀︎</span>
         <small>היום</small>
       </button>
-      <button class="nav-btn" data-screen="exploreScreen">
-        <span>✦</span>
-        <small>עוד</small>
+      <button class="nav-btn" data-screen="anchorScreen">
+        <span>◐</span>
+        <small>בחרתי</small>
       </button>
       <button class="nav-btn" data-screen="lookbookScreen">
         <span>♡</span>
@@ -143,6 +182,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=5"></script>
+  <script src="script.js?v=6"></script>
 </body>
 </html>

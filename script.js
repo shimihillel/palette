@@ -79,7 +79,7 @@ const state = loadState();
 
 const el = {
   todayScreen: document.getElementById('todayScreen'),
-  exploreScreen: document.getElementById('exploreScreen'),
+  anchorScreen: document.getElementById('anchorScreen'),
   lookbookScreen: document.getElementById('lookbookScreen'),
   paletteRow: document.getElementById('paletteRow'),
   mappingList: document.getElementById('mappingList'),
@@ -89,8 +89,19 @@ const el = {
   saveLookBtn: document.getElementById('saveLookBtn'),
   refreshLookBtn: document.getElementById('refreshLookBtn'),
   moreOptionsBtn: document.getElementById('moreOptionsBtn'),
-  exploreList: document.getElementById('exploreList'),
-  refreshExploreBtn: document.getElementById('refreshExploreBtn'),
+  pieceChoices: document.getElementById('pieceChoices'),
+  familyChoices: document.getElementById('familyChoices'),
+  colorChoices: document.getElementById('colorChoices'),
+  buildAroundBtn: document.getElementById('buildAroundBtn'),
+  anchorModeBtn: document.getElementById('anchorModeBtn'),
+  anchorResultCard: document.getElementById('anchorResultCard'),
+  anchorLookTitle: document.getElementById('anchorLookTitle'),
+  anchorLookVibe: document.getElementById('anchorLookVibe'),
+  anchorPaletteRow: document.getElementById('anchorPaletteRow'),
+  anchorMappingList: document.getElementById('anchorMappingList'),
+  anchorWhyWorks: document.getElementById('anchorWhyWorks'),
+  anchorNextBtn: document.getElementById('anchorNextBtn'),
+  anchorSaveBtn: document.getElementById('anchorSaveBtn'),
   lookbookList: document.getElementById('lookbookList'),
   lookbookCount: document.getElementById('lookbookCount'),
   lookbookSearch: document.getElementById('lookbookSearch'),
@@ -120,7 +131,7 @@ function init(){
     persist();
   }
   renderToday();
-  renderExplore();
+  renderAnchor();
   renderLookbook();
   bindEvents();
   showScreen(state.activeScreen || 'todayScreen');
@@ -136,15 +147,16 @@ function bindEvents(){
     state.history = state.history.slice(0, 60);
     persist();
     renderToday();
-    toast('לוק חדש בדרך ✨');
+    toast('הבא בתור ✨');
   });
 
   el.saveLookBtn.addEventListener('click', ()=> saveCurrentLook());
-  el.moreOptionsBtn.addEventListener('click', ()=> {
-    showScreen('exploreScreen');
-    renderExplore(true);
+  el.anchorModeBtn.addEventListener('click', ()=> showScreen('anchorScreen'));
+  el.buildAroundBtn.addEventListener('click', ()=> buildAnchorLook());
+  el.anchorNextBtn.addEventListener('click', ()=> buildAnchorLook());
+  el.anchorSaveBtn.addEventListener('click', ()=> {
+    if(state.anchorLook) saveCurrentLook(state.anchorLook);
   });
-  el.refreshExploreBtn.addEventListener('click', ()=> renderExplore(true));
   el.lookbookSearch.addEventListener('input', renderLookbook);
 
   el.navBtns.forEach(btn => btn.addEventListener('click', ()=> showScreen(btn.dataset.screen)));
@@ -161,14 +173,17 @@ function loadState(){
       const parsed = JSON.parse(raw);
       return {
         currentLook: parsed.currentLook || null,
-        exploreLooks: parsed.exploreLooks || [],
+        anchorLook: parsed.anchorLook || null,
+        anchorPiece: parsed.anchorPiece || 'bottom',
+        anchorFamily: parsed.anchorFamily || 'חום',
+        anchorColorId: parsed.anchorColorId || 'cocoa',
         lookbook: parsed.lookbook || [],
         history: parsed.history || [],
         activeScreen: parsed.activeScreen || 'todayScreen'
       };
     }
   }catch(e){}
-  return { currentLook:null, exploreLooks:[], lookbook:[], history:[], activeScreen:'todayScreen' };
+  return { currentLook:null, anchorLook:null, anchorPiece:'bottom', anchorFamily:'חום', anchorColorId:'cocoa', lookbook:[], history:[], activeScreen:'todayScreen' };
 }
 
 function persist(){
@@ -203,53 +218,105 @@ function renderToday(){
   renderMapping(el.mappingList, look.mapping);
 }
 
-function renderExplore(force = false){
-  if(force || !state.exploreLooks?.length){
-    const signatures = new Set([state.currentLook?.signature, ...(state.exploreLooks||[]).map(l=>l.signature)]);
-    const list = [];
-    let guard = 0;
-    while(list.length < 3 && guard < 80){
-      const look = generateBestLook(list.map(x=>x.signature));
-      if(!signatures.has(look.signature) && !list.some(x=>x.signature===look.signature)){
-        list.push(look);
-        signatures.add(look.signature);
-      }
-      guard++;
-    }
-    state.exploreLooks = list;
-    persist();
-  }
 
-  el.exploreList.innerHTML = '';
-  state.exploreLooks.forEach((look, idx) => {
-    const card = document.createElement('article');
-    card.className = 'look-card';
-    card.innerHTML = `
-      <div class="look-card-head">
-        <div>
-          <p class="tiny-label">אופציה ${idx+1}</p>
-          <h3>${look.title}</h3>
-          <p>${look.vibe}</p>
-        </div>
-      </div>
-      <div class="mini-row">${look.colors.map(c=>`<span class="mini-dot" style="background:${c.hex}"></span>`).join('')}</div>
-      <div class="card-actions">
-        <button class="secondary-btn use-btn">בחרי לי את זה</button>
-        <button class="primary-btn save-alt-btn">שמרי ללוקבוק</button>
-      </div>
-    `;
-    card.querySelector('.use-btn').addEventListener('click', ()=> {
-      state.currentLook = look;
-      state.history.unshift(look.signature);
-      state.history = state.history.slice(0, 60);
+const PIECES = [
+  {id:'top', label:'עליון', icon:'👚'},
+  {id:'bottom', label:'תחתון', icon:'👖'},
+  {id:'shoes', label:'נעליים', icon:'👟'},
+  {id:'accessory', label:'אביזר', icon:'👜'}
+];
+
+const COLOR_FAMILIES = {
+  'חום': ['camel','cognac','cocoa','espresso','bark'],
+  'שמנת': ['ivory','linen','oat','sand'],
+  'כחול': ['navy','cobalt','indigo','slate'],
+  'ירוק': ['sage','eucalyptus','olive','moss','teal'],
+  'ורוד/סגול': ['blush','dustyrose','mauve','lavgray','plum','fig'],
+  'אדום/חם': ['bordeaux','terracotta','rust','coral'],
+  'צהוב/זהב': ['ochre','marigold'],
+  'כהה': ['charcoal','black','espresso','navy']
+};
+
+function renderAnchor(){
+  renderPieceChoices();
+  renderFamilyChoices();
+  renderColorChoices();
+  if(state.anchorLook){
+    renderAnchorLook(state.anchorLook);
+  }
+}
+
+function renderPieceChoices(){
+  if(!el.pieceChoices) return;
+  el.pieceChoices.innerHTML = PIECES.map(piece => `
+    <button class="choice-btn ${state.anchorPiece===piece.id?'selected':''}" data-piece="${piece.id}">
+      <span>${piece.icon}</span>
+      <strong>${piece.label}</strong>
+    </button>
+  `).join('');
+  [...el.pieceChoices.querySelectorAll('.choice-btn')].forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.anchorPiece = btn.dataset.piece;
       persist();
-      renderToday();
-      showScreen('todayScreen');
-      toast('הלוק עבר למסך הראשי ✨');
+      renderAnchor();
     });
-    card.querySelector('.save-alt-btn').addEventListener('click', ()=> saveCurrentLook(look));
-    el.exploreList.appendChild(card);
   });
+}
+
+function renderFamilyChoices(){
+  if(!el.familyChoices) return;
+  el.familyChoices.innerHTML = Object.keys(COLOR_FAMILIES).map(family => `
+    <button class="family-btn ${state.anchorFamily===family?'selected':''}" data-family="${family}">${family}</button>
+  `).join('');
+  [...el.familyChoices.querySelectorAll('.family-btn')].forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.anchorFamily = btn.dataset.family;
+      state.anchorColorId = COLOR_FAMILIES[state.anchorFamily][0];
+      persist();
+      renderAnchor();
+    });
+  });
+}
+
+function renderColorChoices(){
+  if(!el.colorChoices) return;
+  const ids = COLOR_FAMILIES[state.anchorFamily] || COLOR_FAMILIES['חום'];
+  el.colorChoices.innerHTML = ids.map(id => {
+    const c = COLOR_LIBRARY[id];
+    return `<button class="color-btn ${state.anchorColorId===id?'selected':''}" data-color="${id}">
+      <span class="color-chip" style="background:${c.hex}"></span>
+      <strong>${c.he}</strong>
+    </button>`;
+  }).join('');
+  [...el.colorChoices.querySelectorAll('.color-btn')].forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.anchorColorId = btn.dataset.color;
+      persist();
+      renderAnchor();
+    });
+  });
+}
+
+function buildAnchorLook(){
+  const anchorColor = COLOR_LIBRARY[state.anchorColorId] || COLOR_LIBRARY.cocoa;
+  state.anchorLook = generateBestAnchoredLook(state.anchorPiece, anchorColor);
+  state.history.unshift(state.anchorLook.signature);
+  state.history = state.history.slice(0, 60);
+  persist();
+  renderAnchorLook(state.anchorLook);
+  toast('בנינו סביב הפריט שלך ✨');
+}
+
+function renderAnchorLook(look){
+  if(!look || !el.anchorResultCard) return;
+  el.anchorResultCard.hidden = false;
+  el.anchorLookTitle.textContent = look.title;
+  el.anchorLookVibe.textContent = look.vibe;
+  el.anchorWhyWorks.textContent = look.why;
+  renderPalette(el.anchorPaletteRow, look.colors);
+  renderMapping(el.anchorMappingList, look.mapping);
+  const lockedRow = el.anchorMappingList.querySelector(`[data-role="${state.anchorPiece}"]`);
+  if(lockedRow) lockedRow.classList.add('locked');
 }
 
 function renderLookbook(){
@@ -324,7 +391,7 @@ function renderMapping(container, mapping){
   };
   container.innerHTML = Object.entries(labels).map(([key,label]) => {
     const item = mapping[key];
-    return `<div class="mapping-row"><small>${label}</small><strong>${item.text}</strong><span class="mapping-dot" style="background:${item.color.hex}"></span></div>`;
+    return `<div class="mapping-row" data-role="${key}"><small>${label}</small><strong>${item.text}</strong><span class="mapping-dot" style="background:${item.color.hex}"></span></div>`;
   }).join('');
 }
 
@@ -506,6 +573,86 @@ function buildWhy(recipe, colors, mapping){
   }
   return parts.join(' ');
 }
+
+
+function generateBestAnchoredLook(piece, anchorColor){
+  const candidates = [];
+  for(let i=0; i<36; i++) candidates.push(generateAnchoredLook(piece, anchorColor));
+  candidates.sort((a,b)=>scoreLook(b, []) - scoreLook(a, []));
+  return candidates[0];
+}
+
+function generateAnchoredLook(piece, anchorColor){
+  const compatible = compatibleRolesFor(anchorColor);
+  const colors = [anchorColor];
+  while(colors.length < 4){
+    const role = compatible[Math.floor(Math.random()*compatible.length)];
+    const color = pickColorForRole(role, colors);
+    if(!colors.some(c=>c.id===color.id)) colors.push(color);
+  }
+
+  const mapping = {};
+  mapping[piece] = { color: anchorColor, text: anchoredText(piece, anchorColor) };
+
+  const remainingRoles = ['top','bottom','shoes','accessory'].filter(r=>r!==piece);
+  const remainingColors = colors.filter(c=>c.id!==anchorColor.id);
+
+  remainingRoles.forEach((role, idx)=>{
+    const color = chooseBestForRole(role, remainingColors, idx);
+    mapping[role] = { color, text: roleText(role, color) };
+    const ci = remainingColors.findIndex(c=>c.id===color.id);
+    if(ci >= 0) remainingColors.splice(ci,1);
+  });
+
+  const orderedColors = [mapping.top.color, mapping.bottom.color, mapping.shoes.color, mapping.accessory.color];
+  const otherNames = orderedColors.filter(c=>c.id!==anchorColor.id).slice(0,2).map(c=>c.he).join(' ו');
+  const title = `${anchorColor.he} עם ${otherNames}`;
+  const vibe = `התחלנו מ${pieceLabel(piece)} ב${anchorColor.he}, ובנינו סביבו שילוב מלא שלא מרגיש מאולץ.`;
+  const why = `ה${anchorColor.he} הוא העוגן של הלוק. הוספנו צבע שמאיר, צבע שמאזן, ואקסנט קטן כדי שהשילוב ירגיש מתוכנן ולא מקרי.`;
+  const signature = `anchor-${piece}-${anchorColor.id}|${orderedColors.map(c=>c.id).join('|')}`;
+  return { recipeId:'anchor', colors: orderedColors, mapping, title, vibe, why, signature, createdAt: new Date().toISOString() };
+}
+
+function compatibleRolesFor(color){
+  const fam = color.family;
+  if(['dark-neutral','warm-neutral'].includes(fam)) return ['light','blue','soft','green','warmAccent','purple'];
+  if(['light'].includes(fam)) return ['darkNeutral','blue','green','soft','warmAccent','purple'];
+  if(['blue','green'].includes(fam)) return ['light','warmNeutral','darkNeutral','soft','warmAccent'];
+  if(['soft','purple','red-purple'].includes(fam)) return ['light','warmNeutral','darkNeutral','blue','green'];
+  if(['warm-accent'].includes(fam)) return ['light','darkNeutral','blue','green','warmNeutral'];
+  return ['light','warmNeutral','darkNeutral','blue','green','soft'];
+}
+
+function chooseBestForRole(role, colors, idx){
+  if(!colors.length) return COLOR_LIBRARY.ivory;
+  const pref = {
+    top: ['light','soft','blue','green','warm-accent','dark-neutral','warm-neutral'],
+    bottom: ['dark-neutral','blue','green','warm-neutral','purple','light'],
+    shoes: ['warm-neutral','dark-neutral','light','blue','green','soft'],
+    accessory: ['warm-accent','purple','blue','soft','green','dark-neutral','warm-neutral','light']
+  }[role] || [];
+  return [...colors].sort((a,b)=>{
+    const ai = pref.indexOf(a.family);
+    const bi = pref.indexOf(b.family);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  })[0] || colors[idx % colors.length];
+}
+
+function pieceLabel(piece){
+  return ({top:'עליון', bottom:'תחתון', shoes:'נעליים', accessory:'אביזר'})[piece] || 'פריט';
+}
+
+function anchoredText(piece, color){
+  return `${pieceLabel(piece)} ב${color.he}`;
+}
+
+function roleText(role, color){
+  if(role==='top') return topText(color);
+  if(role==='bottom') return bottomText(color);
+  if(role==='shoes') return shoesText(color);
+  return accessoryText(color);
+}
+
 
 function pickWeighted(items, weightKey){
   const total = items.reduce((sum, item) => sum + (Number(item[weightKey]) || 1), 0);
