@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <meta name="description" content="Shimi Looks – מנוע אינסופי כמעט לשילובי צבעים לבגדים, בהשראת Sanzo Wada." />
   <title>Shimi Looks</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" href="assets/icon-32.png" />
@@ -15,17 +14,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=6" />
+  <link rel="stylesheet" href="style.css?v=7" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div>
+      <button class="icon-btn" id="infoBtn" aria-label="מידע">i</button>
+      <div class="brand-block">
         <p class="eyebrow">INFINITE COLOR COMBINATIONS</p>
         <h1>Shimi Looks</h1>
         <p class="subtitle">הסטייל שלך. כל יום מחדש.</p>
       </div>
-      <button class="icon-btn" id="infoBtn" aria-label="מידע">i</button>
+      <div class="top-spacer"></div>
     </header>
 
     <main>
@@ -34,10 +34,9 @@
           <div class="hero-head">
             <div>
               <p class="tiny-label">הלוק של היום</p>
-              <h2 id="lookTitle">טוען שילוב...</h2>
-              <p id="lookVibe" class="hero-copy">עוד רגע, לוק חדש בדרך.</p>
+              <h2 id="lookTitle">—</h2>
+              <p id="lookVibe" class="hero-copy">שילוב צבעים חכם, מגוון ובלי דרמת בוקר.</p>
             </div>
-            <button class="ghost-circle" id="refreshLookBtn" aria-label="תני עוד שילוב">↻</button>
           </div>
 
           <div class="palette-row" id="paletteRow"></div>
@@ -53,16 +52,18 @@
           </div>
 
           <div class="cta-row">
-            <button class="secondary-btn" id="anchorModeBtn">בחרתי משהו</button>
-            <button class="primary-btn" id="saveLookBtn">שומרת ♡</button>
+            <button class="secondary-btn" id="nextLookBtn" type="button">הבא בתור</button>
+            <button class="primary-btn" id="saveLookBtn" type="button">שומרת ♡</button>
           </div>
+
+          <button class="anchor-inline-btn" id="anchorModeBtn" type="button">בחרתי משהו</button>
         </section>
 
         <section class="engine-card card">
           <div>
             <p class="tiny-label">WADA MIX ENGINE</p>
             <h3>כמעט אינסוף שילובים לבישים</h3>
-            <p>המנוע מערבב בין משפחות צבע, תפקידי צבעים, וריאציות ומיפוי לבגדים – ומנסה לא לחזור על מה שכבר נשמר בלוקבוק.</p>
+            <p>המנוע מערבב בין משפחות צבע, תפקידי צבעים ומיפוי לבגדים — ומנסה לא לחזור על מה שכבר שמרת בלוקבוק.</p>
           </div>
           <div class="infinity">∞</div>
         </section>
@@ -88,7 +89,7 @@
           <div class="color-choice-grid" id="colorChoices"></div>
         </section>
 
-        <button class="primary-btn full anchor-build-btn" id="buildAroundBtn">בני לי סביב זה ✨</button>
+        <button class="primary-btn full anchor-build-btn" id="buildAroundBtn" type="button">בני לי סביב זה ✨</button>
 
         <section class="hero-card card anchor-result-card" id="anchorResultCard" hidden>
           <div class="hero-head">
@@ -112,8 +113,8 @@
           </div>
 
           <div class="cta-row">
-            <button class="secondary-btn" id="anchorNextBtn">הבא בתור</button>
-            <button class="primary-btn" id="anchorSaveBtn">שומרת ♡</button>
+            <button class="secondary-btn" id="anchorNextBtn" type="button">הבא בתור</button>
+            <button class="primary-btn" id="anchorSaveBtn" type="button">שומרת ♡</button>
           </div>
         </section>
       </section>
@@ -136,24 +137,15 @@
     </main>
 
     <nav class="bottom-nav">
-      <button class="nav-btn active" data-screen="todayScreen">
-        <span>☀︎</span>
-        <small>היום</small>
-      </button>
-      <button class="nav-btn" data-screen="anchorScreen">
-        <span>◐</span>
-        <small>בחרתי</small>
-      </button>
-      <button class="nav-btn" data-screen="lookbookScreen">
-        <span>♡</span>
-        <small>לוקבוק</small>
-      </button>
+      <button class="nav-btn active" data-screen="todayScreen" type="button"><span>☀︎</span><small>היום</small></button>
+      <button class="nav-btn" data-screen="anchorScreen" type="button"><span>◐</span><small>בחרתי</small></button>
+      <button class="nav-btn" data-screen="lookbookScreen" type="button"><span>♡</span><small>לוקבוק</small></button>
     </nav>
   </div>
 
   <dialog id="lookDialog">
     <div class="dialog-inner">
-      <button class="dialog-close" id="closeDialogBtn">×</button>
+      <button class="dialog-close" id="closeDialogBtn" type="button">×</button>
       <p class="eyebrow soft" id="dialogDate"></p>
       <h3 id="dialogTitle"></h3>
       <p id="dialogVibe" class="dialog-vibe"></p>
@@ -168,20 +160,20 @@
 
   <dialog id="infoDialog">
     <div class="dialog-inner info-inner">
-      <button class="dialog-close" id="closeInfoBtn">×</button>
+      <button class="dialog-close" id="closeInfoBtn" type="button">×</button>
       <p class="eyebrow soft">ABOUT THE ENGINE</p>
       <h3>איך זה עובד?</h3>
-      <p>האפליקציה לא מגרילה סתם 4 צבעים. היא בוחרת מבני השראה, ממלאת אותם בוריאציות צבע חכמות, ממפה את הצבעים לבגדים ובודקת מול הלוקבוק כדי לנסות לייצר גיוון אמיתי.</p>
+      <p>האפליקציה בונה שילובי צבעים מתוך מבני השראה, וריאציות גוונים ומיפוי לבגדים. היא לא מעתיקה את Sanzo Wada, אלא משתמשת בעקרונות השראה כדי לייצר שילובים חדשים.</p>
       <ul class="info-list">
-        <li>בהשראת <b>Sanzo Wada</b>, בלי להעתיק פלטות אחת לאחת.</li>
-        <li>כל שמירה ללוקבוק נחשבת ללוק שנבחר.</li>
-        <li>המנוע מנסה להפחית חזרות קרובות של אותן משפחות צבע.</li>
+        <li>כל לחיצה על <b>הבא בתור</b> מייצרת שילוב חדש.</li>
+        <li><b>שומרת ♡</b> מכניס את הלוק ללוקבוק.</li>
+        <li><b>בחרתי משהו</b> בונה שילוב סביב פריט שכבר בא לך ללבוש.</li>
       </ul>
-      <button class="primary-btn full" id="closeInfoCta">הבנתי, יאללה לוקים</button>
+      <button class="primary-btn full" id="closeInfoCta" type="button">הבנתי</button>
     </div>
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=6"></script>
+  <script src="script.js?v=7"></script>
 </body>
 </html>

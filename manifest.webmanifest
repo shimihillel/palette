@@ -7,7 +7,7 @@
   "display": "standalone",
   "background_color": "#f6f1ea",
   "theme_color": "#f6f1ea",
-  "description": "מנוע כמעט אינסופי לשילובי צבעים לבגדים, בהשראת Sanzo Wada.",
+  "description": "מנוע שילובי צבעים לבגדים.",
   "icons": [
     {
       "src": "assets/icon-192.png",
