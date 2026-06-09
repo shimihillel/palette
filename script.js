@@ -60,7 +60,7 @@ const RECIPES = [
   {id:'studio-6', title:'עמוק, ארצי ומדויק', roles:['warmLight','green','warmAccent','darkNeutral'], baseMap:{top:0,bottom:1,shoes:3,accessory:2}, weight:1.0},
   {id:'studio-7', title:'שיק שקט עם טוויסט קטן', roles:['light','soft','blue','warmNeutral'], baseMap:{top:1,bottom:2,shoes:3,accessory:0}, weight:0.95},
   {id:'studio-8', title:'חם וקר עם איזון יפה', roles:['warmLight','warmAccent','blue','darkNeutral'], baseMap:{top:0,bottom:2,shoes:3,accessory:1}, weight:1.0},
-  {id:'studio-9', title:'אבקתי ומעודן אבל לא משעמם', roles:['light','soft','green','cocoa'], baseMap:{top:0,bottom:2,shoes:3,accessory:1}, weight:0.95},
+  {id:'studio-9', title:'אבקתי ומעודן אבל לא משעמם', roles:['light','soft','green','darkNeutral'], baseMap:{top:0,bottom:2,shoes:3,accessory:1}, weight:0.95},
   {id:'studio-10', title:'קונטרסט מעניין אבל לביש', roles:['light','jewel','warmNeutral','darkNeutral'], baseMap:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.0},
   {id:'studio-11', title:'לוק שמשלב רוך עם נוכחות', roles:['warmLight','soft','purple','warmNeutral'], baseMap:{top:1,bottom:2,shoes:3,accessory:0}, weight:0.9},
   {id:'studio-12', title:'נינוח, אומנותי ומדויק', roles:['light','green','blue','warmAccent'], baseMap:{top:0,bottom:2,shoes:1,accessory:3}, weight:1.0}
@@ -123,6 +123,7 @@ function init(){
   renderExplore();
   renderLookbook();
   bindEvents();
+  showScreen(state.activeScreen || 'todayScreen');
   if('serviceWorker' in navigator){
     window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   }
@@ -348,8 +349,11 @@ function generateBestLook(extraExclude = []){
 
 function generateLook(){
   const recipe = pickWeighted(RECIPES, 'weight');
-  const pickedIds = recipe.roles.map((role, idx) => pickColorForRole(role, recipe.roles.slice(0, idx).map((_, j)=> COLOR_LIBRARY[pickedIds?.[j]])).id );
-  const colors = pickedIds.map(id => COLOR_LIBRARY[id]);
+  const pickedColors = [];
+  recipe.roles.forEach(role => {
+    pickedColors.push(pickColorForRole(role, pickedColors));
+  });
+  const colors = pickedColors;
   let mapTemplate = Math.random() < 0.55 ? recipe.baseMap : MAP_VARIANTS[Math.floor(Math.random()*MAP_VARIANTS.length)];
   const mapping = buildMapping(colors, mapTemplate);
   const title = buildTitle(colors);
