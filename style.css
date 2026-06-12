@@ -217,10 +217,12 @@ button{cursor:pointer;border:0}
   .meter-change-btn{width:100%}
 }
 
-.hidden-why{display:none !important;}
-.anchor-meter{margin-top:10px;}
-.mapping-card{margin-top:12px;}
+/* v15 hide why cards */
+.why-card{
+  display:none !important;
+}
 
-/* v14: remove the long explanation cards from all screens */
-.why-card{display:none !important;}
-.hidden-why{display:none !important;}
+/* v15 anchor color meter */
+.anchor-meter-card{
+  margin:14px 0 12px;
+}

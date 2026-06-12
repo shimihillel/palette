@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=140" />
+  <link rel="stylesheet" href="style.css?v=150" />
 </head>
 <body>
   <div class="app-shell">
@@ -98,6 +98,16 @@
           <div class="color-choice-grid" id="colorChoices"></div>
         </section>
 
+
+        <section class="color-meter-card anchor-meter-card" id="anchorColorMeterCard">
+          <div>
+            <p class="tiny-label">מדד הצבע היומי</p>
+            <h3 id="anchorColorModeTitle">סופר צבע</h3>
+            <p id="anchorColorModeDesc">4 צבעים, בלי להתנצל</p>
+          </div>
+          <button class="meter-change-btn" id="anchorChangeColorModeBtn" type="button">שינוי מדד</button>
+        </section>
+
         <button class="primary-btn full anchor-build-btn" id="buildAroundBtn" type="button">בני לי סביב זה ✨</button>
 
         <section class="hero-card card anchor-result-card" id="anchorResultCard" hidden>
@@ -105,27 +115,21 @@
             <div>
               <p class="tiny-label">נבנה סביב הפריט שלך</p>
               <h2 id="anchorLookTitle">—</h2>
+              <p id="anchorLookVibe" class="hero-copy"></p>
             </div>
           </div>
 
-          <section class="color-meter-card anchor-meter" id="anchorColorMeterCard">
-            <div>
-              <p class="tiny-label">מדד הצבע היומי</p>
-              <h3 id="anchorColorModeTitle">סופר צבע</h3>
-              <p id="anchorColorModeDesc">4 צבעים, בלי להתנצל</p>
-            </div>
-            <button class="meter-change-btn" id="anchorChangeColorModeBtn" type="button">שינוי מדד</button>
-          </section>
-
           <div class="palette-row" id="anchorPaletteRow"></div>
-          <p id="anchorLookVibe" class="hero-copy look-line"></p>
 
           <div class="mapping-card">
             <h3>איך ללבוש את זה</h3>
             <div class="mapping-list" id="anchorMappingList"></div>
           </div>
 
-          <div class="why-card hidden-why" aria-hidden="true"><p id="anchorWhyWorks"></p></div>
+          <div class="why-card">
+            <h3>למה זה עובד?</h3>
+            <p id="anchorWhyWorks"></p>
+          </div>
 
           <div class="cta-row">
             <button class="secondary-btn" id="anchorNextBtn" type="button">הבא בתור</button>
@@ -199,6 +203,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=140"></script>
+  <script src="script.js?v=150"></script>
 </body>
 </html>

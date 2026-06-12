@@ -1,3 +1,5 @@
+function el(id){ return document.getElementById(id); }
+function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(event, fn); }
 
 'use strict';
 
@@ -186,12 +188,12 @@ function bindEvents(){
   });
 
   $('closeDialogBtn').addEventListener('click', () => $('lookDialog').close());
-  bind('infoBtn','click', () => $('infoDialog').showModal());
-  bind('closeInfoBtn','click', () => $('infoDialog').close());
-  bind('closeInfoCta','click', () => $('infoDialog').close());
-  bind('changeColorModeBtn','click', () => openColorModeDialog('today'));
-  bind('anchorChangeColorModeBtn','click', () => openColorModeDialog('anchor'));
-  bind('closeColorModeBtn','click', () => $('colorModeDialog').close());
+  $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
+  $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
+  $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
+  $('changeColorModeBtn').addEventListener('click', () => openColorModeDialog('today'));
+  $('closeColorModeBtn').addEventListener('click', () => $('colorModeDialog').close());
+  on('anchorChangeColorModeBtn','click', () => openColorModeDialog('anchor'));
 }
 
 function renderAll(){
@@ -213,18 +215,21 @@ function currentMode(){
 
 function renderColorModeCard(){
   const mode = currentMode();
-  if($('colorModeTitle')) $('colorModeTitle').textContent = mode.title;
-  if($('colorModeDesc')) $('colorModeDesc').textContent = mode.desc;
+  if(el('colorModeTitle')) el('colorModeTitle').textContent = mode.title;
+  if(el('colorModeDesc')) el('colorModeDesc').textContent = mode.desc;
 }
 
 function renderAnchorColorModeCard(){
   const mode = COLOR_MODES[state.anchorColorMode || state.colorMode || 'super'] || COLOR_MODES.super;
-  if($('anchorColorModeTitle')) $('anchorColorModeTitle').textContent = mode.title;
-  if($('anchorColorModeDesc')) $('anchorColorModeDesc').textContent = mode.desc;
+  if(el('anchorColorModeTitle')) el('anchorColorModeTitle').textContent = mode.title;
+  if(el('anchorColorModeDesc')) el('anchorColorModeDesc').textContent = mode.desc;
 }
 
 function openColorModeDialog(context='today'){
-  const activeMode = context === 'anchor' ? (state.anchorColorMode || state.colorMode || 'super') : (state.colorMode || 'super');
+  const activeMode = context === 'anchor'
+    ? (state.anchorColorMode || state.colorMode || 'super')
+    : (state.colorMode || 'super');
+
   $('colorModeOptions').innerHTML = Object.values(COLOR_MODES).map(mode => `
     <button class="mode-card ${activeMode === mode.id ? 'selected' : ''}" data-mode="${mode.id}" type="button">
       <strong>${mode.title}</strong>
@@ -232,14 +237,19 @@ function openColorModeDialog(context='today'){
       <small>${mode.detail}</small>
     </button>
   `).join('');
+
   document.querySelectorAll('#colorModeOptions .mode-card').forEach(btn => {
     btn.addEventListener('click', () => {
       if(context === 'anchor'){
         state.anchorColorMode = btn.dataset.mode;
-        state.anchorLook = generateBestAnchoredLook(state.anchorPiece, getAnchorColor(), state.anchorColorMode);
-        remember(state.anchorLook);
+        renderAnchorColorModeCard();
+        if(state.anchorLook){
+          const anchorColor = COLORS[state.anchorColorId] || COLORS.cocoa;
+          state.anchorLook = generateBestAnchoredLook(state.anchorPiece, anchorColor, state.anchorColorMode);
+          remember(state.anchorLook);
+          renderAnchorLook(state.anchorLook);
+        }
         saveState();
-        renderAnchorLook(state.anchorLook);
       }else{
         state.colorMode = btn.dataset.mode;
         state.currentLook = generateBestLook(state.colorMode);
@@ -247,10 +257,11 @@ function openColorModeDialog(context='today'){
         saveState();
         renderToday();
       }
-      if($('colorModeDialog')) $('colorModeDialog').close();
+      $('colorModeDialog').close();
     });
   });
-  const dlg=$('colorModeDialog'); if(dlg && dlg.showModal) dlg.showModal();
+
+  $('colorModeDialog').showModal();
 }
 
 function renderToday(){
@@ -264,6 +275,7 @@ function renderToday(){
 }
 
 function renderAnchor(){
+  renderAnchorColorModeCard();
   renderPieceChoices();
   renderFamilyChoices();
   renderColorChoices();
@@ -328,11 +340,11 @@ function buildAnchorLook(){
 }
 
 function renderAnchorLook(look){
+  renderAnchorColorModeCard();
   $('anchorResultCard').hidden = false;
   $('anchorLookTitle').textContent = look.title;
-  $('anchorLookVibe').textContent = look.vibe || pick(MODE_LINES[state.anchorColorMode || 'super']);
+  $('anchorLookVibe').textContent = look.vibe;
   $('anchorWhyWorks').textContent = look.why;
-  renderAnchorColorModeCard();
   renderPalette($('anchorPaletteRow'), look.colors);
   renderMapping($('anchorMappingList'), look.mapping);
   const locked = $('anchorMappingList').querySelector(`[data-role="${state.anchorPiece}"]`);
@@ -624,7 +636,7 @@ function buildWhyByMode(colors, mode){
 }
 
 function generateBestAnchoredLook(piece, anchorColor, mode='super'){
-  const candidates = Array.from({length:100}, () => generateAnchoredLook(piece, anchorColor, mode));
+  const candidates = Array.from({length:90}, () => generateAnchoredLook(piece, anchorColor, mode));
   const score = look => scoreAnchoredLook(look, piece, anchorColor);
   candidates.sort((a,b) => score(b) - score(a));
   return candidates[0];
@@ -632,10 +644,12 @@ function generateBestAnchoredLook(piece, anchorColor, mode='super'){
 
 function generateAnchoredLook(piece, anchorColor, mode='super'){
   let colors;
+
   if(mode === 'half'){
     const relaxed = pickRelaxedSet(2).filter(c => c.id !== anchorColor.id);
     let colorA = pickColor(pick(COLORFUL_GROUPS), [anchorColor, ...relaxed]);
-    let colorB = null, tries = 0;
+    let colorB = null;
+    let tries = 0;
     while(!colorB && tries < 35){
       const c = pickColor(pick(COLORFUL_GROUPS), [anchorColor, ...relaxed, colorA]);
       if(c.family !== colorA.family && c.id !== colorA.id && c.id !== anchorColor.id) colorB = c;
@@ -648,6 +662,7 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
     let accent = pickColor(pick(COLORFUL_GROUPS), [anchorColor, ...relaxed]);
     colors = [anchorColor, ...relaxed, accent];
   }else{
+    // סופר צבע נשאר כמו שהיה בגרסת המקור של "בחרתי".
     const roles = compatibleRoles(anchorColor);
     colors = [anchorColor];
     while(colors.length < 4){
@@ -679,13 +694,13 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
 
   const orderedColors = [mapping.top.color, mapping.bottom.color, mapping.shoes.color, mapping.accessory.color];
   return {
-    title: buildTitle(orderedColors),
+    title:`${anchorColor.he} עם ${orderedColors.filter(c => c.id !== anchorColor.id).slice(0,2).map(c => c.he).join(' ו')}`,
     vibe: pick(MODE_LINES[mode] || MODE_LINES.super),
     why: buildWhyByMode(orderedColors, mode),
     colors:orderedColors,
     mapping,
     colorMode:mode,
-    signature:`anchor-v13|${mode}|${piece}|${anchorColor.id}|${orderedColors.map(c => c.id).join('|')}`,
+    signature:`anchor-v15|${mode}|${piece}|${anchorColor.id}|${orderedColors.map(c => c.id).join('|')}`,
     createdAt:new Date().toISOString()
   };
 }
