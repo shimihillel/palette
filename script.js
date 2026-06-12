@@ -194,6 +194,7 @@ function bindEvents(){
   $('changeColorModeBtn').addEventListener('click', () => openColorModeDialog('today'));
   $('closeColorModeBtn').addEventListener('click', () => $('colorModeDialog').close());
   on('anchorChangeColorModeBtn','click', () => openColorModeDialog('anchor'));
+  on('buildAroundBtn','click', buildAnchorLook);
 }
 
 function renderAll(){
@@ -331,12 +332,18 @@ function renderColorChoices(){
 }
 
 function buildAnchorLook(){
-  const anchorColor = COLORS[state.anchorColorId] || COLORS.cocoa;
-  state.anchorLook = generateBestAnchoredLook(state.anchorPiece, anchorColor, state.anchorColorMode || state.colorMode || 'super');
-  remember(state.anchorLook);
-  saveState();
-  renderAnchorLook(state.anchorLook);
-  toast('בנינו סביב הפריט שלך ✨');
+  try{
+    const anchorColor = COLORS[state.anchorColorId] || COLORS.cocoa;
+    state.anchorColorMode = state.anchorColorMode || state.colorMode || 'super';
+    state.anchorLook = generateBestAnchoredLook(state.anchorPiece, anchorColor, state.anchorColorMode);
+    remember(state.anchorLook);
+    saveState();
+    renderAnchorLook(state.anchorLook);
+    toast('בנינו סביב הפריט שלך ✨');
+  }catch(err){
+    console.error('anchor build failed', err);
+    toast('רגע, משהו נתקע. נסי שוב');
+  }
 }
 
 function renderAnchorLook(look){
@@ -636,10 +643,13 @@ function buildWhyByMode(colors, mode){
 }
 
 function generateBestAnchoredLook(piece, anchorColor, mode='super'){
-  const candidates = Array.from({length:90}, () => generateAnchoredLook(piece, anchorColor, mode));
-  const score = look => scoreAnchoredLook(look, piece, anchorColor);
-  candidates.sort((a,b) => score(b) - score(a));
-  return candidates[0];
+  const candidates = Array.from({length:80}, () => generateAnchoredLook(piece, anchorColor, mode));
+  candidates.sort((a,b) => {
+    const av = (a.colors || []).filter(c => c && c.id !== anchorColor.id).length + (a.colorMode === mode ? 2 : 0);
+    const bv = (b.colors || []).filter(c => c && c.id !== anchorColor.id).length + (b.colorMode === mode ? 2 : 0);
+    return bv - av;
+  });
+  return candidates[0] || generateAnchoredLook(piece, anchorColor, mode);
 }
 
 function generateAnchoredLook(piece, anchorColor, mode='super'){
@@ -662,7 +672,6 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
     let accent = pickColor(pick(COLORFUL_GROUPS), [anchorColor, ...relaxed]);
     colors = [anchorColor, ...relaxed, accent];
   }else{
-    // סופר צבע נשאר כמו שהיה בגרסת המקור של "בחרתי".
     const roles = compatibleRoles(anchorColor);
     colors = [anchorColor];
     while(colors.length < 4){
@@ -687,7 +696,7 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
   let remainingColors = colors.filter(c => c.id !== anchorColor.id);
 
   remainingRoles.forEach(role => {
-    const color = bestForRole(role, remainingColors);
+    const color = bestForRole(role, remainingColors.length ? remainingColors : colors.filter(c => c.id !== anchorColor.id));
     mapping[role] = {color, text: roleText(role, color)};
     remainingColors = remainingColors.filter(c => c.id !== color.id);
   });
@@ -700,7 +709,7 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
     colors:orderedColors,
     mapping,
     colorMode:mode,
-    signature:`anchor-v15|${mode}|${piece}|${anchorColor.id}|${orderedColors.map(c => c.id).join('|')}`,
+    signature:`anchor-v16|${mode}|${piece}|${anchorColor.id}|${orderedColors.map(c => c.id).join('|')}`,
     createdAt:new Date().toISOString()
   };
 }
