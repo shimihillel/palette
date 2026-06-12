@@ -220,3 +220,7 @@ button{cursor:pointer;border:0}
 .hidden-why{display:none !important;}
 .anchor-meter{margin-top:10px;}
 .mapping-card{margin-top:12px;}
+
+/* v14: remove the long explanation cards from all screens */
+.why-card{display:none !important;}
+.hidden-why{display:none !important;}

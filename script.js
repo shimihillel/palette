@@ -186,12 +186,12 @@ function bindEvents(){
   });
 
   $('closeDialogBtn').addEventListener('click', () => $('lookDialog').close());
-  $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
-  $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
-  $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
-  $('changeColorModeBtn').addEventListener('click', () => openColorModeDialog('today'));
-  $('anchorChangeColorModeBtn').addEventListener('click', () => openColorModeDialog('anchor'));
-  $('closeColorModeBtn').addEventListener('click', () => $('colorModeDialog').close());
+  bind('infoBtn','click', () => $('infoDialog').showModal());
+  bind('closeInfoBtn','click', () => $('infoDialog').close());
+  bind('closeInfoCta','click', () => $('infoDialog').close());
+  bind('changeColorModeBtn','click', () => openColorModeDialog('today'));
+  bind('anchorChangeColorModeBtn','click', () => openColorModeDialog('anchor'));
+  bind('closeColorModeBtn','click', () => $('colorModeDialog').close());
 }
 
 function renderAll(){
@@ -213,14 +213,14 @@ function currentMode(){
 
 function renderColorModeCard(){
   const mode = currentMode();
-  $('colorModeTitle').textContent = mode.title;
-  $('colorModeDesc').textContent = mode.desc;
+  if($('colorModeTitle')) $('colorModeTitle').textContent = mode.title;
+  if($('colorModeDesc')) $('colorModeDesc').textContent = mode.desc;
 }
 
 function renderAnchorColorModeCard(){
   const mode = COLOR_MODES[state.anchorColorMode || state.colorMode || 'super'] || COLOR_MODES.super;
-  $('anchorColorModeTitle').textContent = mode.title;
-  $('anchorColorModeDesc').textContent = mode.desc;
+  if($('anchorColorModeTitle')) $('anchorColorModeTitle').textContent = mode.title;
+  if($('anchorColorModeDesc')) $('anchorColorModeDesc').textContent = mode.desc;
 }
 
 function openColorModeDialog(context='today'){
@@ -247,10 +247,10 @@ function openColorModeDialog(context='today'){
         saveState();
         renderToday();
       }
-      $('colorModeDialog').close();
+      if($('colorModeDialog')) $('colorModeDialog').close();
     });
   });
-  $('colorModeDialog').showModal();
+  const dlg=$('colorModeDialog'); if(dlg && dlg.showModal) dlg.showModal();
 }
 
 function renderToday(){
