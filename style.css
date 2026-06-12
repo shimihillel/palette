@@ -216,3 +216,7 @@ button{cursor:pointer;border:0}
   .color-meter-card{align-items:flex-start;flex-direction:column}
   .meter-change-btn{width:100%}
 }
+
+.hidden-why{display:none !important;}
+.anchor-meter{margin-top:10px;}
+.mapping-card{margin-top:12px;}

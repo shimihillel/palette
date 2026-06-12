@@ -131,13 +131,14 @@ function loadState(){
       anchorPiece: parsed.anchorPiece || 'bottom',
       anchorFamily: parsed.anchorFamily || 'חום',
       anchorColorId: parsed.anchorColorId || 'cocoa',
+      anchorColorMode: parsed.anchorColorMode || parsed.colorMode || 'super',
       lookbook: parsed.lookbook || [],
       recent: parsed.recent || [],
       colorMode: parsed.colorMode || 'super',
       screen: parsed.screen || 'todayScreen'
     };
   }catch(e){
-    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',lookbook:[],recent:[],colorMode:'super',screen:'todayScreen'};
+    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],colorMode:'super',screen:'todayScreen'};
   }
 }
 
@@ -188,7 +189,8 @@ function bindEvents(){
   $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
   $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
   $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
-  $('changeColorModeBtn').addEventListener('click', openColorModeDialog);
+  $('changeColorModeBtn').addEventListener('click', () => openColorModeDialog('today'));
+  $('anchorChangeColorModeBtn').addEventListener('click', () => openColorModeDialog('anchor'));
   $('closeColorModeBtn').addEventListener('click', () => $('colorModeDialog').close());
 }
 
@@ -215,9 +217,16 @@ function renderColorModeCard(){
   $('colorModeDesc').textContent = mode.desc;
 }
 
-function openColorModeDialog(){
+function renderAnchorColorModeCard(){
+  const mode = COLOR_MODES[state.anchorColorMode || state.colorMode || 'super'] || COLOR_MODES.super;
+  $('anchorColorModeTitle').textContent = mode.title;
+  $('anchorColorModeDesc').textContent = mode.desc;
+}
+
+function openColorModeDialog(context='today'){
+  const activeMode = context === 'anchor' ? (state.anchorColorMode || state.colorMode || 'super') : (state.colorMode || 'super');
   $('colorModeOptions').innerHTML = Object.values(COLOR_MODES).map(mode => `
-    <button class="mode-card ${state.colorMode === mode.id ? 'selected' : ''}" data-mode="${mode.id}" type="button">
+    <button class="mode-card ${activeMode === mode.id ? 'selected' : ''}" data-mode="${mode.id}" type="button">
       <strong>${mode.title}</strong>
       <span>${mode.desc}</span>
       <small>${mode.detail}</small>
@@ -225,11 +234,19 @@ function openColorModeDialog(){
   `).join('');
   document.querySelectorAll('#colorModeOptions .mode-card').forEach(btn => {
     btn.addEventListener('click', () => {
-      state.colorMode = btn.dataset.mode;
-      state.currentLook = generateBestLook(state.colorMode);
-      remember(state.currentLook);
-      saveState();
-      renderToday();
+      if(context === 'anchor'){
+        state.anchorColorMode = btn.dataset.mode;
+        state.anchorLook = generateBestAnchoredLook(state.anchorPiece, getAnchorColor(), state.anchorColorMode);
+        remember(state.anchorLook);
+        saveState();
+        renderAnchorLook(state.anchorLook);
+      }else{
+        state.colorMode = btn.dataset.mode;
+        state.currentLook = generateBestLook(state.colorMode);
+        remember(state.currentLook);
+        saveState();
+        renderToday();
+      }
       $('colorModeDialog').close();
     });
   });
@@ -303,7 +320,7 @@ function renderColorChoices(){
 
 function buildAnchorLook(){
   const anchorColor = COLORS[state.anchorColorId] || COLORS.cocoa;
-  state.anchorLook = generateBestAnchoredLook(state.anchorPiece, anchorColor);
+  state.anchorLook = generateBestAnchoredLook(state.anchorPiece, anchorColor, state.anchorColorMode || state.colorMode || 'super');
   remember(state.anchorLook);
   saveState();
   renderAnchorLook(state.anchorLook);
@@ -313,8 +330,9 @@ function buildAnchorLook(){
 function renderAnchorLook(look){
   $('anchorResultCard').hidden = false;
   $('anchorLookTitle').textContent = look.title;
-  $('anchorLookVibe').textContent = look.vibe;
+  $('anchorLookVibe').textContent = look.vibe || pick(MODE_LINES[state.anchorColorMode || 'super']);
   $('anchorWhyWorks').textContent = look.why;
+  renderAnchorColorModeCard();
   renderPalette($('anchorPaletteRow'), look.colors);
   renderMapping($('anchorMappingList'), look.mapping);
   const locked = $('anchorMappingList').querySelector(`[data-role="${state.anchorPiece}"]`);
@@ -605,19 +623,48 @@ function buildWhyByMode(colors, mode){
   return buildWhy(colors);
 }
 
-function generateBestAnchoredLook(piece, anchorColor){
-  const candidates = Array.from({length:40}, () => generateAnchoredLook(piece, anchorColor));
+function generateBestAnchoredLook(piece, anchorColor, mode='super'){
+  const candidates = Array.from({length:100}, () => generateAnchoredLook(piece, anchorColor, mode));
+  const score = look => scoreAnchoredLook(look, piece, anchorColor);
   candidates.sort((a,b) => score(b) - score(a));
   return candidates[0];
 }
 
-function generateAnchoredLook(piece, anchorColor){
-  const roles = compatibleRoles(anchorColor);
-  const colors = [anchorColor];
-  while(colors.length < 4){
-    const color = pickColor(pick(roles), colors);
-    if(!colors.some(c => c.id === color.id)) colors.push(color);
+function generateAnchoredLook(piece, anchorColor, mode='super'){
+  let colors;
+  if(mode === 'half'){
+    const relaxed = pickRelaxedSet(2).filter(c => c.id !== anchorColor.id);
+    let colorA = pickColor(pick(COLORFUL_GROUPS), [anchorColor, ...relaxed]);
+    let colorB = null, tries = 0;
+    while(!colorB && tries < 35){
+      const c = pickColor(pick(COLORFUL_GROUPS), [anchorColor, ...relaxed, colorA]);
+      if(c.family !== colorA.family && c.id !== colorA.id && c.id !== anchorColor.id) colorB = c;
+      tries++;
+    }
+    colorB = colorB || pickColor(pick(COLORFUL_GROUPS), [anchorColor, ...relaxed, colorA]);
+    colors = [anchorColor, ...relaxed, colorA, colorB];
+  }else if(mode === 'tiny'){
+    const relaxed = pickRelaxedSet(3).filter(c => c.id !== anchorColor.id);
+    let accent = pickColor(pick(COLORFUL_GROUPS), [anchorColor, ...relaxed]);
+    colors = [anchorColor, ...relaxed, accent];
+  }else{
+    const roles = compatibleRoles(anchorColor);
+    colors = [anchorColor];
+    while(colors.length < 4){
+      const color = pickColor(pick(roles), colors);
+      if(!colors.some(c => c.id === color.id)) colors.push(color);
+    }
   }
+
+  const unique = [];
+  colors.forEach(c => {
+    if(c && !unique.some(x => x.id === c.id)) unique.push(c);
+  });
+  while(unique.length < 4){
+    unique.push(pickColor(pick(['warmNeutral','green','purple','blue','warmAccent','darkNeutral','light','soft']), unique));
+  }
+  colors = unique.slice(0,4);
+
   const mapping = {};
   mapping[piece] = {color:anchorColor, text:`${pieceLabel(piece)} ב${anchorColor.he}`};
 
@@ -632,12 +679,13 @@ function generateAnchoredLook(piece, anchorColor){
 
   const orderedColors = [mapping.top.color, mapping.bottom.color, mapping.shoes.color, mapping.accessory.color];
   return {
-    title:`${anchorColor.he} עם ${orderedColors.filter(c => c.id !== anchorColor.id).slice(0,2).map(c => c.he).join(' ו')}`,
-    vibe:`התחלנו מ${pieceLabel(piece)} ב${anchorColor.he}, ובנינו סביבו שילוב מלא שלא מרגיש מאולץ.`,
-    why:`ה${anchorColor.he} הוא העוגן. הוספנו צבע שמאיר, צבע שמאזן ואקסנט קטן כדי שהשילוב ירגיש מתוכנן ולא מקרי.`,
+    title: buildTitle(orderedColors),
+    vibe: pick(MODE_LINES[mode] || MODE_LINES.super),
+    why: buildWhyByMode(orderedColors, mode),
     colors:orderedColors,
     mapping,
-    signature:`anchor|${piece}|${anchorColor.id}|${orderedColors.map(c => c.id).join('|')}`,
+    colorMode:mode,
+    signature:`anchor-v13|${mode}|${piece}|${anchorColor.id}|${orderedColors.map(c => c.id).join('|')}`,
     createdAt:new Date().toISOString()
   };
 }
