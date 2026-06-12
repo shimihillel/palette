@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=110" />
+  <link rel="stylesheet" href="style.css?v=120" />
 </head>
 <body>
   <div class="app-shell">
@@ -35,11 +35,20 @@
             <div>
               <p class="tiny-label">הלוק של היום</p>
               <h2 id="lookTitle">—</h2>
-              <p id="lookVibe" class="hero-copy">שילוב צבעים חכם, מגוון ובלי דרמת בוקר.</p>
             </div>
           </div>
 
+          <section class="color-meter-card" id="colorMeterCard">
+            <div>
+              <p class="tiny-label">מדד הצבע היומי</p>
+              <h3 id="colorModeTitle">סופר צבע</h3>
+              <p id="colorModeDesc">4 צבעים, בלי להתנצל</p>
+            </div>
+            <button class="meter-change-btn" id="changeColorModeBtn" type="button">שינוי מדד</button>
+          </section>
+
           <div class="palette-row" id="paletteRow"></div>
+          <p id="lookVibe" class="hero-copy look-line">שילוב צבעים חכם, מגוון ובלי דרמת בוקר.</p>
 
           <div class="mapping-card">
             <h3>איך ללבוש את זה</h3>
@@ -173,7 +182,17 @@
     </div>
   </dialog>
 
+  <dialog id="colorModeDialog">
+    <div class="dialog-inner info-inner">
+      <button class="dialog-close" id="closeColorModeBtn" type="button">×</button>
+      <p class="eyebrow soft">COLOR MOOD</p>
+      <h3>מדד הצבע היומי</h3>
+      <p class="dialog-vibe">בחרי כמה צבע יש לך כוח להיות היום. שינוי מדד מייצר לוק חדש אוטומטית.</p>
+      <div class="mode-options" id="colorModeOptions"></div>
+    </div>
+  </dialog>
+
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=110"></script>
+  <script src="script.js?v=120"></script>
 </body>
 </html>

@@ -91,6 +91,33 @@ const COLOR_FAMILIES = {
   'כהה':['charcoal','black','espresso','navy']
 };
 
+const COLOR_MODES = {
+  super:{id:'super', title:'סופר צבע', desc:'4 צבעים, בלי להתנצל', detail:'לימים שבא לך שהלוק ייכנס לפנייך.'},
+  half:{id:'half', title:'חצי קלאץ׳', desc:'חצי צבע, חצי איזון', detail:'כשבא לך צבע, אבל לא רעש.'},
+  tiny:{id:'tiny', title:'בקטנה ממש', desc:'רגוע עם צבע אחד שעושה עניין', detail:'ליום שקט עם קריצה מדויקת.'}
+};
+
+const MODE_LINES = {
+  super:[
+    'היום הלוק בא לעשות שמח.',
+    'צבע, נוכחות, בלי להתנצל.',
+    'זה לא לוק, זו הכרזה.'
+  ],
+  half:[
+    'צבעוני, אבל לא מתאמץ מדי.',
+    'יש צבע, יש שקט, יש סטייל.',
+    'בול באמצע בין וואו לנוח.'
+  ],
+  tiny:[
+    'רגוע עם קריצה אחת שעושה את העבודה.',
+    'שקט, אבל לא משעמם.',
+    'הצבע קטן, האפקט לא.'
+  ]
+};
+
+const RELAXED_GROUPS = ['light','warmNeutral','darkNeutral','soft'];
+const COLORFUL_GROUPS = ['blue','green','purple','warmAccent'];
+
 const state = loadState();
 
 const $ = (id) => document.getElementById(id);
@@ -106,10 +133,11 @@ function loadState(){
       anchorColorId: parsed.anchorColorId || 'cocoa',
       lookbook: parsed.lookbook || [],
       recent: parsed.recent || [],
+      colorMode: parsed.colorMode || 'super',
       screen: parsed.screen || 'todayScreen'
     };
   }catch(e){
-    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',lookbook:[],recent:[],screen:'todayScreen'};
+    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',lookbook:[],recent:[],colorMode:'super',screen:'todayScreen'};
   }
 }
 
@@ -120,7 +148,7 @@ function saveState(){
 function init(){
   try{
     if(!state.currentLook){
-      state.currentLook = generateBestLook();
+      state.currentLook = generateBestLook(state.colorMode || 'super');
       remember(state.currentLook);
       saveState();
     }
@@ -136,7 +164,7 @@ function init(){
 
 function bindEvents(){
   $('nextLookBtn').addEventListener('click', () => {
-    state.currentLook = generateBestLook();
+    state.currentLook = generateBestLook(state.colorMode || 'super');
     remember(state.currentLook);
     saveState();
     renderToday();
@@ -160,6 +188,8 @@ function bindEvents(){
   $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
   $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
   $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
+  $('changeColorModeBtn').addEventListener('click', openColorModeDialog);
+  $('closeColorModeBtn').addEventListener('click', () => $('colorModeDialog').close());
 }
 
 function renderAll(){
@@ -175,11 +205,43 @@ function showScreen(screenId){
   saveState();
 }
 
+function currentMode(){
+  return COLOR_MODES[state.colorMode || 'super'] || COLOR_MODES.super;
+}
+
+function renderColorModeCard(){
+  const mode = currentMode();
+  $('colorModeTitle').textContent = mode.title;
+  $('colorModeDesc').textContent = mode.desc;
+}
+
+function openColorModeDialog(){
+  $('colorModeOptions').innerHTML = Object.values(COLOR_MODES).map(mode => `
+    <button class="mode-card ${state.colorMode === mode.id ? 'selected' : ''}" data-mode="${mode.id}" type="button">
+      <strong>${mode.title}</strong>
+      <span>${mode.desc}</span>
+      <small>${mode.detail}</small>
+    </button>
+  `).join('');
+  document.querySelectorAll('#colorModeOptions .mode-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.colorMode = btn.dataset.mode;
+      state.currentLook = generateBestLook(state.colorMode);
+      remember(state.currentLook);
+      saveState();
+      renderToday();
+      $('colorModeDialog').close();
+    });
+  });
+  $('colorModeDialog').showModal();
+}
+
 function renderToday(){
   const look = state.currentLook;
   $('lookTitle').textContent = look.title;
-  $('lookVibe').textContent = look.vibe;
+  $('lookVibe').textContent = look.vibe || pick(MODE_LINES[state.colorMode || 'super']);
   $('whyWorks').textContent = look.why;
+  renderColorModeCard();
   renderPalette($('paletteRow'), look.colors);
   renderMapping($('mappingList'), look.mapping);
 }
@@ -405,8 +467,8 @@ function pickWeightedRecipe(recipes){
   return recipes[recipes.length - 1];
 }
 
-function generateBestLook(){
-  const candidates = Array.from({length:70}, () => generateLook());
+function generateBestLook(mode='super'){
+  const candidates = Array.from({length:90}, () => generateLook(mode));
   candidates.sort((a,b) => scoreLookWithTopVariety(b) - scoreLookWithTopVariety(a));
   return candidates[0];
 }
@@ -437,13 +499,15 @@ function scoreLookWithTopVariety(look){
   return s;
 }
 
-function generateLook(){
+function generateLook(mode='super'){
+  if(mode === 'half') return generateHalfClutchLook();
+  if(mode === 'tiny') return generateTinyLook();
+
   const recipe = pickWeightedRecipe(RECIPES);
   let colors = [];
   recipe.roles.forEach(role => colors.push(pickColor(role, colors)));
 
-  // v11: light colors may exist, but are rare and never forced.
-  // If a palette accidentally has too much light/soft/black, rebuild a more Shimi-ish palette.
+  // סופר צבע נשאר כמו שהאפליקציה עבדה עד עכשיו.
   const lightCount = colors.filter(c => c.family === 'light').length;
   const softCount = colors.filter(c => c.family === 'soft').length;
   const blackishCount = colors.filter(c => c.id === 'black' || c.id === 'charcoal').length;
@@ -459,7 +523,6 @@ function generateLook(){
     }
   }
 
-  // keep max one light in regular mode, and if present, move it away from the first swatch
   if(colors.filter(c => c.family === 'light').length > 1){
     const firstLight = colors.find(c => c.family === 'light');
     colors = colors.filter(c => c.family !== 'light');
@@ -467,18 +530,79 @@ function generateLook(){
   }
 
   colors = colors.slice(0,4);
-  const mapping = buildVariedMapping(colors);
+  return buildLookFromColors(colors, 'super');
+}
 
-  const signature = `free-v11|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
+function generateHalfClutchLook(){
+  const relaxedColors = pickRelaxedSet(2);
+  let colorA = pickColor(pick(COLORFUL_GROUPS), relaxedColors);
+  let colorB = null;
+  let tries = 0;
+  while(!colorB && tries < 35){
+    const c = pickColor(pick(COLORFUL_GROUPS), [...relaxedColors, colorA]);
+    if(c.family !== colorA.family && c.id !== colorA.id) colorB = c;
+    tries++;
+  }
+  colorB = colorB || pickColor(pick(COLORFUL_GROUPS), [...relaxedColors, colorA]);
+  const colors = shuffleArray([...relaxedColors, colorA, colorB]).slice(0,4);
+  return buildLookFromColors(colors, 'half');
+}
+
+function generateTinyLook(){
+  const relaxedColors = pickRelaxedSet(3);
+  let accent = null;
+  let tries = 0;
+  while(!accent && tries < 35){
+    const c = pickColor(pick(COLORFUL_GROUPS), relaxedColors);
+    if(!relaxedColors.some(r => r.id === c.id)) accent = c;
+    tries++;
+  }
+  accent = accent || pickColor('warmAccent', relaxedColors);
+  const colors = shuffleArray([...relaxedColors, accent]).slice(0,4);
+  return buildLookFromColors(colors, 'tiny');
+}
+
+function pickRelaxedSet(count){
+  const colors = [];
+  const sameFamily = Math.random() < 0.55;
+  if(sameFamily){
+    const group = pick(RELAXED_GROUPS);
+    while(colors.length < count && colors.length < (GROUPS[group] || []).length){
+      const c = pickColor(group, colors);
+      if(!colors.some(x => x.id === c.id)) colors.push(c);
+    }
+  }
+  while(colors.length < count){
+    const c = pickColor(pick(RELAXED_GROUPS), colors);
+    if(!colors.some(x => x.id === c.id)) colors.push(c);
+  }
+  return colors.slice(0,count);
+}
+
+function buildLookFromColors(colors, mode){
+  const mapping = buildVariedMapping(colors);
+  const modeLine = pick(MODE_LINES[mode] || MODE_LINES.super);
+  const signature = `meter-v12|${mode}|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
   return {
     title: buildTitle(colors),
-    vibe: buildVibe(recipe, colors),
-    why: buildWhy(colors),
+    vibe: modeLine,
+    why: buildWhyByMode(colors, mode),
     colors,
     mapping,
+    colorMode:mode,
     signature,
     createdAt:new Date().toISOString()
   };
+}
+
+function buildWhyByMode(colors, mode){
+  if(mode === 'half'){
+    return `יש כאן חצי צבע וחצי איזון: שני צבעים רגועים מחזיקים את הבסיס, ושני צבעים שונים מכניסים עניין בלי להפוך את זה לרעש.`;
+  }
+  if(mode === 'tiny'){
+    return `הבסיס נשאר רגוע, וצבע אחד מכניס את הקריצה. זה שקט, אבל לא משעמם.`;
+  }
+  return buildWhy(colors);
 }
 
 function generateBestAnchoredLook(piece, anchorColor){

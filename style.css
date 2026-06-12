@@ -117,3 +117,102 @@ button{cursor:pointer;border:0}
   .swatch-card strong{font-size:12px}
   .choice-grid,.color-choice-grid{grid-template-columns:1fr}
 }
+
+.color-meter-card{
+  margin:2px 0 14px;
+  padding:14px;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:rgba(255,255,255,.58);
+  border:1px solid rgba(79,52,39,.08);
+}
+.color-meter-card h3{
+  margin:0;
+  font-size:21px;
+  line-height:1.05;
+  font-weight:900;
+}
+.color-meter-card p:not(.tiny-label){
+  margin:4px 0 0;
+  color:var(--muted);
+  font-weight:800;
+  font-size:13px;
+}
+.meter-change-btn{
+  flex:0 0 auto;
+  background:linear-gradient(140deg,var(--brown),var(--brown2));
+  color:#fff;
+  border-radius:999px;
+  padding:10px 13px;
+  font-weight:900;
+  box-shadow:0 10px 22px rgba(79,52,39,.14);
+}
+.look-line{
+  margin:0 0 14px;
+  padding:0 4px;
+  font-weight:800;
+}
+#colorModeDialog{
+  width:min(92vw,430px);
+  border:0;
+  padding:0;
+  border-radius:28px;
+  overflow:hidden;
+  background:var(--paper);
+  box-shadow:0 30px 80px rgba(79,52,39,.24);
+}
+#colorModeDialog::backdrop{
+  background:rgba(79,52,39,.22);
+  backdrop-filter:blur(5px);
+}
+.mode-options{
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+}
+.mode-card{
+  width:100%;
+  text-align:right;
+  padding:15px 14px;
+  border-radius:20px;
+  background:rgba(255,255,255,.66);
+  border:1px solid rgba(79,52,39,.10);
+  color:var(--ink);
+  box-shadow:0 8px 22px rgba(79,52,39,.06);
+}
+.mode-card strong{
+  display:block;
+  font-size:19px;
+  font-weight:900;
+}
+.mode-card span{
+  display:block;
+  margin-top:3px;
+  color:var(--brown2);
+  font-weight:900;
+  font-size:13px;
+}
+.mode-card small{
+  display:block;
+  margin-top:4px;
+  color:var(--muted);
+  line-height:1.35;
+  font-size:13px;
+  font-weight:700;
+}
+.mode-card.selected{
+  background:linear-gradient(140deg,var(--brown),var(--brown2));
+  color:#fff;
+  border-color:transparent;
+}
+.mode-card.selected span,
+.mode-card.selected small{
+  color:rgba(255,255,255,.82);
+}
+@media(max-width:390px){
+  .color-meter-card{align-items:flex-start;flex-direction:column}
+  .meter-change-btn{width:100%}
+}
