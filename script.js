@@ -37,21 +37,80 @@ const COLORS = {
   ochre:{id:'ochre',he:'אוכרה',en:'Ochre',hex:'#C78E1A',family:'warm-accent'},
   marigold:{id:'marigold',he:'חרדל זהוב',en:'Marigold',hex:'#D7A722',family:'warm-accent'},
   charcoal:{id:'charcoal',he:'פחם',en:'Charcoal',hex:'#3B3A3D',family:'dark-neutral'},
-  black:{id:'black',he:'שחור',en:'Black',hex:'#101216',family:'dark-neutral'}
+  black:{id:'black',he:'שחור',en:'Black',hex:'#101216',family:'dark-neutral'},
+
+  // v17 — more real neutrals + stronger accents.
+  white:{id:'white',he:'לבן',en:'White',hex:'#F7F4EF',family:'neutral'},
+  opticwhite:{id:'opticwhite',he:'לבן נקי',en:'Clean White',hex:'#FFFFFF',family:'neutral'},
+  pearl:{id:'pearl',he:'פנינה',en:'Pearl',hex:'#ECE8DF',family:'neutral'},
+  silver:{id:'silver',he:'אפור כסף',en:'Silver Gray',hex:'#BFC1C3',family:'neutral'},
+  fog:{id:'fog',he:'אפור בהיר',en:'Light Gray',hex:'#D6D6D2',family:'neutral'},
+  stone:{id:'stone',he:'אפור אבן',en:'Stone Gray',hex:'#9A9A92',family:'neutral'},
+  graphite:{id:'graphite',he:'גרפיט',en:'Graphite',hex:'#56575A',family:'neutral'},
+
+  tomato:{id:'tomato',he:'אדום עגבנייה',en:'Tomato Red',hex:'#C94431',family:'red'},
+  cherry:{id:'cherry',he:'אדום דובדבן',en:'Cherry Red',hex:'#B51F32',family:'red'},
+  lipstick:{id:'lipstick',he:'אדום ליפסטיק',en:'Lipstick Red',hex:'#D0384D',family:'red'},
+  scarlet:{id:'scarlet',he:'אדום ארגמן',en:'Scarlet',hex:'#D54A35',family:'red'},
+  denim:{id:'denim',he:'ג׳ינס',en:'Denim',hex:'#496F9B',family:'blue'},
+  sky:{id:'sky',he:'תכלת',en:'Sky Blue',hex:'#86AFCB',family:'blue'},
+  mint:{id:'mint',he:'מנטה',en:'Mint',hex:'#A9CBB7',family:'green'},
+  emerald:{id:'emerald',he:'ירוק אמרלד',en:'Emerald',hex:'#227A5A',family:'green'},
+  lilac:{id:'lilac',he:'לילך',en:'Lilac',hex:'#B89AD4',family:'purple'},
+  fuchsia:{id:'fuchsia',he:'פוקסיה',en:'Fuchsia',hex:'#C13E8A',family:'purple'},
+  butter:{id:'butter',he:'צהוב חמאה',en:'Butter Yellow',hex:'#F0D975',family:'warm-accent'},
+  lemon:{id:'lemon',he:'צהוב לימון',en:'Lemon',hex:'#EAD94C',family:'warm-accent'}
 };
 
 const GROUPS = {
-  light:['ivory','linen','oat'],
-  warmLight:['oat','sand','linen'],
-  warmNeutral:['sand','camel','cognac'],
-  darkNeutral:['cocoa','espresso','bark','charcoal'],
-  blue:['navy','cobalt','indigo','slate','teal'],
-  green:['sage','eucalyptus','olive','moss'],
-  soft:['blush','dustyrose','mauve','lavgray'],
-  purple:['plum','fig','bordeaux'],
-  warmAccent:['terracotta','rust','coral','ochre','marigold'],
-  jewel:['cobalt','indigo','plum','fig','teal','bordeaux']
+  light:['ivory','linen','oat','pearl'],
+  warmLight:['oat','sand','linen','pearl','butter'],
+  warmNeutral:['sand','camel','cognac','cocoa','bark'],
+  darkNeutral:['cocoa','espresso','bark','graphite','charcoal','black'],
+  neutral:['white','opticwhite','pearl','fog','silver','stone','graphite','charcoal','black'],
+  blue:['navy','cobalt','indigo','slate','teal','denim','sky'],
+  green:['sage','eucalyptus','olive','moss','mint','emerald'],
+  soft:['blush','dustyrose','mauve','lavgray','lilac'],
+  purple:['plum','fig','bordeaux','lilac','fuchsia'],
+  warmAccent:['terracotta','rust','coral','ochre','marigold','butter','lemon'],
+  red:['tomato','cherry','lipstick','scarlet'],
+  jewel:['cobalt','indigo','plum','fig','teal','bordeaux','emerald','fuchsia','cherry']
 };
+
+const RED_COLOR_IDS = ['tomato','cherry','lipstick','scarlet'];
+function isRedColor(color){
+  return !!color && (color.family === 'red' || RED_COLOR_IDS.includes(color.id));
+}
+function canUseColorForRole(color, role){
+  if(!color) return false;
+  if((role === 'top' || role === 'bottom') && isRedColor(color)) return false;
+  return true;
+}
+function safeColorsForRole(colors, role){
+  const safe = (colors || []).filter(c => canUseColorForRole(c, role));
+  return safe.length ? safe : (colors || []);
+}
+function fixNoRedTopBottom(mapping, colors){
+  if(!mapping || !colors) return mapping;
+  ['top','bottom'].forEach(role => {
+    const current = mapping[role]?.color;
+    if(!isRedColor(current)) return;
+    const swapRole = ['shoes','accessory'].find(r => mapping[r] && !isRedColor(mapping[r].color));
+    if(swapRole){
+      const tmp = mapping[swapRole].color;
+      mapping[swapRole].color = current;
+      mapping[swapRole].text = roleText(swapRole, current);
+      mapping[role].color = tmp;
+      mapping[role].text = roleText(role, tmp);
+    }else{
+      const replacement = pick(safeColorsForRole(colors, role));
+      mapping[role].color = replacement;
+      mapping[role].text = roleText(role, replacement);
+    }
+  });
+  return mapping;
+}
+const VARIETY_GROUPS = ['neutral','blue','green','purple','warmAccent','red','warmNeutral','darkNeutral','soft'];
 
 const RECIPES = [
   {title:'חום, ירוק ובורדו',roles:['warmNeutral','green','purple','darkNeutral'],map:{top:1,bottom:3,shoes:0,accessory:2}, weight:1.25},
@@ -72,7 +131,15 @@ const RECIPES = [
 
   // pink/black are present, but reduced.
   {title:'ורוד עתיק במינון',roles:['soft','green','warmNeutral','blue'],map:{top:1,bottom:2,shoes:3,accessory:0}, weight:0.28},
-  {title:'כהה דרמטי במינון',roles:['darkNeutral','purple','warmNeutral','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.32}
+  {title:'כהה דרמטי במינון',roles:['darkNeutral','purple','warmNeutral','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.32},
+  // v17 — more contrast and real black/white/gray.
+  {title:'שחור לבן עם צבע',roles:['neutral','blue','warmAccent','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.80},
+  {title:'אפור, כחול ואדום קטן',roles:['neutral','blue','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.75},
+  {title:'לבן, ירוק ונעל אדומה',roles:['neutral','green','red','purple'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.70},
+  {title:'גרפיט עם צהוב ותכלת',roles:['neutral','warmAccent','blue','green'],map:{top:2,bottom:0,shoes:1,accessory:3}, weight:0.80},
+  {title:'ג׳ינס, לבן ואביזר אדום',roles:['blue','neutral','red','warmAccent'],map:{top:0,bottom:1,shoes:3,accessory:2}, weight:0.75},
+  {title:'אפור עם פוקסיה וזית',roles:['neutral','purple','green','warmNeutral'],map:{top:1,bottom:0,shoes:3,accessory:2}, weight:0.72}
+
 ];
 
 const PIECES = [
@@ -117,8 +184,8 @@ const MODE_LINES = {
   ]
 };
 
-const RELAXED_GROUPS = ['light','warmNeutral','darkNeutral','soft'];
-const COLORFUL_GROUPS = ['blue','green','purple','warmAccent'];
+const RELAXED_GROUPS = ['neutral','light','warmNeutral','darkNeutral','soft'];
+const COLORFUL_GROUPS = ['blue','green','purple','warmAccent','red'];
 
 const state = loadState();
 
@@ -458,39 +525,38 @@ function shuffleArray(arr){
 }
 
 function buildVariedMapping(colors){
-  const nonLight = colors.filter(c => c.family !== 'light');
-  const topPool = nonLight.length ? nonLight : colors;
+  const topPool = safeColorsForRole(colors.filter(c => c.family !== 'light'), 'top');
+  const actualTopPool = topPool.length ? topPool : safeColorsForRole(colors, 'top');
 
-  // Earth/green/bordeaux/blue should often be the top.
-  const topPreferred = topPool.filter(c =>
-    ['warm-neutral','green','purple','blue','warm-accent','dark-neutral'].includes(c.family)
+  const topPreferred = actualTopPool.filter(c =>
+    ['warm-neutral','green','purple','blue','warm-accent','neutral'].includes(c.family)
   );
-  const topColor = pick(topPreferred.length ? topPreferred : topPool);
+  const topColor = pick(topPreferred.length ? topPreferred : actualTopPool);
 
   const remaining = colors.filter(c => c.id !== topColor.id);
   const mapping = { top:{color:topColor, text:roleText('top', topColor)} };
 
   const preferred = {
-    bottom:['dark-neutral','blue','green','warm-neutral','purple','warm-accent','soft','light'],
-    shoes:['warm-neutral','dark-neutral','green','blue','warm-accent','purple','light','soft'],
-    accessory:['warm-accent','purple','blue','green','warm-neutral','soft','light','dark-neutral']
+    bottom:['neutral','dark-neutral','blue','green','warm-neutral','purple','warm-accent','soft','light'],
+    shoes:['red','warm-neutral','neutral','dark-neutral','green','blue','warm-accent','purple','light','soft'],
+    accessory:['red','warm-accent','purple','blue','green','neutral','warm-neutral','soft','light','dark-neutral']
   };
 
   ['bottom','shoes','accessory'].forEach(role => {
-    const options = remaining.length ? remaining : colors;
+    const options = safeColorsForRole(remaining.length ? remaining : colors, role);
     const pref = preferred[role] || [];
     const sorted = [...options].sort((a,b) => {
       const ai = pref.indexOf(a.family);
       const bi = pref.indexOf(b.family);
       return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
     });
-    const color = Math.random() < 0.78 ? sorted[0] : pick(options);
+    const color = Math.random() < 0.70 ? sorted[0] : pick(options);
     mapping[role] = {color, text:roleText(role, color)};
     const idx = remaining.findIndex(c => c.id === color.id);
     if(idx >= 0) remaining.splice(idx, 1);
   });
 
-  return mapping;
+  return fixNoRedTopBottom(mapping, colors);
 }
 
 
@@ -517,21 +583,24 @@ function scoreLookWithTopVariety(look){
 
   // Preferred Shimi zone: earth, brown, green, bordeaux/purple, blues.
   families.forEach(f => {
-    if(['warm-neutral','green','purple','blue','warm-accent'].includes(f)) s += 14;
+    if(['warm-neutral','green','purple','blue','warm-accent','neutral'].includes(f)) s += 14;
     if(f === 'light') s -= 22;
     if(f === 'soft') s -= 12;
   });
 
-  if(ids.includes('black')) s -= 24;
-  if(ids.includes('charcoal')) s -= 10;
+  if(ids.includes('black')) s += 4;
+  if(ids.includes('charcoal')) s += 4;
+  if(families.includes('red')) s += 8;
   if(families.filter(f => f === 'light').length > 1) s -= 80;
   if(families.filter(f => f === 'soft').length > 1) s -= 40;
 
+  if(look.mapping && look.mapping.bottom && isRedColor(look.mapping.bottom.color)) s -= 999;
   if(look.mapping && look.mapping.top && look.mapping.top.color){
     const top = look.mapping.top.color;
+    if(isRedColor(top)) s -= 999;
     if(top.family === 'light') s -= 70;
     if(top.family === 'soft') s -= 22;
-    if(['green','purple','blue','warm-accent','warm-neutral'].includes(top.family)) s += 22;
+    if(['green','purple','blue','warm-accent','warm-neutral','neutral'].includes(top.family)) s += 22;
   }
   return s;
 }
@@ -550,7 +619,7 @@ function generateLook(mode='super'){
   const blackishCount = colors.filter(c => c.id === 'black' || c.id === 'charcoal').length;
 
   if(lightCount > 1 || softCount > 1 || blackishCount > 1){
-    const shimiGroups = ['warmNeutral','green','purple','blue','warmAccent','darkNeutral'];
+    const shimiGroups = ['neutral','warmNeutral','green','purple','blue','warmAccent','darkNeutral','red'];
     colors = [];
     while(colors.length < 4){
       const c = pickColor(pick(shimiGroups), colors);
@@ -685,7 +754,7 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
     if(c && !unique.some(x => x.id === c.id)) unique.push(c);
   });
   while(unique.length < 4){
-    unique.push(pickColor(pick(['warmNeutral','green','purple','blue','warmAccent','darkNeutral','light','soft']), unique));
+    unique.push(pickColor(pick(['neutral','warmNeutral','green','purple','blue','warmAccent','darkNeutral','light','soft','red']), unique));
   }
   colors = unique.slice(0,4);
 
@@ -701,6 +770,7 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
     remainingColors = remainingColors.filter(c => c.id !== color.id);
   });
 
+  fixNoRedTopBottom(mapping, colors);
   const orderedColors = [mapping.top.color, mapping.bottom.color, mapping.shoes.color, mapping.accessory.color];
   return {
     title:`${anchorColor.he} עם ${orderedColors.filter(c => c.id !== anchorColor.id).slice(0,2).map(c => c.he).join(' ו')}`,
@@ -714,17 +784,27 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
   };
 }
 
-function pickColor(groupName, previous){
+function pickColor(groupName, previous, role=null){
   const ids = GROUPS[groupName] || GROUPS.blue;
-  const options = ids.map(id => COLORS[id]).filter(Boolean);
+  let options = ids.map(id => COLORS[id]).filter(Boolean);
+  if(role) options = safeColorsForRole(options, role);
   const previousFamilies = previous.map(c => c.family);
-  const recentIds = state.lookbook.slice(0,8).flatMap(look => look.colors.map(c => c.id));
+  const recentLooks = state.lookbook.slice(0,14);
+  const recentIds = recentLooks.flatMap(look => look.colors.map(c => c.id));
+  const veryRecentIds = state.lookbook.slice(0,4).flatMap(look => look.colors.map(c => c.id));
   const weighted = options.map(color => {
-    let weight = 10;
-    if(previousFamilies.includes(color.family)) weight -= 5;
-    if(recentIds.includes(color.id)) weight -= 4;
+    let weight = 12;
+    if(previousFamilies.includes(color.family)) weight -= 4;
+    if(recentIds.includes(color.id)) weight -= 8;
+    if(veryRecentIds.includes(color.id)) weight -= 14;
     if(previous.some(c => c.id === color.id)) weight = 0.1;
-    return {color, weight:Math.max(0.5, weight)};
+
+    // Red is allowed only as shoes/accessory, never top/bottom.
+    if(isRedColor(color) && (role === 'top' || role === 'bottom')) weight = 0.1;
+    if(isRedColor(color) && (role === 'shoes' || role === 'accessory')) weight += 5;
+
+    if(color.family === 'neutral') weight += 2;
+    return {color, weight:Math.max(0.4, weight)};
   });
   return weightedPick(weighted);
 }
@@ -752,12 +832,13 @@ function score(look){
 }
 
 function mapByTemplate(colors, map){
-  return {
+  const mapping = {
     top:{color:colors[map.top], text:roleText('top', colors[map.top])},
     bottom:{color:colors[map.bottom], text:roleText('bottom', colors[map.bottom])},
     shoes:{color:colors[map.shoes], text:roleText('shoes', colors[map.shoes])},
     accessory:{color:colors[map.accessory], text:roleText('accessory', colors[map.accessory])}
   };
+  return fixNoRedTopBottom(mapping, colors);
 }
 
 function roleText(role, color){
@@ -773,23 +854,24 @@ function pieceLabel(piece){
 
 function compatibleRoles(color){
   const fam = color.family;
-  if(['dark-neutral','warm-neutral'].includes(fam)) return ['light','blue','soft','green','warmAccent','purple'];
-  if(fam === 'light') return ['darkNeutral','blue','green','soft','warmAccent','purple'];
-  if(['blue','green'].includes(fam)) return ['light','warmNeutral','darkNeutral','soft','warmAccent'];
-  if(['soft','purple'].includes(fam)) return ['light','warmNeutral','darkNeutral','blue','green'];
+  if(['dark-neutral','warm-neutral','neutral'].includes(fam)) return ['light','blue','soft','green','warmAccent','purple','red'];
+  if(fam === 'light') return ['darkNeutral','neutral','blue','green','soft','warmAccent','purple','red'];
+  if(['blue','green'].includes(fam)) return ['light','neutral','warmNeutral','darkNeutral','soft','warmAccent','red'];
+  if(['soft','purple','red'].includes(fam)) return ['light','neutral','warmNeutral','darkNeutral','blue','green'];
   if(fam === 'warm-accent') return ['light','darkNeutral','blue','green','warmNeutral'];
   return ['light','warmNeutral','darkNeutral','blue','green','soft'];
 }
 
 function bestForRole(role, colors){
   if(!colors.length) return COLORS.ivory;
+  const safe = safeColorsForRole(colors, role);
   const pref = {
-    top:['blue','green','purple','warm-accent','soft','dark-neutral','warm-neutral','light'],
-    bottom:['dark-neutral','blue','green','warm-neutral','purple','light'],
-    shoes:['warm-neutral','dark-neutral','light','blue','green','soft'],
-    accessory:['warm-accent','purple','blue','soft','green','dark-neutral','warm-neutral','light']
+    top:['blue','green','purple','warm-accent','soft','neutral','dark-neutral','warm-neutral','light'],
+    bottom:['neutral','dark-neutral','blue','green','warm-neutral','purple','light'],
+    shoes:['red','warm-neutral','neutral','dark-neutral','light','blue','green','soft'],
+    accessory:['red','warm-accent','purple','blue','soft','green','neutral','dark-neutral','warm-neutral','light']
   }[role] || [];
-  return [...colors].sort((a,b) => {
+  return [...safe].sort((a,b) => {
     const ai = pref.indexOf(a.family);
     const bi = pref.indexOf(b.family);
     return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
