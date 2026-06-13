@@ -282,11 +282,12 @@ function loadState(){
       anchorColorMode: parsed.anchorColorMode || parsed.colorMode || 'super',
       lookbook: parsed.lookbook || [],
       recent: parsed.recent || [],
+      recentHome: parsed.recentHome || [],
       colorMode: parsed.colorMode || 'super',
       screen: parsed.screen || 'todayScreen'
     };
   }catch(e){
-    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],colorMode:'super',screen:'todayScreen'};
+    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],colorMode:'super',screen:'todayScreen'};
   }
 }
 
@@ -298,7 +299,7 @@ function init(){
   try{
     if(!state.currentLook){
       state.currentLook = generateBestLook(state.colorMode || 'super');
-      remember(state.currentLook);
+      remember(state.currentLook, 'today');
       saveState();
     }
     bindEvents();
@@ -314,7 +315,7 @@ function init(){
 function bindEvents(){
   $('nextLookBtn').addEventListener('click', () => {
     state.currentLook = generateBestLook(state.colorMode || 'super');
-    remember(state.currentLook);
+    remember(state.currentLook, 'today');
     saveState();
     renderToday();
     toast('הבא בתור ✨');
@@ -393,14 +394,14 @@ function openColorModeDialog(context='today'){
         if(state.anchorLook){
           const anchorColor = COLORS[state.anchorColorId] || COLORS.cocoa;
           state.anchorLook = generateBestAnchoredLook(state.anchorPiece, anchorColor, state.anchorColorMode);
-          remember(state.anchorLook);
+          remember(state.anchorLook, 'anchor');
           renderAnchorLook(state.anchorLook);
         }
         saveState();
       }else{
         state.colorMode = btn.dataset.mode;
         state.currentLook = generateBestLook(state.colorMode);
-        remember(state.currentLook);
+        remember(state.currentLook, 'today');
         saveState();
         renderToday();
       }
@@ -482,7 +483,7 @@ function buildAnchorLook(){
     const anchorColor = COLORS[state.anchorColorId] || COLORS.cocoa;
     state.anchorColorMode = state.anchorColorMode || state.colorMode || 'super';
     state.anchorLook = generateBestAnchoredLook(state.anchorPiece, anchorColor, state.anchorColorMode);
-    remember(state.anchorLook);
+    remember(state.anchorLook, 'anchor');
     saveState();
     renderAnchorLook(state.anchorLook);
     toast('בנינו סביב הפריט שלך ✨');
@@ -588,9 +589,60 @@ function saveLook(look){
   toast('נשמר ללוקבוק ♡');
 }
 
-function remember(look){
+function compactLookForHistory(look){
+  return {
+    signature: look.signature,
+    ids: (look.colors || []).map(c => c.id),
+    top: look.mapping?.top?.color?.id || '',
+    bottom: look.mapping?.bottom?.color?.id || '',
+    topFamily: look.mapping?.top?.color?.family || '',
+    bottomFamily: look.mapping?.bottom?.color?.family || ''
+  };
+}
+
+function recentHomeHistory(count=3){
+  return (state.recentHome || []).slice(0, count);
+}
+
+function violatesThreeClickRule(look, history=recentHomeHistory(3)){
+  if(!history.length) return false;
+  const ids = (look.colors || []).map(c => c.id);
+  const top = look.mapping?.top?.color?.id || '';
+  const bottom = look.mapping?.bottom?.color?.id || '';
+  const topFamily = look.mapping?.top?.color?.family || '';
+  const bottomFamily = look.mapping?.bottom?.color?.family || '';
+  const recentMainIds = new Set(history.flatMap(item => [item.top, item.bottom]).filter(Boolean));
+
+  if(recentMainIds.has(top) || recentMainIds.has(bottom)) return true;
+
+  for(const item of history){
+    if(item.signature === look.signature) return true;
+    const overlap = ids.filter(id => item.ids.includes(id)).length;
+    if(overlap >= 2) return true;
+    if(item.topFamily === topFamily && item.bottomFamily === bottomFamily) return true;
+  }
+  return false;
+}
+
+function softlyRepeatsRecentLook(look, history=recentHomeHistory(3)){
+  if(!history.length) return false;
+  const ids = (look.colors || []).map(c => c.id);
+  const top = look.mapping?.top?.color?.id || '';
+  const bottom = look.mapping?.bottom?.color?.id || '';
+  return history.some(item => {
+    const overlap = ids.filter(id => item.ids.includes(id)).length;
+    return item.top === top || item.bottom === bottom || overlap >= 3;
+  });
+}
+
+function remember(look, source='today'){
   state.recent.unshift(look.signature);
   state.recent = state.recent.slice(0, 80);
+  if(source === 'today'){
+    state.recentHome = state.recentHome || [];
+    state.recentHome.unshift(compactLookForHistory(look));
+    state.recentHome = state.recentHome.slice(0, 12);
+  }
 }
 
 
@@ -650,25 +702,23 @@ function pickWeightedRecipe(recipes){
 }
 
 function generateBestLook(mode='super'){
-  const candidates = Array.from({length:180}, () => generateLook(mode));
+  const candidates = Array.from({length:260}, () => generateLook(mode));
   candidates.sort((a,b) => scoreLookWithTopVariety(b) - scoreLookWithTopVariety(a));
 
-  // In super mode, black / white / red should appear often enough to feel real.
-  // If the top candidate is too safe, prefer a high-scoring candidate with one of them.
+  const strictPool = candidates.filter(look => !violatesThreeClickRule(look));
+  const softPool = candidates.filter(look => !softlyRepeatsRecentLook(look));
+  const basePool = strictPool.length ? strictPool : (softPool.length ? softPool : candidates);
+
   if(mode === 'super'){
     const bwRatio = blackWhiteRecentRatio();
-    const redSpecial = candidates.find(look => (look.colors || []).some(c => isRedColor(c)));
-    const bwSpecial = candidates.find(look => (look.colors || []).some(c => isBlackOrWhiteColor(c)) && !hasBlackWhiteConflict(look.mapping));
+    const bwSpecial = basePool.find(look => (look.colors || []).some(c => isBlackOrWhiteColor(c)) && !hasBlackWhiteConflict(look.mapping));
+    const redSpecial = basePool.find(look => (look.colors || []).some(c => isRedColor(c)));
 
-    if(bwRatio < 0.30 && bwSpecial && Math.random() < 0.30){
-      return bwSpecial;
-    }
-    if(redSpecial && Math.random() < 0.24){
-      return redSpecial;
-    }
+    if(bwRatio < 0.30 && bwSpecial && Math.random() < 0.22) return bwSpecial;
+    if(redSpecial && Math.random() < 0.20) return redSpecial;
   }
 
-  return candidates[0];
+  return basePool[0] || candidates[0];
 }
 
 function scoreLookWithTopVariety(look){
@@ -695,6 +745,16 @@ function scoreLookWithTopVariety(look){
   const recentFamilies = recent.flatMap(look => look.colors.map(c => c.family));
   s -= overlapCount(recentIds, ids) * 16;
   s -= overlapCount(recentFamilies, families) * 5;
+
+  const recentHome = recentHomeHistory(3);
+  recentHome.forEach(item => {
+    const overlap = ids.filter(id => item.ids.includes(id)).length;
+    s -= overlap * 18;
+    if(item.top === look.mapping?.top?.color?.id) s -= 60;
+    if(item.bottom === look.mapping?.bottom?.color?.id) s -= 50;
+    if(item.topFamily === look.mapping?.top?.color?.family) s -= 14;
+    if(item.bottomFamily === look.mapping?.bottom?.color?.family) s -= 10;
+  });
 
   // Preferred Shimi zone, but now neutrals and red accents are invited too.
   families.forEach(f => {
