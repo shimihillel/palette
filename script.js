@@ -82,6 +82,66 @@ const BLACK_WHITE_IDS = ['black','white','opticwhite'];
 function isBlackWhiteColor(color){
   return !!color && BLACK_WHITE_IDS.includes(color.id);
 }
+function isBlackColor(color){
+  return !!color && color.id === 'black';
+}
+function isWhiteColor(color){
+  return !!color && (color.id === 'white' || color.id === 'opticwhite');
+}
+function isBlackOrWhiteColor(color){
+  return isBlackColor(color) || isWhiteColor(color);
+}
+function hasBlackWhiteConflict(mapping){
+  const top = mapping?.top?.color;
+  const bottom = mapping?.bottom?.color;
+  return (isBlackColor(top) && isWhiteColor(bottom)) || (isWhiteColor(top) && isBlackColor(bottom));
+}
+function hasBlackWhiteInMainRoles(mapping){
+  return isBlackOrWhiteColor(mapping?.top?.color) || isBlackOrWhiteColor(mapping?.bottom?.color);
+}
+function blackWhiteCount(look){
+  return (look.colors || []).filter(c => isBlackOrWhiteColor(c)).length;
+}
+function blackWhiteRecentRatio(){
+  const recent = state.lookbook.slice(0,10);
+  if(!recent.length) return 0;
+  return recent.filter(look => (look.colors || []).some(c => isBlackOrWhiteColor(c))).length / recent.length;
+}
+function fixBlackWhiteMainConflict(mapping, colors){
+  if(!mapping || !colors) return mapping;
+
+  // Never allow top black + bottom white, or top white + bottom black.
+  if(hasBlackWhiteConflict(mapping)){
+    const swapRole = ['shoes','accessory'].find(role => {
+      const c = mapping[role]?.color;
+      return c && !isBlackOrWhiteColor(c) && !isRedColor(c);
+    });
+
+    if(swapRole){
+      const bottomColor = mapping.bottom.color;
+      mapping[swapRole].color = bottomColor;
+      mapping[swapRole].text = roleText(swapRole, bottomColor);
+      const replacement = mapping[swapRole].color;
+      mapping.bottom.color = replacement;
+      mapping.bottom.text = roleText('bottom', replacement);
+    }else{
+      const safe = colors.find(c => !isBlackOrWhiteColor(c) && !isRedColor(c)) || colors.find(c => !isRedColor(c)) || COLORS.denim;
+      mapping.bottom.color = safe;
+      mapping.bottom.text = roleText('bottom', safe);
+    }
+  }
+
+  // If top is black/white, the opposite black/white should only live in shoes/accessory.
+  const top = mapping.top?.color;
+  const bottom = mapping.bottom?.color;
+  if(isBlackOrWhiteColor(top) && isBlackOrWhiteColor(bottom)){
+    const safe = colors.find(c => !isBlackOrWhiteColor(c) && !isRedColor(c)) || COLORS.denim;
+    mapping.bottom.color = safe;
+    mapping.bottom.text = roleText('bottom', safe);
+  }
+
+  return fixBlackWhiteMainConflict(mapping, colors);
+}
 function hasBlackWhiteRed(look){
   const ids = (look.colors || []).map(c => c.id);
   return ids.some(id => BLACK_WHITE_IDS.includes(id) || RED_COLOR_IDS.includes(id));
@@ -145,19 +205,19 @@ const RECIPES = [
   {title:'ורוד עתיק במינון',roles:['soft','green','warmNeutral','blue'],map:{top:1,bottom:2,shoes:3,accessory:0}, weight:0.28},
   {title:'כהה דרמטי במינון',roles:['darkNeutral','purple','warmNeutral','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.32},
   // v17 — more contrast and real black/white/gray.
-  {title:'שחור לבן עם צבע',roles:['neutral','blue','warmAccent','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:1.85},
-  {title:'אפור, כחול ואדום קטן',roles:['neutral','blue','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:1.75},
-  {title:'לבן, ירוק ונעל אדומה',roles:['neutral','green','red','purple'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:1.70},
+  {title:'שחור לבן עם צבע',roles:['neutral','blue','warmAccent','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.95},
+  {title:'אפור, כחול ואדום קטן',roles:['neutral','blue','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:1.15},
+  {title:'לבן, ירוק ונעל אדומה',roles:['neutral','green','red','purple'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.85},
   {title:'גרפיט עם צהוב ותכלת',roles:['neutral','warmAccent','blue','green'],map:{top:2,bottom:0,shoes:1,accessory:3}, weight:1.45},
-  {title:'ג׳ינס, לבן ואביזר אדום',roles:['blue','neutral','red','warmAccent'],map:{top:0,bottom:1,shoes:3,accessory:2}, weight:1.70},
+  {title:'ג׳ינס, לבן ואביזר אדום',roles:['blue','neutral','red','warmAccent'],map:{top:0,bottom:1,shoes:3,accessory:2}, weight:0.90},
   {title:'אפור עם פוקסיה וזית',roles:['neutral','purple','green','warmNeutral'],map:{top:1,bottom:0,shoes:3,accessory:2}, weight:0.72}
 ,
   // v18 — intentional black/white/red moments.
-  {title:'שחור לבן ואדום קטן',roles:['neutral','neutral','red','blue'],map:{top:3,bottom:0,shoes:2,accessory:1}, weight:2.05},
-  {title:'לבן נקי עם שחור וקורל',roles:['neutral','neutral','warmAccent','green'],map:{top:2,bottom:1,shoes:0,accessory:3}, weight:1.75},
-  {title:'שחור עם ירוק ונגיעה אדומה',roles:['neutral','green','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:1.95},
-  {title:'לבן, דנים ואדום באקססורי',roles:['neutral','blue','red','purple'],map:{top:1,bottom:0,shoes:3,accessory:2}, weight:1.90},
-  {title:'אפור גרפיט עם לבן וצהוב',roles:['neutral','neutral','warmAccent','blue'],map:{top:3,bottom:0,shoes:2,accessory:1}, weight:1.55}
+  {title:'שחור לבן ואדום קטן',roles:['neutral','neutral','red','blue'],map:{top:3,bottom:0,shoes:2,accessory:1}, weight:0.80},
+  {title:'לבן נקי עם שחור וקורל',roles:['neutral','neutral','warmAccent','green'],map:{top:2,bottom:1,shoes:0,accessory:3}, weight:0.70},
+  {title:'שחור עם ירוק ונגיעה אדומה',roles:['neutral','green','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.85},
+  {title:'לבן, דנים ואדום באקססורי',roles:['neutral','blue','red','purple'],map:{top:1,bottom:0,shoes:3,accessory:2}, weight:0.85},
+  {title:'אפור גרפיט עם לבן וצהוב',roles:['neutral','neutral','warmAccent','blue'],map:{top:3,bottom:0,shoes:2,accessory:1}, weight:0.85}
 
 ];
 
@@ -596,11 +656,15 @@ function generateBestLook(mode='super'){
   // In super mode, black / white / red should appear often enough to feel real.
   // If the top candidate is too safe, prefer a high-scoring candidate with one of them.
   if(mode === 'super'){
-    const lastLooks = state.lookbook.slice(0,3);
-    const recentlyHadSpecial = lastLooks.some(look => hasBlackWhiteRed(look));
-    const special = candidates.find(look => hasBlackWhiteRed(look));
-    if(special && (!hasBlackWhiteRed(candidates[0]) || !recentlyHadSpecial || Math.random() < 0.42)){
-      return special;
+    const bwRatio = blackWhiteRecentRatio();
+    const redSpecial = candidates.find(look => (look.colors || []).some(c => isRedColor(c)));
+    const bwSpecial = candidates.find(look => (look.colors || []).some(c => isBlackOrWhiteColor(c)) && !hasBlackWhiteConflict(look.mapping));
+
+    if(bwRatio < 0.30 && bwSpecial && Math.random() < 0.30){
+      return bwSpecial;
+    }
+    if(redSpecial && Math.random() < 0.24){
+      return redSpecial;
     }
   }
 
@@ -640,10 +704,15 @@ function scoreLookWithTopVariety(look){
     if(f === 'red') s += 18;
   });
 
-  if(ids.includes('black')) s += 28;
-  if(ids.includes('white') || ids.includes('opticwhite')) s += 30;
-  if(ids.some(id => RED_COLOR_IDS.includes(id))) s += 32;
+  if(ids.includes('black')) s += 8;
+  if(ids.includes('white') || ids.includes('opticwhite')) s += 8;
+  if(ids.some(id => RED_COLOR_IDS.includes(id))) s += 22;
   if(ids.includes('charcoal')) s += 6;
+
+  // Keep black/white special: around 30% overall, and never as top+bottom opposite combo.
+  if(hasBlackWhiteConflict(look.mapping)) s -= 999;
+  if(blackWhiteRecentRatio() >= 0.30 && ids.some(id => BLACK_WHITE_IDS.includes(id))) s -= 120;
+  if(blackWhiteCount(look) > 1) s -= 35;
 
   // Avoid all-neutral boredom.
   if(families.filter(f => f === 'neutral').length >= 3) s -= 18;
@@ -669,10 +738,16 @@ function generateLook(mode='super'){
   let colors = [];
   recipe.roles.forEach(role => colors.push(pickColor(role, colors)));
 
-  // If a super-color look came out too safe, intentionally insert black/white/red.
-  if(mode === 'super' && !colors.some(c => isBlackWhiteColor(c) || isRedColor(c)) && Math.random() < 0.55){
-    const forced = pick([COLORS.black, COLORS.white, COLORS.opticwhite, COLORS.tomato, COLORS.cherry, COLORS.lipstick]);
-    colors[Math.floor(Math.random() * colors.length)] = forced;
+  // If a super-color look came out too safe, sometimes insert red, and only rarely black/white.
+  const bwRatio = blackWhiteRecentRatio();
+  if(mode === 'super' && !colors.some(c => isBlackWhiteColor(c) || isRedColor(c))){
+    if(bwRatio < 0.30 && Math.random() < 0.22){
+      const forced = pick([COLORS.black, COLORS.white, COLORS.opticwhite]);
+      colors[Math.floor(Math.random() * colors.length)] = forced;
+    }else if(Math.random() < 0.26){
+      const forced = pick([COLORS.tomato, COLORS.cherry, COLORS.lipstick]);
+      colors[Math.floor(Math.random() * colors.length)] = forced;
+    }
   }
 
   // סופר צבע נשאר כמו שהאפליקציה עבדה עד עכשיו.
@@ -866,10 +941,10 @@ function pickColor(groupName, previous, role=null){
     if(isRedColor(color) && (role === 'shoes' || role === 'accessory')) weight += 14;
 
     // Push black/white to actually appear, not just sit politely in the palette.
-    if(color.id === 'black') weight += 10;
-    if(color.id === 'white' || color.id === 'opticwhite') weight += 11;
+    if(color.id === 'black') weight += 2;
+    if(color.id === 'white' || color.id === 'opticwhite') weight += 2;
 
-    if(color.family === 'neutral') weight += 4;
+    if(color.family === 'neutral') weight += 2;
     return {color, weight:Math.max(0.4, weight)};
   });
   return weightedPick(weighted);
