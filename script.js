@@ -514,25 +514,24 @@ function renderLookbook(){
   });
   $('lookbookCount').textContent = state.lookbook.length;
   if(!list.length){
-    $('lookbookList').innerHTML = `<div class="card empty-state"><strong>עדיין אין לוקים שמורים</strong><br>כשתלחצי שומרת ♡, הלוק יופיע כאן.</div>`;
+    $('lookbookList').innerHTML = `<div class="card empty-state"><strong>עדיין אין לוקים שאהבתי</strong><br>כשתלחצי שומרת ♡, הם יופיעו כאן. נשמור עד 30 אחרונים כדי שזה לא יהפוך למחסן.</div>`;
     return;
   }
-  $('lookbookList').innerHTML = list.map((look, index) => `
-    <article class="look-card">
-      <div class="saved-top">
-        <div>
-          <h3 class="saved-title">${look.title}</h3>
-          <p class="saved-vibe">${look.vibe}</p>
+  $('lookbookList').innerHTML = list.map((look) => `
+    <article class="liked-card">
+      <button class="liked-main" data-open="${look.signature}" type="button">
+        <div class="liked-info">
+          <h3 class="liked-title">${look.title}</h3>
+          <p class="liked-date">${formatDate(look.savedAt)} · ${look.colorMode === 'tiny' ? 'נגיעה קטנה' : look.colorMode === 'half' ? 'חצי קלאץ׳' : 'סופר צבע'}</p>
         </div>
-        <span class="saved-date">${formatDate(look.savedAt)}</span>
-      </div>
-      <div class="saved-swatches">${look.colors.map(c => `<span class="mini-dot" style="background:${c.hex}"></span>`).join('')}</div>
-      <div class="saved-bottom">
-        <button class="text-btn" data-open="${look.signature}" type="button">פתחי לוק</button>
-        <button class="text-btn" data-delete="${look.signature}" type="button">מחיקה</button>
-      </div>
+        <div class="liked-dots">
+          ${look.colors.slice(0,4).map(c => `<span class="liked-dot" title="${c.he}" style="background:${c.hex}"></span>`).join('')}
+        </div>
+      </button>
+      <button class="liked-delete" data-delete="${look.signature}" type="button" aria-label="מחיקה">×</button>
     </article>
   `).join('');
+
   document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => {
     const look = state.lookbook.find(item => item.signature === btn.dataset.open);
     if(look) openDialog(look);
@@ -541,7 +540,7 @@ function renderLookbook(){
     state.lookbook = state.lookbook.filter(item => item.signature !== btn.dataset.delete);
     saveState();
     renderLookbook();
-    toast('נמחק מהלוקבוק');
+    toast('נמחק מאהבתי');
   }));
 }
 
@@ -580,13 +579,14 @@ function openDialog(look){
 function saveLook(look){
   if(!look) return;
   if(state.lookbook.some(item => item.signature === look.signature)){
-    toast('כבר שמור בלוקבוק ♡');
+    toast('כבר שמור באהבתי ♡');
     return;
   }
   state.lookbook.unshift({...look, savedAt:new Date().toISOString()});
+  state.lookbook = state.lookbook.slice(0, 30);
   saveState();
   renderLookbook();
-  toast('נשמר ללוקבוק ♡');
+  toast('נשמר באהבתי ♡');
 }
 
 function compactLookForHistory(look){
