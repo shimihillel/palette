@@ -4,7 +4,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v29-visual-clean';
-const APP_VERSION = 'v29';
+const APP_VERSION = 'v30';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -412,12 +412,12 @@ function bindEvents(){
     toast('הבא בתור ✨');
   }
 
-  $('nextLookBtn').addEventListener('click', nextTodayLook);
+  on('nextLookBtn', 'click', nextTodayLook);
   on('nextLookTopBtn', 'click', nextTodayLook);
 
-  $('saveLookBtn').addEventListener('click', () => saveLook(state.currentLook));
+  on('saveLookBtn', 'click', () => saveLook(state.currentLook));
   on('saveLookTopBtn', 'click', () => saveLook(state.currentLook));
-  $('anchorModeBtn').addEventListener('click', () => showScreen('anchorScreen'));
+  on('anchorModeBtn', 'click', () => showScreen('anchorScreen'));
   $('buildAroundBtn').addEventListener('click', () => buildAnchorLook());
   $('anchorNextBtn').addEventListener('click', () => buildAnchorLook());
   $('anchorSaveBtn').addEventListener('click', () => {
