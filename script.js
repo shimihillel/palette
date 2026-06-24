@@ -3,8 +3,8 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 
 'use strict';
 
-const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v27';
+const STORAGE_KEY = 'shimi-looks-v29-visual-clean';
+const APP_VERSION = 'v29';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -404,15 +404,19 @@ function init(){
 }
 
 function bindEvents(){
-  $('nextLookBtn').addEventListener('click', () => {
+  function nextTodayLook(){
     state.currentLook = generateBestLook(state.colorMode || 'super');
     remember(state.currentLook, 'today');
     saveState();
     renderToday();
     toast('הבא בתור ✨');
-  });
+  }
+
+  $('nextLookBtn').addEventListener('click', nextTodayLook);
+  on('nextLookTopBtn', 'click', nextTodayLook);
 
   $('saveLookBtn').addEventListener('click', () => saveLook(state.currentLook));
+  on('saveLookTopBtn', 'click', () => saveLook(state.currentLook));
   $('anchorModeBtn').addEventListener('click', () => showScreen('anchorScreen'));
   $('buildAroundBtn').addEventListener('click', () => buildAnchorLook());
   $('anchorNextBtn').addEventListener('click', () => buildAnchorLook());
@@ -660,80 +664,57 @@ function renderOutfitPreview(container, mapping, lockedRole=null){
   const accessory = outfitColor(mapping, 'accessory', '#6B355F');
   const lockLabel = lockedRole ? `<span class="outfit-lock-chip">${pieceLabel(lockedRole)} שלך</span>` : '';
   container.innerHTML = `
-    <div class="outfit-figure-wrap">
+    <div class="outfit-figure-wrap clean-mannequin-wrap">
       ${lockLabel}
-      <svg class="outfit-figure" viewBox="0 0 260 420" role="img" aria-label="איור דמות הלובשת את צבעי הלוק" xmlns="http://www.w3.org/2000/svg">
+      <svg class="outfit-figure clean-mannequin" viewBox="0 0 260 360" role="img" aria-label="איור מניקן פשוט עם צבעי הלוק" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
-            <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#4f3427" flood-opacity="0.15"/>
+          <filter id="softShadowV29" x="-20%" y="-20%" width="140%" height="150%">
+            <feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#4f3427" flood-opacity="0.10"/>
           </filter>
-          <linearGradient id="skinGlow" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stop-color="#F2C4A4"/>
-            <stop offset="1" stop-color="#D99A78"/>
+          <linearGradient id="skinV29" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#F0C3A4"/>
+            <stop offset="1" stop-color="#E2A783"/>
           </linearGradient>
-          <linearGradient id="hairGlow" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#5A2F18"/>
-            <stop offset="1" stop-color="#2F1B12"/>
+          <linearGradient id="hairV29" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#62391F"/>
+            <stop offset="1" stop-color="#2F2019"/>
           </linearGradient>
         </defs>
+        <ellipse cx="130" cy="336" rx="72" ry="13" fill="#4f3427" opacity="0.09"/>
 
-        <ellipse cx="130" cy="395" rx="70" ry="13" fill="#4f3427" opacity="0.10"/>
+        <g filter="url(#softShadowV29)">
+          <!-- ראש נקי בלי פנים -->
+          <circle cx="130" cy="52" r="30" fill="url(#skinV29)"/>
+          <path d="M101 50 C103 22 121 11 139 16 C158 21 166 37 160 61 C150 50 143 45 130 45 C118 45 109 48 101 50Z" fill="url(#hairV29)"/>
+          <circle cx="132" cy="14" r="18" fill="url(#hairV29)"/>
+          <path d="M111 80 H149 V102 C149 116 111 116 111 102Z" fill="url(#skinV29)"/>
 
-        <g filter="url(#softShadow)">
-          <!-- hair back -->
-          <path d="M91 78 C91 45 111 25 134 25 C160 25 176 48 172 80 C169 105 92 107 91 78Z" fill="url(#hairGlow)"/>
-          <circle cx="131" cy="27" r="23" fill="url(#hairGlow)"/>
-          <path d="M106 36 C108 14 129 7 143 15 C129 15 119 25 117 39Z" fill="#71401f" opacity=".55"/>
+          <!-- צוואר וכתפיים רכות -->
+          <path d="M82 105 C99 92 116 88 130 88 C145 88 162 92 178 105 C170 135 166 166 166 198 C146 208 114 208 94 198 C94 166 90 135 82 105Z" fill="${top}" stroke="#2f2019" stroke-opacity=".10" stroke-width="2"/>
+          <path d="M86 106 C70 118 63 147 67 178 C74 184 84 183 91 176 C91 151 96 126 107 101Z" fill="${top}" stroke="#2f2019" stroke-opacity=".08" stroke-width="2"/>
+          <path d="M174 106 C190 118 197 147 193 178 C186 184 176 183 169 176 C169 151 164 126 153 101Z" fill="${top}" stroke="#2f2019" stroke-opacity=".08" stroke-width="2"/>
+          <path d="M120 94 C124 108 129 115 130 115 C132 115 137 108 141 94" fill="none" stroke="#2f2019" stroke-opacity=".16" stroke-width="2" stroke-linecap="round"/>
 
-          <!-- neck/head -->
-          <path d="M116 105 H144 V143 C144 152 116 152 116 143Z" fill="url(#skinGlow)"/>
-          <ellipse cx="130" cy="78" rx="39" ry="45" fill="url(#skinGlow)"/>
-          <path d="M93 77 C98 43 117 48 130 55 C146 46 166 51 170 78 C158 67 147 61 130 63 C116 62 105 67 93 77Z" fill="url(#hairGlow)"/>
-          <path d="M93 75 C80 102 94 125 108 136 C96 118 101 93 105 78Z" fill="url(#hairGlow)"/>
-          <path d="M167 76 C181 103 165 127 151 136 C164 117 158 92 154 78Z" fill="url(#hairGlow)"/>
-          <path d="M96 82 C83 100 82 126 96 145" fill="none" stroke="#4A2717" stroke-width="5" stroke-linecap="round" opacity=".8"/>
-          <path d="M165 82 C178 101 177 126 163 146" fill="none" stroke="#4A2717" stroke-width="5" stroke-linecap="round" opacity=".8"/>
-          <circle cx="114" cy="80" r="2.7" fill="#321b13"/>
-          <circle cx="146" cy="80" r="2.7" fill="#321b13"/>
-          <path d="M120 99 C126 105 137 105 143 99" fill="none" stroke="#9B4E3F" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M130 83 C128 91 128 94 132 96" fill="none" stroke="#B8745E" stroke-width="1.4" stroke-linecap="round"/>
-          <circle cx="88" cy="107" r="6" fill="#D7A56B"/>
-          <circle cx="172" cy="107" r="6" fill="#D7A56B"/>
+          <!-- ידיים פשוטות -->
+          <path d="M68 178 C67 206 70 228 76 245" fill="none" stroke="url(#skinV29)" stroke-width="14" stroke-linecap="round"/>
+          <path d="M192 178 C193 206 190 228 184 245" fill="none" stroke="url(#skinV29)" stroke-width="14" stroke-linecap="round"/>
 
-          <!-- arms -->
-          <path d="M76 153 C65 184 62 222 70 258 C72 267 83 264 82 255 C78 221 83 187 94 160Z" fill="url(#skinGlow)"/>
-          <path d="M184 154 C197 185 201 222 191 258 C189 267 178 264 180 254 C185 220 178 186 166 160Z" fill="url(#skinGlow)"/>
-          <circle cx="76" cy="260" r="8" fill="url(#skinGlow)"/>
-          <circle cx="184" cy="260" r="8" fill="url(#skinGlow)"/>
+          <!-- אביזר נקי -->
+          <path d="M69 229 C50 247 49 291 61 308 C75 322 104 315 105 296 C105 272 93 239 69 229Z" fill="${accessory}" stroke="#2f2019" stroke-opacity=".14" stroke-width="2"/>
+          <path d="M73 235 C81 214 99 216 98 251" fill="none" stroke="${accessory}" stroke-width="7" stroke-linecap="round" opacity=".82"/>
 
-          <!-- accessory bag behind/side -->
-          <path d="M72 245 C55 264 51 307 62 325 C74 340 105 334 106 314 C106 292 95 255 72 245Z" fill="${accessory}" stroke="#2f2019" stroke-opacity=".16" stroke-width="2"/>
-          <path d="M75 251 C82 227 101 230 99 267" fill="none" stroke="${accessory}" stroke-width="8" stroke-linecap="round" opacity=".85"/>
-          <path d="M76 252 C83 229 98 231 96 265" fill="none" stroke="#3B2432" stroke-width="2" stroke-linecap="round" opacity=".35"/>
-          <circle cx="77" cy="272" r="3" fill="#D7A56B" opacity=".85"/>
-          <circle cx="96" cy="271" r="3" fill="#D7A56B" opacity=".85"/>
+          <!-- תחתון -->
+          <path d="M90 195 H170 V214 H90Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
+          <circle cx="130" cy="204" r="3" fill="#D7A56B"/>
+          <path d="M95 212 C108 218 121 218 130 214 C130 250 126 291 120 324 L84 324 C84 286 87 247 95 212Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
+          <path d="M130 214 C139 218 153 218 165 212 C173 247 176 286 176 324 L140 324 C134 291 130 250 130 214Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
+          <path d="M130 219 C129 251 129 289 130 322" stroke="#0c1723" stroke-opacity=".16" stroke-width="2"/>
 
-          <!-- top -->
-          <path d="M83 139 C97 125 113 119 130 119 C148 119 164 125 177 139 C171 177 166 207 164 228 C145 237 114 237 95 228 C93 206 89 176 83 139Z" fill="${top}" stroke="#2f2019" stroke-opacity=".12" stroke-width="2"/>
-          <path d="M84 140 C74 151 68 170 69 190 C74 196 84 195 90 189 C91 174 95 157 101 144Z" fill="${top}" stroke="#2f2019" stroke-opacity=".10" stroke-width="2"/>
-          <path d="M176 140 C188 153 193 171 191 190 C185 197 176 196 170 189 C169 174 164 157 158 144Z" fill="${top}" stroke="#2f2019" stroke-opacity=".10" stroke-width="2"/>
-          <path d="M118 124 C121 140 128 149 130 149 C133 149 140 139 143 124" fill="none" stroke="#2f2019" stroke-opacity=".18" stroke-width="2" stroke-linecap="round"/>
-          <path d="M103 222 C118 228 143 228 157 222" fill="none" stroke="#2f2019" stroke-opacity=".10" stroke-width="3" stroke-linecap="round"/>
-
-          <!-- bottom / pants -->
-          <path d="M94 224 C106 231 121 232 130 229 C130 272 126 335 120 376 L86 376 C85 333 86 275 94 224Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
-          <path d="M130 229 C139 232 154 231 166 224 C174 275 175 333 174 376 L140 376 C134 335 130 272 130 229Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
-          <path d="M130 232 C129 271 129 325 130 371" stroke="#0c1723" stroke-opacity=".22" stroke-width="2"/>
-          <path d="M105 229 C111 265 109 325 104 373" stroke="#fff" stroke-opacity=".10" stroke-width="3"/>
-          <path d="M155 229 C149 265 151 325 156 373" stroke="#fff" stroke-opacity=".10" stroke-width="3"/>
-          <path d="M91 224 H169 V240 H91Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".16" stroke-width="2"/>
-          <circle cx="130" cy="232" r="3" fill="#D7A56B"/>
-
-          <!-- ankles / shoes -->
-          <path d="M94 373 H118 V387 H94Z" fill="url(#skinGlow)"/>
-          <path d="M142 373 H166 V387 H142Z" fill="url(#skinGlow)"/>
-          <path d="M83 386 C95 377 111 378 123 386 C121 398 89 400 76 394 C76 391 79 388 83 386Z" fill="${shoes}" stroke="#2f2019" stroke-opacity=".20" stroke-width="2"/>
-          <path d="M137 386 C149 377 165 378 177 386 C179 389 181 393 183 398 C168 401 140 398 137 386Z" fill="${shoes}" stroke="#2f2019" stroke-opacity=".20" stroke-width="2"/>
+          <!-- נעליים -->
+          <path d="M92 322 H118 V333 H92Z" fill="url(#skinV29)"/>
+          <path d="M142 322 H168 V333 H142Z" fill="url(#skinV29)"/>
+          <path d="M82 333 C96 325 114 326 125 333 C122 344 90 346 76 340 C76 337 79 335 82 333Z" fill="${shoes}" stroke="#2f2019" stroke-opacity=".18" stroke-width="2"/>
+          <path d="M136 333 C150 325 168 326 179 333 C181 336 182 339 184 343 C168 347 140 344 136 333Z" fill="${shoes}" stroke="#2f2019" stroke-opacity=".18" stroke-width="2"/>
         </g>
       </svg>
     </div>
