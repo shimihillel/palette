@@ -2,207 +2,79 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#f6f1ea" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" type="image/png" href="assets/icon-32.png" />
-  <link rel="apple-touch-icon" href="assets/icon-180.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=210" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#7b2d26" />
+  <title>מה ללבוש היום?</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <button class="icon-btn" id="infoBtn" aria-label="מידע">i</button>
-      <div class="brand-block">
-        <p class="eyebrow">INFINITE COLOR COMBINATIONS</p>
-        <h1>Shimi Looks</h1>
-        <p class="subtitle">הסטייל שלך. כל יום מחדש.</p>
+  <main class="app-shell">
+    <section class="hero-card">
+      <p class="eyebrow">שימי סטייל</p>
+      <h1>מה ללבוש היום?</h1>
+      <p class="subtitle">פלטות צבעים עם טעם, קצת וינטג׳, והרבה פחות אדום שתלטן.</p>
+    </section>
+
+    <section class="mode-card" aria-label="בחירת מצב">
+      <button class="mode-btn active" data-mode="random">אקראי</button>
+      <button class="mode-btn" data-mode="hasColor">יש לי צבע</button>
+    </section>
+
+    <section class="input-card hidden" id="colorInputCard">
+      <label for="baseColor">איזה צבע כבר יש לך?</label>
+      <select id="baseColor">
+        <option value="brown">חום</option>
+        <option value="olive">זית</option>
+        <option value="burgundy">בורדו</option>
+        <option value="blue">כחול</option>
+        <option value="green">ירוק</option>
+        <option value="pink">ורוד</option>
+        <option value="black">שחור</option>
+        <option value="white">לבן</option>
+        <option value="beige">בז׳</option>
+        <option value="red">אדום</option>
+      </select>
+    </section>
+
+    <section class="look-card" id="lookCard">
+      <div class="look-header">
+        <p class="look-label">הלוק שלך</p>
+        <button class="tiny-btn" id="resetHistoryBtn" title="איפוס היסטוריית צבעים">איפוס</button>
       </div>
-      <div class="top-spacer"></div>
-    </header>
 
-    <main>
-      <section class="screen active" id="todayScreen">
-        <section class="hero-card card">
-          <div class="hero-head">
-            <div>
-              <p class="tiny-label">הלוק של היום</p>
-              <h2 id="lookTitle">—</h2>
-            </div>
-          </div>
+      <div class="palette" id="palette"></div>
 
-          <section class="color-meter-card" id="colorMeterCard">
-            <div>
-              <p class="tiny-label">מדד הצבע היומי</p>
-              <h3 id="colorModeTitle">סופר צבע</h3>
-              <p id="colorModeDesc">4 צבעים, בלי להתנצל</p>
-            </div>
-            <button class="meter-change-btn" id="changeColorModeBtn" type="button">שינוי מדד</button>
-          </section>
-
-          <div class="palette-row" id="paletteRow"></div>
-          <p id="lookVibe" class="hero-copy look-line">שילוב צבעים חכם, מגוון ובלי דרמת בוקר.</p>
-
-          <div class="mapping-card">
-            <h3>איך ללבוש את זה</h3>
-            <div class="mapping-list" id="mappingList"></div>
-          </div>
-
-          <div class="why-card">
-            <h3>למה זה עובד?</h3>
-            <p id="whyWorks"></p>
-          </div>
-
-          <div class="cta-row">
-            <button class="secondary-btn" id="nextLookBtn" type="button">הבא בתור</button>
-            <button class="primary-btn" id="saveLookBtn" type="button">שומרת ♡</button>
-          </div>
-
-          <button class="anchor-inline-btn" id="anchorModeBtn" type="button">בחרתי משהו</button>
-        </section>
-
-        <section class="engine-card card">
-          <div>
-            <p class="tiny-label">WADA MIX ENGINE</p>
-            <h3>כמעט אינסוף שילובים לבישים</h3>
-            <p>המנוע מערבב בין משפחות צבע, תפקידי צבעים ומיפוי לבגדים — ומנסה לא לחזור על מה שכבר שמרת באהבתי.</p>
-          </div>
-          <div class="infinity">∞</div>
-        </section>
-      </section>
-
-      <section class="screen" id="anchorScreen">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow soft">BUILD AROUND ONE PIECE</p>
-            <h2>בחרתי משהו</h2>
-            <p class="screen-note">יש לך כבר פריט שבא לך ללבוש? בחרי מה הוא ובאיזה גוון, ואני אבנה סביבו שילוב מלא.</p>
-          </div>
-        </div>
-
-        <section class="card anchor-card">
-          <h3>מה הפריט?</h3>
-          <div class="choice-grid" id="pieceChoices"></div>
-        </section>
-
-        <section class="card anchor-card">
-          <h3>באיזה גוון?</h3>
-          <div class="family-strip" id="familyChoices"></div>
-          <div class="color-choice-grid" id="colorChoices"></div>
-        </section>
-
-
-        <section class="color-meter-card anchor-meter-card" id="anchorColorMeterCard">
-          <div>
-            <p class="tiny-label">מדד הצבע היומי</p>
-            <h3 id="anchorColorModeTitle">סופר צבע</h3>
-            <p id="anchorColorModeDesc">4 צבעים, בלי להתנצל</p>
-          </div>
-          <button class="meter-change-btn" id="anchorChangeColorModeBtn" type="button">שינוי מדד</button>
-        </section>
-
-        <button class="primary-btn full anchor-build-btn" id="buildAroundBtn" type="button">בני לי סביב זה ✨</button>
-
-        <section class="hero-card card anchor-result-card" id="anchorResultCard" hidden>
-          <div class="hero-head">
-            <div>
-              <p class="tiny-label">נבנה סביב הפריט שלך</p>
-              <h2 id="anchorLookTitle">—</h2>
-              <p id="anchorLookVibe" class="hero-copy"></p>
-            </div>
-          </div>
-
-          <div class="palette-row" id="anchorPaletteRow"></div>
-
-          <div class="mapping-card">
-            <h3>איך ללבוש את זה</h3>
-            <div class="mapping-list" id="anchorMappingList"></div>
-          </div>
-
-          <div class="why-card">
-            <h3>למה זה עובד?</h3>
-            <p id="anchorWhyWorks"></p>
-          </div>
-
-          <div class="cta-row">
-            <button class="secondary-btn" id="anchorNextBtn" type="button">הבא בתור</button>
-            <button class="primary-btn" id="anchorSaveBtn" type="button">שומרת ♡</button>
-          </div>
-        </section>
-      </section>
-
-      <section class="screen" id="lookbookScreen">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow soft">כל מה שנבחר</p>
-            <h2>האהבתי שלי</h2>
-          </div>
-          <span class="count-badge" id="lookbookCount">0</span>
-        </div>
-
-        <div class="search-wrap card compact">
-          <input id="lookbookSearch" placeholder="חיפוש לפי צבע, שם לוק או תיאור..." />
-        </div>
-
-        <div class="lookbook-list" id="lookbookList"></div>
-      </section>
-    </main>
-
-    <nav class="bottom-nav">
-      <button class="nav-btn active" data-screen="todayScreen" type="button"><span>☀︎</span><small>היום</small></button>
-      <button class="nav-btn" data-screen="anchorScreen" type="button"><span>◐</span><small>בחרתי</small></button>
-      <button class="nav-btn" data-screen="lookbookScreen" type="button"><span>♡</span><small>אהבתי</small></button>
-    </nav>
-  </div>
-
-  <dialog id="lookDialog">
-    <div class="dialog-inner">
-      <button class="dialog-close" id="closeDialogBtn" type="button">×</button>
-      <p class="eyebrow soft" id="dialogDate"></p>
-      <h3 id="dialogTitle"></h3>
-      <p id="dialogVibe" class="dialog-vibe"></p>
-      <div class="palette-row large" id="dialogPalette"></div>
-      <div class="mapping-list dialog-map" id="dialogMapping"></div>
-      <div class="why-card dialog-why">
-        <h3>למה זה עובד?</h3>
-        <p id="dialogWhy"></p>
+      <div class="items-grid">
+        <article class="item-note">
+          <span>בגד מרכזי</span>
+          <strong id="mainItem">—</strong>
+        </article>
+        <article class="item-note">
+          <span>נעליים</span>
+          <strong id="shoesItem">—</strong>
+        </article>
+        <article class="item-note">
+          <span>אביזר</span>
+          <strong id="accessoryItem">—</strong>
+        </article>
       </div>
-    </div>
-  </dialog>
 
-  <dialog id="infoDialog">
-    <div class="dialog-inner info-inner">
-      <button class="dialog-close" id="closeInfoBtn" type="button">×</button>
-      <p class="eyebrow soft">ABOUT THE ENGINE</p>
-      <h3>איך זה עובד?</h3>
-      <p>האפליקציה בונה שילובי צבעים מתוך מבני השראה, וריאציות גוונים ומיפוי לבגדים. היא לא מעתיקה את Sanzo Wada, אלא משתמשת בעקרונות השראה כדי לייצר שילובים חדשים.</p>
-      <ul class="info-list">
-        <li>כל לחיצה על <b>הבא בתור</b> מייצרת שילוב חדש.</li>
-        <li><b>שומרת ♡</b> מכניס את הלוק לאהבתי.</li>
-        <li><b>בחרתי משהו</b> בונה שילוב סביב פריט שכבר בא לך ללבוש.</li>
-      </ul>
-      <button class="primary-btn full" id="closeInfoCta" type="button">הבנתי</button>
-    </div>
-  </dialog>
+      <p class="reason" id="reason">לחצי על הבא בתור כדי לקבל שילוב.</p>
+    </section>
 
-  <dialog id="colorModeDialog">
-    <div class="dialog-inner info-inner">
-      <button class="dialog-close" id="closeColorModeBtn" type="button">×</button>
-      <p class="eyebrow soft">COLOR MOOD</p>
-      <h3>מדד הצבע היומי</h3>
-      <p class="dialog-vibe">בחרי כמה צבע יש לך כוח להיות היום. שינוי מדד מייצר לוק חדש אוטומטית.</p>
-      <div class="mode-options" id="colorModeOptions"></div>
-    </div>
-  </dialog>
+    <section class="actions">
+      <button class="primary" id="nextBtn">הבא בתור</button>
+      <button class="secondary" id="saveBtn">שומרת ♡</button>
+      <button class="secondary" id="chosenBtn">בחרתי משהו</button>
+    </section>
 
-  <div class="toast" id="toast"></div>
-  <script src="script.js?v=210"></script>
+    <section class="saved-card">
+      <h2>שמורים</h2>
+      <div id="savedLooks" class="saved-list empty">עוד אין שמורים. מחכים ללוק שצועק שימי.</div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
 </body>
 </html>

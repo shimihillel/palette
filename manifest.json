@@ -1,0 +1,11 @@
+{
+  "name": "מה ללבוש היום?",
+  "short_name": "שימי סטייל",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f8efe6",
+  "theme_color": "#7b2d26",
+  "dir": "rtl",
+  "lang": "he",
+  "icons": []
+}
