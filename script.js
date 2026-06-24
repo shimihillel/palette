@@ -4,7 +4,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v26';
+const APP_VERSION = 'v27';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -509,6 +509,7 @@ function renderToday(){
   $('lookVibe').textContent = look.vibe || pick(MODE_LINES[state.colorMode || 'super']);
   $('whyWorks').textContent = look.why;
   renderColorModeCard();
+  renderOutfitPreview($('outfitStage'), look.mapping);
   renderPalette($('paletteRow'), look.colors);
   renderMapping($('mappingList'), look.mapping);
 }
@@ -590,6 +591,7 @@ function renderAnchorLook(look){
   $('anchorLookTitle').textContent = look.title;
   $('anchorLookVibe').textContent = look.vibe;
   $('anchorWhyWorks').textContent = look.why;
+  renderOutfitPreview($('anchorOutfitStage'), look.mapping, state.anchorPiece);
   renderPalette($('anchorPaletteRow'), look.colors);
   renderMapping($('anchorMappingList'), look.mapping);
   const locked = $('anchorMappingList').querySelector(`[data-role="${state.anchorPiece}"]`);
@@ -645,6 +647,99 @@ function renderPalette(container, colors){
   `).join('');
 }
 
+
+function outfitColor(mapping, role, fallback){
+  return mapping?.[role]?.color?.hex || fallback;
+}
+
+function renderOutfitPreview(container, mapping, lockedRole=null){
+  if(!container || !mapping) return;
+  const top = outfitColor(mapping, 'top', '#D7A722');
+  const bottom = outfitColor(mapping, 'bottom', '#1F4065');
+  const shoes = outfitColor(mapping, 'shoes', '#A6653D');
+  const accessory = outfitColor(mapping, 'accessory', '#6B355F');
+  const lockLabel = lockedRole ? `<span class="outfit-lock-chip">${pieceLabel(lockedRole)} שלך</span>` : '';
+  container.innerHTML = `
+    <div class="outfit-figure-wrap">
+      ${lockLabel}
+      <svg class="outfit-figure" viewBox="0 0 260 420" role="img" aria-label="איור דמות הלובשת את צבעי הלוק" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+            <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#4f3427" flood-opacity="0.15"/>
+          </filter>
+          <linearGradient id="skinGlow" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#F2C4A4"/>
+            <stop offset="1" stop-color="#D99A78"/>
+          </linearGradient>
+          <linearGradient id="hairGlow" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#5A2F18"/>
+            <stop offset="1" stop-color="#2F1B12"/>
+          </linearGradient>
+        </defs>
+
+        <ellipse cx="130" cy="395" rx="70" ry="13" fill="#4f3427" opacity="0.10"/>
+
+        <g filter="url(#softShadow)">
+          <!-- hair back -->
+          <path d="M91 78 C91 45 111 25 134 25 C160 25 176 48 172 80 C169 105 92 107 91 78Z" fill="url(#hairGlow)"/>
+          <circle cx="131" cy="27" r="23" fill="url(#hairGlow)"/>
+          <path d="M106 36 C108 14 129 7 143 15 C129 15 119 25 117 39Z" fill="#71401f" opacity=".55"/>
+
+          <!-- neck/head -->
+          <path d="M116 105 H144 V143 C144 152 116 152 116 143Z" fill="url(#skinGlow)"/>
+          <ellipse cx="130" cy="78" rx="39" ry="45" fill="url(#skinGlow)"/>
+          <path d="M93 77 C98 43 117 48 130 55 C146 46 166 51 170 78 C158 67 147 61 130 63 C116 62 105 67 93 77Z" fill="url(#hairGlow)"/>
+          <path d="M93 75 C80 102 94 125 108 136 C96 118 101 93 105 78Z" fill="url(#hairGlow)"/>
+          <path d="M167 76 C181 103 165 127 151 136 C164 117 158 92 154 78Z" fill="url(#hairGlow)"/>
+          <path d="M96 82 C83 100 82 126 96 145" fill="none" stroke="#4A2717" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+          <path d="M165 82 C178 101 177 126 163 146" fill="none" stroke="#4A2717" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+          <circle cx="114" cy="80" r="2.7" fill="#321b13"/>
+          <circle cx="146" cy="80" r="2.7" fill="#321b13"/>
+          <path d="M120 99 C126 105 137 105 143 99" fill="none" stroke="#9B4E3F" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M130 83 C128 91 128 94 132 96" fill="none" stroke="#B8745E" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="88" cy="107" r="6" fill="#D7A56B"/>
+          <circle cx="172" cy="107" r="6" fill="#D7A56B"/>
+
+          <!-- arms -->
+          <path d="M76 153 C65 184 62 222 70 258 C72 267 83 264 82 255 C78 221 83 187 94 160Z" fill="url(#skinGlow)"/>
+          <path d="M184 154 C197 185 201 222 191 258 C189 267 178 264 180 254 C185 220 178 186 166 160Z" fill="url(#skinGlow)"/>
+          <circle cx="76" cy="260" r="8" fill="url(#skinGlow)"/>
+          <circle cx="184" cy="260" r="8" fill="url(#skinGlow)"/>
+
+          <!-- accessory bag behind/side -->
+          <path d="M72 245 C55 264 51 307 62 325 C74 340 105 334 106 314 C106 292 95 255 72 245Z" fill="${accessory}" stroke="#2f2019" stroke-opacity=".16" stroke-width="2"/>
+          <path d="M75 251 C82 227 101 230 99 267" fill="none" stroke="${accessory}" stroke-width="8" stroke-linecap="round" opacity=".85"/>
+          <path d="M76 252 C83 229 98 231 96 265" fill="none" stroke="#3B2432" stroke-width="2" stroke-linecap="round" opacity=".35"/>
+          <circle cx="77" cy="272" r="3" fill="#D7A56B" opacity=".85"/>
+          <circle cx="96" cy="271" r="3" fill="#D7A56B" opacity=".85"/>
+
+          <!-- top -->
+          <path d="M83 139 C97 125 113 119 130 119 C148 119 164 125 177 139 C171 177 166 207 164 228 C145 237 114 237 95 228 C93 206 89 176 83 139Z" fill="${top}" stroke="#2f2019" stroke-opacity=".12" stroke-width="2"/>
+          <path d="M84 140 C74 151 68 170 69 190 C74 196 84 195 90 189 C91 174 95 157 101 144Z" fill="${top}" stroke="#2f2019" stroke-opacity=".10" stroke-width="2"/>
+          <path d="M176 140 C188 153 193 171 191 190 C185 197 176 196 170 189 C169 174 164 157 158 144Z" fill="${top}" stroke="#2f2019" stroke-opacity=".10" stroke-width="2"/>
+          <path d="M118 124 C121 140 128 149 130 149 C133 149 140 139 143 124" fill="none" stroke="#2f2019" stroke-opacity=".18" stroke-width="2" stroke-linecap="round"/>
+          <path d="M103 222 C118 228 143 228 157 222" fill="none" stroke="#2f2019" stroke-opacity=".10" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- bottom / pants -->
+          <path d="M94 224 C106 231 121 232 130 229 C130 272 126 335 120 376 L86 376 C85 333 86 275 94 224Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
+          <path d="M130 229 C139 232 154 231 166 224 C174 275 175 333 174 376 L140 376 C134 335 130 272 130 229Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
+          <path d="M130 232 C129 271 129 325 130 371" stroke="#0c1723" stroke-opacity=".22" stroke-width="2"/>
+          <path d="M105 229 C111 265 109 325 104 373" stroke="#fff" stroke-opacity=".10" stroke-width="3"/>
+          <path d="M155 229 C149 265 151 325 156 373" stroke="#fff" stroke-opacity=".10" stroke-width="3"/>
+          <path d="M91 224 H169 V240 H91Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".16" stroke-width="2"/>
+          <circle cx="130" cy="232" r="3" fill="#D7A56B"/>
+
+          <!-- ankles / shoes -->
+          <path d="M94 373 H118 V387 H94Z" fill="url(#skinGlow)"/>
+          <path d="M142 373 H166 V387 H142Z" fill="url(#skinGlow)"/>
+          <path d="M83 386 C95 377 111 378 123 386 C121 398 89 400 76 394 C76 391 79 388 83 386Z" fill="${shoes}" stroke="#2f2019" stroke-opacity=".20" stroke-width="2"/>
+          <path d="M137 386 C149 377 165 378 177 386 C179 389 181 393 183 398 C168 401 140 398 137 386Z" fill="${shoes}" stroke="#2f2019" stroke-opacity=".20" stroke-width="2"/>
+        </g>
+      </svg>
+    </div>
+  `;
+}
+
 function renderMapping(container, mapping){
   const labels = {top:'עליון', bottom:'תחתון', shoes:'נעליים', accessory:'אביזר'};
   container.innerHTML = Object.entries(labels).map(([role,label]) => {
@@ -662,6 +757,7 @@ function openDialog(look){
   $('dialogTitle').textContent = look.title;
   $('dialogVibe').textContent = look.vibe;
   $('dialogWhy').textContent = look.why;
+  renderOutfitPreview($('dialogOutfitStage'), look.mapping);
   renderPalette($('dialogPalette'), look.colors);
   renderMapping($('dialogMapping'), look.mapping);
   $('lookDialog').showModal();
