@@ -298,148 +298,39 @@ button{cursor:pointer;border:0}
 }
 
 
-.top-action-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin:0 0 14px;
+/* v31 refined visual layout */
+.refined-hero-card{padding:20px 18px 18px}
+.compact-meter{padding:12px 14px}
+.top-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:2px 0 14px}
+.top-action-row .primary-btn,.top-action-row .secondary-btn{padding:15px 12px;border-radius:18px}
+.look-visual-card{margin-top:4px;background:rgba(255,255,255,.58);border:1px solid rgba(79,52,39,.08);border-radius:24px;padding:14px;box-shadow:0 8px 20px rgba(79,52,39,.05)}
+.look-visual-grid{display:grid;grid-template-columns:minmax(168px,44%) 1fr;gap:14px;direction:ltr;align-items:center}
+.visual-stack{position:relative;display:flex;flex-direction:column;gap:10px;padding:6px 0 2px;min-width:0}
+.color-block{border-radius:18px;box-shadow:inset 0 1px 4px rgba(255,255,255,.28);border:1px solid rgba(0,0,0,.05)}
+.color-block.top{height:92px}
+.color-block.bottom{height:148px}
+.shoes-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:80%;min-width:132px}
+.shoe-block{height:72px;border-radius:16px;box-shadow:inset 0 1px 4px rgba(255,255,255,.28);border:1px solid rgba(0,0,0,.05)}
+.accessory-heart{position:absolute;left:-8px;top:142px;width:92px;height:92px;display:grid;place-items:center;filter:drop-shadow(0 8px 16px rgba(79,52,39,.12))}
+.accessory-heart svg{width:100%;height:100%;overflow:visible}
+.visual-map{display:grid;gap:0;border-radius:18px;overflow:hidden;min-width:0;direction:rtl}
+.visual-row{padding:12px 2px 12px 0;border-bottom:1px solid rgba(79,52,39,.08)}
+.visual-row:last-child{border-bottom:0}
+.visual-role{font-size:17px;font-weight:800;margin-bottom:3px;color:var(--ink)}
+.visual-text{font-size:15px;color:var(--ink);font-weight:700}
+.visual-subtext{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.35}
+.anchor-cta-row{margin-top:14px}
+.why-card{margin-top:14px}
+@media (max-width:430px){
+  .look-visual-grid{grid-template-columns:minmax(150px,42%) 1fr;gap:12px}
+  .accessory-heart{width:80px;height:80px;left:-6px;top:148px}
+  .color-block.top{height:84px}
+  .color-block.bottom{height:138px}
+  .shoe-block{height:64px}
+  .visual-role{font-size:16px}
 }
-.top-action-row .primary-btn,
-.top-action-row .secondary-btn{
-  min-height:54px;
-}
-
-/* v28 — תצוגת לוק על דמות מניקן פשוטה */
-.outfit-preview-card{
-  margin:4px 0 14px;
-  padding:14px 12px 8px;
-  border-radius:28px;
-  background:linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,248,240,.42));
-  border:1px solid rgba(255,255,255,.78);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.65), 0 18px 46px rgba(79,52,39,.08);
-  overflow:hidden;
-}
-.outfit-stage{
-  min-height:270px;
-  display:grid;
-  place-items:center;
-  position:relative;
-}
-.outfit-figure-wrap{
-  width:min(100%, 300px);
-  min-height:270px;
-  display:grid;
-  place-items:center;
-  position:relative;
-}
-.outfit-figure{
-  width:100%;
-  max-width:270px;
-  height:auto;
-  display:block;
-}
-.outfit-lock-chip{
-  position:absolute;
-  top:4px;
-  right:8px;
-  z-index:2;
-  padding:7px 10px;
-  border-radius:999px;
-  background:rgba(200,113,63,.12);
-  color:var(--brown);
-  border:1px solid rgba(200,113,63,.18);
-  font-size:12px;
-  font-weight:900;
-}
-.anchor-outfit-preview{
-  margin-top:10px;
-}
-.dialog-outfit-preview{
-  margin:10px 0 12px;
-  padding:8px 10px 4px;
-  border-radius:22px;
-}
-.dialog-outfit-preview .outfit-stage{
-  min-height:220px;
-}
-.dialog-outfit-preview .outfit-figure-wrap{
-  max-width:225px;
-  min-height:220px;
-}
-.mapping-row strong{
-  flex:1;
-  text-align:right;
-}
-@media(max-width:390px){
-  .outfit-stage{min-height:235px}
-  .outfit-figure-wrap{min-height:235px;max-width:245px}
-  .top-action-row{margin-bottom:12px}
-}
-
-
-/* v30 — clean visual mode, no duplicate bottom buttons */
-.top-action-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin:0 0 14px;
-  position:sticky;
-  top:8px;
-  z-index:10;
-  padding:8px 0;
-  backdrop-filter:blur(10px);
-}
-.top-action-row .secondary-btn,
-.top-action-row .primary-btn{
-  min-height:54px;
-  font-size:18px;
-  border-radius:20px;
-}
-.outfit-preview-card{
-  padding:14px 10px 8px;
-  margin:8px 0 14px;
-  border-radius:28px;
-  background:rgba(255,255,255,.58);
-  border:1px solid rgba(79,52,39,.08);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
-  overflow:hidden;
-}
-.outfit-stage{min-height:300px;}
-.clean-mannequin-wrap{max-width:265px;min-height:300px;}
-.clean-mannequin{max-width:240px;}
-.mapping-row{
-  display:grid;
-  grid-template-columns:auto 1fr auto;
-  gap:12px;
-  align-items:center;
-}
-.mapping-row small{
-  order:3;
-  text-align:right;
-  min-width:58px;
-}
-.mapping-row strong{
-  order:2;
-  text-align:right;
-}
-.mapping-dot{
-  order:1;
-  width:20px;
-  height:20px;
-}
-@media(max-width:390px){
-  .outfit-stage{min-height:270px}
-  .clean-mannequin-wrap{min-height:270px;max-width:235px}
-  .clean-mannequin{max-width:220px}
-  .top-action-row .secondary-btn,.top-action-row .primary-btn{font-size:16px;min-height:50px}
-}
-
-
-/* v30 — remove the old duplicate action area from today screen */
-#todayScreen .hero-card > .cta-row,
-#todayScreen .hero-card > .anchor-inline-btn{
-  display:none !important;
-}
-#todayScreen .palette-row{
-  margin-top:4px;
+@media (max-width:360px){
+  .look-visual-grid{grid-template-columns:1fr;direction:rtl}
+  .visual-stack{max-width:220px;margin:0 auto}
+  .accessory-heart{left:-10px;top:138px}
 }

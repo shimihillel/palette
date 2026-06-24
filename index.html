@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=300" />
+  <link rel="stylesheet" href="style.css?v=310" />
 </head>
 <body>
   <div class="app-shell">
@@ -30,15 +30,16 @@
 
     <main>
       <section class="screen active" id="todayScreen">
-        <section class="hero-card card">
+        <section class="hero-card card refined-hero-card">
           <div class="hero-head">
             <div>
               <p class="tiny-label">הלוק של היום</p>
               <h2 id="lookTitle">—</h2>
+              <p id="lookVibe" class="hero-copy look-line">שילוב צבעים חכם, מגוון ובלי דרמת בוקר.</p>
             </div>
           </div>
 
-          <section class="color-meter-card" id="colorMeterCard">
+          <section class="color-meter-card compact-meter" id="colorMeterCard">
             <div>
               <p class="tiny-label">מדד הצבע היומי</p>
               <h3 id="colorModeTitle">סופר צבע</h3>
@@ -48,27 +49,16 @@
           </section>
 
           <div class="top-action-row">
-            <button class="secondary-btn" id="nextLookTopBtn" type="button">הבא בתור</button>
-            <button class="primary-btn" id="saveLookTopBtn" type="button">שומרת ♡</button>
+            <button class="secondary-btn" id="saveLookBtn" type="button">שומרת ♡</button>
+            <button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button>
           </div>
 
-          <section class="outfit-preview-card" aria-label="תצוגת הלוק על דמות">
-            <div class="outfit-stage" id="outfitStage"></div>
-          </section>
-
-          <div class="palette-row" id="paletteRow"></div>
-          <p id="lookVibe" class="hero-copy look-line">שילוב צבעים חכם, מגוון ובלי דרמת בוקר.</p>
-
-          <div class="mapping-card">
-            <h3>איך ללבוש את זה</h3>
-            <div class="mapping-list" id="mappingList"></div>
-          </div>
+          <section class="look-visual-card" id="lookVisual"></section>
 
           <div class="why-card">
             <h3>למה זה עובד?</h3>
             <p id="whyWorks"></p>
           </div>
-
         </section>
 
         <section class="engine-card card">
@@ -101,8 +91,7 @@
           <div class="color-choice-grid" id="colorChoices"></div>
         </section>
 
-
-        <section class="color-meter-card anchor-meter-card" id="anchorColorMeterCard">
+        <section class="color-meter-card anchor-meter-card compact-meter" id="anchorColorMeterCard">
           <div>
             <p class="tiny-label">מדד הצבע היומי</p>
             <h3 id="anchorColorModeTitle">סופר צבע</h3>
@@ -122,25 +111,16 @@
             </div>
           </div>
 
-          <section class="outfit-preview-card anchor-outfit-preview" aria-label="תצוגת הלוק על דמות">
-            <div class="outfit-stage" id="anchorOutfitStage"></div>
-          </section>
-
-          <div class="palette-row" id="anchorPaletteRow"></div>
-
-          <div class="mapping-card">
-            <h3>איך ללבוש את זה</h3>
-            <div class="mapping-list" id="anchorMappingList"></div>
-          </div>
+          <section class="look-visual-card" id="anchorLookVisual"></section>
 
           <div class="why-card">
             <h3>למה זה עובד?</h3>
             <p id="anchorWhyWorks"></p>
           </div>
 
-          <div class="cta-row">
-            <button class="secondary-btn" id="anchorNextBtn" type="button">הבא בתור</button>
-            <button class="primary-btn" id="anchorSaveBtn" type="button">שומרת ♡</button>
+          <div class="cta-row anchor-cta-row">
+            <button class="secondary-btn" id="anchorSaveBtn" type="button">שומרת ♡</button>
+            <button class="primary-btn" id="anchorNextBtn" type="button">הבא בתור ✦</button>
           </div>
         </section>
       </section>
@@ -175,9 +155,6 @@
       <p class="eyebrow soft" id="dialogDate"></p>
       <h3 id="dialogTitle"></h3>
       <p id="dialogVibe" class="dialog-vibe"></p>
-      <section class="outfit-preview-card dialog-outfit-preview" aria-label="תצוגת הלוק על דמות">
-        <div class="outfit-stage" id="dialogOutfitStage"></div>
-      </section>
       <div class="palette-row large" id="dialogPalette"></div>
       <div class="mapping-list dialog-map" id="dialogMapping"></div>
       <div class="why-card dialog-why">
@@ -213,6 +190,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=300"></script>
+  <script src="script.js?v=310"></script>
 </body>
 </html>

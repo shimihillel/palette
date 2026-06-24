@@ -3,8 +3,8 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 
 'use strict';
 
-const STORAGE_KEY = 'shimi-looks-v29-visual-clean';
-const APP_VERSION = 'v30';
+const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
+const APP_VERSION = 'v25';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -70,7 +70,7 @@ const GROUPS = {
   darkNeutral:['cocoa','espresso','bark','graphite','charcoal','black'],
   neutral:['white','opticwhite','pearl','fog','silver','stone','graphite','charcoal','black'],
   blue:['navy','cobalt','indigo','slate','denim','sky'],
-  green:['sage','eucalyptus','olive','moss','emerald'],
+  green:['sage','eucalyptus','olive','moss','mint','emerald'],
   soft:['blush','dustyrose','mauve','lavgray','lilac'],
   purple:['plum','fig','bordeaux','lilac','fuchsia'],
   warmAccent:['terracotta','rust','coral','ochre','marigold','butter','lemon'],
@@ -155,10 +155,10 @@ function isRedColor(color){
   return !!color && (color.family === 'red' || RED_COLOR_IDS.includes(color.id));
 }
 
-const SHOE_SAFE_IDS = ['ivory','linen','oat','sand','camel','cognac','cocoa','espresso','bark','charcoal','black','white','opticwhite','pearl','fog','silver','stone','graphite','navy','cobalt','indigo','slate','denim','sky','sage','eucalyptus','olive','moss','emerald','blush','dustyrose','mauve','lavgray','lilac','plum','fig','bordeaux','terracotta','rust','coral','ochre','marigold','butter','lemon','tomato','cherry','lipstick','scarlet'];
-const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־10 לוקים
+const SHOE_SAFE_IDS = ['ivory','linen','oat','sand','camel','cognac','cocoa','espresso','bark','charcoal','black','white','opticwhite','pearl','fog','silver','stone','graphite','navy','cobalt','indigo','slate','denim','sky','sage','eucalyptus','olive','moss','mint','emerald','blush','dustyrose','mauve','lavgray','lilac','plum','fig','bordeaux','terracotta','rust','coral','ochre','marigold','butter','lemon','tomato','cherry','lipstick','scarlet'];
+const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־6 לוקים
 function isTurquoiseLike(color){
-  return !!color && ['teal','mint'].includes(color.id);
+  return !!color && ['teal'].includes(color.id);
 }
 function recentShoeColors(count=8){
   return state.lookbook.slice(0,count).map(look => look.mapping?.shoes?.color?.id).filter(Boolean);
@@ -176,17 +176,17 @@ function isPinkShoeColor(color){
   return !!color && ['blush','dustyrose','mauve','lavgray','lilac','fuchsia'].includes(color.id);
 }
 function isGreenShoeColor(color){
-  return !!color && ['sage','eucalyptus','olive','moss','emerald'].includes(color.id);
+  return !!color && ['sage','eucalyptus','olive','moss','mint','emerald'].includes(color.id);
 }
 function pickShoeColorAvoidingRecent(colors){
   let options = (colors||[]).filter(c => c && SHOE_SAFE_IDS.includes(c.id) && !isTurquoiseLike(c));
-  if(!options.length) options = (colors||[]).filter(c => c && !isTurquoiseLike(c) && c.id !== 'mint' && !isRedColor(c));
+  if(!options.length) options = (colors||[]).filter(c => c && !isTurquoiseLike(c) && !isRedColor(c));
   if(!options.length) options = [COLORS.camel, COLORS.cognac, COLORS.espresso, COLORS.navy].filter(Boolean);
   const recent = recentShoeColors(6);
   const weighted = options.map(c => {
     let weight = 12;
     if(recent.includes(c.id)) weight -= 9;
-    // גיוון פשוט: כל צבע נעליים אפשרי חוץ מטורקיז/מנטה, עם קנס רק לחזרות קרובות.
+    // גיוון פשוט: כל צבע מקבל סיכוי דומה, עם קנס רק לחזרות קרובות.
     if(recent.includes(c.id)) weight -= 18;
     if(recentShoeColors(10).includes(c.id)) weight -= 8;
     if(c.family === 'red') weight += recentRedShoesCount(6) ? -45 : 3;
@@ -198,7 +198,7 @@ function fixShoeVariety(mapping, colors){
   if(!mapping || !mapping.shoes) return mapping;
   const shoe = mapping.shoes.color;
   const recentShoes = recentShoeColors(5);
-  const redOverload = isRedColor(shoe) && recentRedShoesCount(10) >= SHOE_RED_MAX_RECENT;
+  const redOverload = isRedColor(shoe) && recentRedShoesCount(6) >= SHOE_RED_MAX_RECENT;
   const repeatOverload = shoe && recentShoes.filter(id => id === shoe.id).length >= 1;
   const turquoiseBad = isTurquoiseLike(shoe);
   if(redOverload || repeatOverload || turquoiseBad){
@@ -229,15 +229,15 @@ function fixRedAccentFrequency(mapping, colors){
     mapping.accessory.text = roleText('accessory', repl);
   }
 
-  // אביזר אדום מרוסן: בערך פעם ב־6 לוקים.
-  if(isRedColor(mapping.accessory?.color) && recentRedAccessoryCount(6) >= 1){
+  // אביזר אדום נדיר יותר: בערך פעם ב־10 לוקים.
+  if(isRedColor(mapping.accessory?.color) && recentRedAccessoryCount(10) >= 1){
     const repl = pickAccessoryColorAvoidingRed(colors);
     mapping.accessory.color = repl;
     mapping.accessory.text = roleText('accessory', repl);
   }
 
-  // נעליים אדומות נדירות יותר: בערך פעם ב־10 לוקים.
-  if(isRedColor(mapping.shoes?.color) && recentRedShoesCount(10) >= 1){
+  // נעליים אדומות מותרות יותר מאביזר, אבל עדיין במרווח: בערך פעם ב־6 לוקים.
+  if(isRedColor(mapping.shoes?.color) && recentRedShoesCount(6) >= 1){
     const repl = pickShoeColorAvoidingRecent(colors);
     mapping.shoes.color = repl;
     mapping.shoes.text = roleText('shoes', repl);
@@ -404,20 +404,16 @@ function init(){
 }
 
 function bindEvents(){
-  function nextTodayLook(){
+  $('nextLookBtn').addEventListener('click', () => {
     state.currentLook = generateBestLook(state.colorMode || 'super');
     remember(state.currentLook, 'today');
     saveState();
     renderToday();
     toast('הבא בתור ✨');
-  }
+  });
 
-  on('nextLookBtn', 'click', nextTodayLook);
-  on('nextLookTopBtn', 'click', nextTodayLook);
-
-  on('saveLookBtn', 'click', () => saveLook(state.currentLook));
-  on('saveLookTopBtn', 'click', () => saveLook(state.currentLook));
-  on('anchorModeBtn', 'click', () => showScreen('anchorScreen'));
+  $('saveLookBtn').addEventListener('click', () => saveLook(state.currentLook));
+  on('anchorModeBtn','click', () => showScreen('anchorScreen'));
   $('buildAroundBtn').addEventListener('click', () => buildAnchorLook());
   $('anchorNextBtn').addEventListener('click', () => buildAnchorLook());
   $('anchorSaveBtn').addEventListener('click', () => {
@@ -513,9 +509,7 @@ function renderToday(){
   $('lookVibe').textContent = look.vibe || pick(MODE_LINES[state.colorMode || 'super']);
   $('whyWorks').textContent = look.why;
   renderColorModeCard();
-  renderOutfitPreview($('outfitStage'), look.mapping);
-  renderPalette($('paletteRow'), look.colors);
-  renderMapping($('mappingList'), look.mapping);
+  renderLookVisual($('lookVisual'), look.mapping);
 }
 
 function renderAnchor(){
@@ -595,11 +589,7 @@ function renderAnchorLook(look){
   $('anchorLookTitle').textContent = look.title;
   $('anchorLookVibe').textContent = look.vibe;
   $('anchorWhyWorks').textContent = look.why;
-  renderOutfitPreview($('anchorOutfitStage'), look.mapping, state.anchorPiece);
-  renderPalette($('anchorPaletteRow'), look.colors);
-  renderMapping($('anchorMappingList'), look.mapping);
-  const locked = $('anchorMappingList').querySelector(`[data-role="${state.anchorPiece}"]`);
-  if(locked) locked.classList.add('locked');
+  renderLookVisual($('anchorLookVisual'), look.mapping, {lockedRole: state.anchorPiece});
 }
 
 function renderLookbook(){
@@ -641,6 +631,48 @@ function renderLookbook(){
   }));
 }
 
+
+function renderLookVisual(container, mapping, options={}){
+  if(!container || !mapping) return;
+  const labels = {top:'עליון', bottom:'תחתון', shoes:'נעליים', accessory:'אביזר'};
+  const descriptions = {
+    top: mapping.top?.color?.he || '',
+    bottom: mapping.bottom?.color?.he || '',
+    shoes: mapping.shoes?.color?.he || '',
+    accessory: mapping.accessory?.color?.he || ''
+  };
+  const heart = accessoryHeartSvg(mapping.accessory?.color?.hex || '#C94431');
+  container.innerHTML = `
+    <div class="look-visual-grid">
+      <div class="visual-stack">
+        <div class="color-block top" style="background:${mapping.top.color.hex}"></div>
+        <div class="color-block bottom" style="background:${mapping.bottom.color.hex}"></div>
+        <div class="accessory-heart" aria-hidden="true">${heart}</div>
+        <div class="shoes-pair">
+          <div class="shoe-block" style="background:${mapping.shoes.color.hex}"></div>
+          <div class="shoe-block" style="background:${mapping.shoes.color.hex}"></div>
+        </div>
+      </div>
+      <div class="visual-map">
+        ${['top','bottom','shoes','accessory'].map(role => {
+          const locked = options.lockedRole === role ? ' · הפריט שלך' : '';
+          return `<div class="visual-row ${options.lockedRole === role ? 'locked' : ''}">
+            <div class="visual-role">${labels[role]}</div>
+            <div class="visual-text">${descriptions[role]}</div>
+            <div class="visual-subtext">${mapping[role].text}${locked}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function accessoryHeartSvg(fill){
+  return `<svg viewBox="0 0 64 64" role="img" aria-label="אביזר">
+    <path d="M32 55C23 47 8 36.5 8 22.5 8 15.6 13.6 10 20.5 10c4.9 0 9.3 2.8 11.5 6.8C34.2 12.8 38.6 10 43.5 10 50.4 10 56 15.6 56 22.5 56 36.5 41 47 32 55z" fill="${fill}" stroke="#fff8f0" stroke-width="3.5" stroke-linejoin="round"/>
+  </svg>`;
+}
+
 function renderPalette(container, colors){
   container.innerHTML = colors.map(c => `
     <div class="swatch-card">
@@ -649,76 +681,6 @@ function renderPalette(container, colors){
       <span>${c.en}</span>
     </div>
   `).join('');
-}
-
-
-function outfitColor(mapping, role, fallback){
-  return mapping?.[role]?.color?.hex || fallback;
-}
-
-function renderOutfitPreview(container, mapping, lockedRole=null){
-  if(!container || !mapping) return;
-  const top = outfitColor(mapping, 'top', '#D7A722');
-  const bottom = outfitColor(mapping, 'bottom', '#1F4065');
-  const shoes = outfitColor(mapping, 'shoes', '#A6653D');
-  const accessory = outfitColor(mapping, 'accessory', '#6B355F');
-  const lockLabel = lockedRole ? `<span class="outfit-lock-chip">${pieceLabel(lockedRole)} שלך</span>` : '';
-  container.innerHTML = `
-    <div class="outfit-figure-wrap clean-mannequin-wrap">
-      ${lockLabel}
-      <svg class="outfit-figure clean-mannequin" viewBox="0 0 260 360" role="img" aria-label="איור מניקן פשוט עם צבעי הלוק" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="softShadowV29" x="-20%" y="-20%" width="140%" height="150%">
-            <feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#4f3427" flood-opacity="0.10"/>
-          </filter>
-          <linearGradient id="skinV29" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stop-color="#F0C3A4"/>
-            <stop offset="1" stop-color="#E2A783"/>
-          </linearGradient>
-          <linearGradient id="hairV29" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#62391F"/>
-            <stop offset="1" stop-color="#2F2019"/>
-          </linearGradient>
-        </defs>
-        <ellipse cx="130" cy="336" rx="72" ry="13" fill="#4f3427" opacity="0.09"/>
-
-        <g filter="url(#softShadowV29)">
-          <!-- ראש נקי בלי פנים -->
-          <circle cx="130" cy="52" r="30" fill="url(#skinV29)"/>
-          <path d="M101 50 C103 22 121 11 139 16 C158 21 166 37 160 61 C150 50 143 45 130 45 C118 45 109 48 101 50Z" fill="url(#hairV29)"/>
-          <circle cx="132" cy="14" r="18" fill="url(#hairV29)"/>
-          <path d="M111 80 H149 V102 C149 116 111 116 111 102Z" fill="url(#skinV29)"/>
-
-          <!-- צוואר וכתפיים רכות -->
-          <path d="M82 105 C99 92 116 88 130 88 C145 88 162 92 178 105 C170 135 166 166 166 198 C146 208 114 208 94 198 C94 166 90 135 82 105Z" fill="${top}" stroke="#2f2019" stroke-opacity=".10" stroke-width="2"/>
-          <path d="M86 106 C70 118 63 147 67 178 C74 184 84 183 91 176 C91 151 96 126 107 101Z" fill="${top}" stroke="#2f2019" stroke-opacity=".08" stroke-width="2"/>
-          <path d="M174 106 C190 118 197 147 193 178 C186 184 176 183 169 176 C169 151 164 126 153 101Z" fill="${top}" stroke="#2f2019" stroke-opacity=".08" stroke-width="2"/>
-          <path d="M120 94 C124 108 129 115 130 115 C132 115 137 108 141 94" fill="none" stroke="#2f2019" stroke-opacity=".16" stroke-width="2" stroke-linecap="round"/>
-
-          <!-- ידיים פשוטות -->
-          <path d="M68 178 C67 206 70 228 76 245" fill="none" stroke="url(#skinV29)" stroke-width="14" stroke-linecap="round"/>
-          <path d="M192 178 C193 206 190 228 184 245" fill="none" stroke="url(#skinV29)" stroke-width="14" stroke-linecap="round"/>
-
-          <!-- אביזר נקי -->
-          <path d="M69 229 C50 247 49 291 61 308 C75 322 104 315 105 296 C105 272 93 239 69 229Z" fill="${accessory}" stroke="#2f2019" stroke-opacity=".14" stroke-width="2"/>
-          <path d="M73 235 C81 214 99 216 98 251" fill="none" stroke="${accessory}" stroke-width="7" stroke-linecap="round" opacity=".82"/>
-
-          <!-- תחתון -->
-          <path d="M90 195 H170 V214 H90Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
-          <circle cx="130" cy="204" r="3" fill="#D7A56B"/>
-          <path d="M95 212 C108 218 121 218 130 214 C130 250 126 291 120 324 L84 324 C84 286 87 247 95 212Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
-          <path d="M130 214 C139 218 153 218 165 212 C173 247 176 286 176 324 L140 324 C134 291 130 250 130 214Z" fill="${bottom}" stroke="#2f2019" stroke-opacity=".13" stroke-width="2"/>
-          <path d="M130 219 C129 251 129 289 130 322" stroke="#0c1723" stroke-opacity=".16" stroke-width="2"/>
-
-          <!-- נעליים -->
-          <path d="M92 322 H118 V333 H92Z" fill="url(#skinV29)"/>
-          <path d="M142 322 H168 V333 H142Z" fill="url(#skinV29)"/>
-          <path d="M82 333 C96 325 114 326 125 333 C122 344 90 346 76 340 C76 337 79 335 82 333Z" fill="${shoes}" stroke="#2f2019" stroke-opacity=".18" stroke-width="2"/>
-          <path d="M136 333 C150 325 168 326 179 333 C181 336 182 339 184 343 C168 347 140 344 136 333Z" fill="${shoes}" stroke="#2f2019" stroke-opacity=".18" stroke-width="2"/>
-        </g>
-      </svg>
-    </div>
-  `;
 }
 
 function renderMapping(container, mapping){
@@ -738,7 +700,6 @@ function openDialog(look){
   $('dialogTitle').textContent = look.title;
   $('dialogVibe').textContent = look.vibe;
   $('dialogWhy').textContent = look.why;
-  renderOutfitPreview($('dialogOutfitStage'), look.mapping);
   renderPalette($('dialogPalette'), look.colors);
   renderMapping($('dialogMapping'), look.mapping);
   $('lookDialog').showModal();
@@ -967,7 +928,7 @@ function scoreLookWithTopVariety(look){
   if(look.mapping?.accessory?.color){
     const acc = look.mapping.accessory.color;
     if(isTurquoiseLike(acc)) s -= 999;
-    if(isRedColor(acc)) s += recentRedAccessoryCount(6) ? -220 : -8;
+    if(isRedColor(acc)) s += recentRedAccessoryCount(10) ? -220 : -8;
   }
   if(isRedColor(look.mapping?.shoes?.color) && isRedColor(look.mapping?.accessory?.color)) s -= 999;
 
@@ -1183,7 +1144,7 @@ function pickColor(groupName, previous, role=null){
     // Red is allowed only as shoes/accessory, never top/bottom.
     if(isRedColor(color) && (role === 'top' || role === 'bottom')) weight = 0.1;
     if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(6) ? -45 : 4;
-    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(6) ? -55 : 2;
+    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(10) ? -55 : 2;
     if(isTurquoiseLike(color)) weight = 0.05;
 
     // Push black/white to actually appear, not just sit politely in the palette.
