@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=340-overwrite" />
+  <link rel="stylesheet" href="style.css?v=370-reset" />
 </head>
 <body>
   <div class="app-shell">
@@ -26,34 +26,34 @@
       <div class="brand-block">
         <h1>SHIMI LOOKS</h1>
       </div>
-      <button class="icon-btn calendar-btn" id="calendarBtn" aria-label="אהבתי">⌲</button>
+      <button class="icon-btn calendar-btn" id="calendarBtn" aria-label="אהבתי">▢</button>
     </header>
 
     <main>
       <section class="screen active" id="todayScreen">
-        <section class="hero-card refined-hero-card home-top-shell">
-          <div class="home-top-row">
-            <button class="mode-pill" id="changeColorModeBtn" type="button"><span class="pill-sparkle">✦</span><span id="colorModeTitle">סופר צבע</span></button>
-            <p id="colorModeDesc" hidden>4 צבעים, בלי להתנצל</p>
-          </div>
+        <section class="today-layout">
+          <button class="mode-pill" id="changeColorModeBtn" type="button"><span>✦</span><strong id="colorModeTitle">סופר צבע</strong></button>
+          <p id="colorModeDesc" hidden>4 צבעים, בלי להתנצל</p>
 
-          <div class="home-title-wrap">
-            <p class="tiny-label look-day-label">הלוק של היום</p>
+          <div class="today-title-block">
             <h2 id="lookTitle">—</h2>
-            <p id="lookVibe" class="hero-copy home-subtitle">לוק יומי עם נגיעה חמה ובולטת</p>
+            <p id="lookVibe" class="today-subtitle">לוק יומי עם נגיעה חמה ובולטת</p>
           </div>
 
-          <div class="top-action-row top-action-row-home">
-            <button class="secondary-btn" id="saveLookBtn" type="button">שומרת ♡</button>
+          <div class="top-action-row clean-actions">
             <button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button>
+            <button class="secondary-btn" id="saveLookBtn" type="button">שומרת ♡</button>
           </div>
 
-          <section class="look-visual-card editorial-look-card" id="lookVisual"></section>
+          <section class="look-visual-card clean-look-card" id="lookVisual"></section>
 
-          <div class="why-card editorial-why-card">
-            <h3>למה זה עובד?</h3>
-            <p id="whyWorks"></p>
-          </div>
+          <section class="why-card clean-why-card">
+            <div class="why-sparkle">✧</div>
+            <div>
+              <h3>למה זה עובד?</h3>
+              <p id="whyWorks"></p>
+            </div>
+          </section>
         </section>
       </section>
 
@@ -184,6 +184,6 @@
       caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
     }
   </script>
-  <script src="script.js?v=360-exact"></script>
+  <script src="script.js?v=370-reset"></script>
 </body>
 </html>

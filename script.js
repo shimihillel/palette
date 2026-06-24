@@ -590,7 +590,11 @@ function renderAnchorLook(look){
   $('anchorLookTitle').textContent = look.title;
   $('anchorLookVibe').textContent = look.vibe;
   $('anchorWhyWorks').textContent = look.why;
-  renderLookVisual($('anchorLookVisual'), look.mapping, {lockedRole: state.anchorPiece});
+  if(el('anchorLookVisual')) renderLookVisual($('anchorLookVisual'), look.mapping, {lockedRole: state.anchorPiece});
+  if(el('anchorPaletteRow')) renderPalette($('anchorPaletteRow'), look.colors);
+  if(el('anchorMappingList')) renderMapping($('anchorMappingList'), look.mapping);
+  const locked = el('anchorMappingList') ? $('anchorMappingList').querySelector(`[data-role="${state.anchorPiece}"]`) : null;
+  if(locked) locked.classList.add('locked');
 }
 
 function renderLookbook(){
@@ -633,49 +637,39 @@ function renderLookbook(){
 }
 
 
+
+
 function renderLookVisual(container, mapping, options={}){
   if(!container || !mapping) return;
-  const labels = {top:'עליון', bottom:'תחתון', shoes:'נעליים', accessory:'אביזר'};
-  const icons = {top:'⌇', bottom:'║', shoes:'◡', accessory:'♡'};
-  const descriptions = {
-    top: mapping.top?.color?.he || '',
-    bottom: mapping.bottom?.color?.he || '',
-    shoes: mapping.shoes?.color?.he || '',
-    accessory: mapping.accessory?.color?.he || ''
-  };
-  const heart = accessoryHeartSvg(mapping.accessory?.color?.hex || '#C94431');
+  const rows = [
+    {role:'top', label:'עליון'},
+    {role:'bottom', label:'תחתון'},
+    {role:'shoes', label:'נעליים'},
+    {role:'accessory', label:'אביזר'}
+  ];
   container.innerHTML = `
-    <div class="look-visual-grid editorial-grid">
-      <div class="visual-stack editorial-stack">
-        <div class="color-block top" style="background:${mapping.top.color.hex}"></div>
-        <div class="color-block bottom" style="background:${mapping.bottom.color.hex}"></div>
-        <div class="accessory-heart" aria-hidden="true">${heart}</div>
-        <div class="shoes-pair">
-          <div class="shoe-block" style="background:${mapping.shoes.color.hex}"></div>
-          <div class="shoe-block" style="background:${mapping.shoes.color.hex}"></div>
-        </div>
+    <div class="look-card-title">הלוק שלך</div>
+    <div class="look-card-grid">
+      <div class="color-bar-stack" aria-hidden="true">
+        ${rows.map(({role}) => `<div class="color-fabric-bar" style="background:${mapping[role].color.hex}"></div>`).join('')}
       </div>
-      <div class="visual-map editorial-map">
-        ${['top','bottom','shoes','accessory'].map(role => {
+      <div class="wearing-list">
+        ${rows.map(({role,label}) => {
+          const item = mapping[role];
           const locked = options.lockedRole === role ? ' · הפריט שלך' : '';
-          return `<div class="visual-row editorial-row ${options.lockedRole === role ? 'locked' : ''}">
-            <div class="role-icon-badge">${icons[role]}</div>
-            <div class="editorial-copy">
-              <div class="visual-role">${labels[role]}</div>
-              <div class="visual-text">${descriptions[role]}</div>
-              <div class="visual-subtext">${mapping[role].text}${locked}</div>
+          return `<div class="wear-row ${options.lockedRole === role ? 'locked' : ''}">
+            <span class="wear-line"></span>
+            <span class="wear-dot" style="background:${item.color.hex}"></span>
+            <div class="wear-copy">
+              <strong>${label}</strong>
+              <span>${item.color.he}</span>
+              <small>${item.text}${locked}</small>
             </div>
           </div>`;
         }).join('')}
       </div>
     </div>
   `;
-}
-
-function accessoryHeartSvg(fill){
-  return `<svg viewBox="0 0 64 64" role="img" aria-label="אביזר">
-    <path d="M32 55C23 47 8 36.5 8 22.5 8 15.6 13.6 10 20.5 10c4.9 0 9.3 2.8 11.5 6.8C34.2 12.8 38.6 10 43.5 10 50.4 10 56 15.6 56 22.5 56 36.5 41 47 32 55z" fill="${fill}" stroke="#fff8f0" stroke-width="3.5" stroke-linejoin="round"/>
-  </svg>`;
 }
 
 function renderPalette(container, colors){

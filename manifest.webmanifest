@@ -3,11 +3,11 @@
   "short_name": "Looks",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=36",
+  "start_url": "./index.html?v=37",
   "display": "standalone",
   "background_color": "#f6f1ea",
   "theme_color": "#f6f1ea",
-  "description": "Shimi Looks v36 — exact overwrite package based on approved screen.",
+  "description": "Shimi Looks v37 reset – clean realistic look card UI.",
   "icons": [
     {
       "src": "assets/icon-192.png",
