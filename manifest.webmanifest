@@ -3,11 +3,11 @@
   "short_name": "Looks",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=25",
+  "start_url": "./index.html?v=26",
   "display": "standalone",
   "background_color": "#f6f1ea",
   "theme_color": "#f6f1ea",
-  "description": "שימי בסטייל — גיוון נעליים מאוזן בלי דחיפה לצבע מסוים.",
+  "description": "שימי בסטייל — גיוון נעליים אמיתי, אדום מרוסן, מנטה וטורקיז בחוץ מנעליים.",
   "icons": [
     {
       "src": "assets/icon-192.png",

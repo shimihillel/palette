@@ -4,7 +4,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v25';
+const APP_VERSION = 'v26';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -70,7 +70,7 @@ const GROUPS = {
   darkNeutral:['cocoa','espresso','bark','graphite','charcoal','black'],
   neutral:['white','opticwhite','pearl','fog','silver','stone','graphite','charcoal','black'],
   blue:['navy','cobalt','indigo','slate','denim','sky'],
-  green:['sage','eucalyptus','olive','moss','mint','emerald'],
+  green:['sage','eucalyptus','olive','moss','emerald'],
   soft:['blush','dustyrose','mauve','lavgray','lilac'],
   purple:['plum','fig','bordeaux','lilac','fuchsia'],
   warmAccent:['terracotta','rust','coral','ochre','marigold','butter','lemon'],
@@ -155,10 +155,10 @@ function isRedColor(color){
   return !!color && (color.family === 'red' || RED_COLOR_IDS.includes(color.id));
 }
 
-const SHOE_SAFE_IDS = ['ivory','linen','oat','sand','camel','cognac','cocoa','espresso','bark','charcoal','black','white','opticwhite','pearl','fog','silver','stone','graphite','navy','cobalt','indigo','slate','denim','sky','sage','eucalyptus','olive','moss','mint','emerald','blush','dustyrose','mauve','lavgray','lilac','plum','fig','bordeaux','terracotta','rust','coral','ochre','marigold','butter','lemon','tomato','cherry','lipstick','scarlet'];
-const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־6 לוקים
+const SHOE_SAFE_IDS = ['ivory','linen','oat','sand','camel','cognac','cocoa','espresso','bark','charcoal','black','white','opticwhite','pearl','fog','silver','stone','graphite','navy','cobalt','indigo','slate','denim','sky','sage','eucalyptus','olive','moss','emerald','blush','dustyrose','mauve','lavgray','lilac','plum','fig','bordeaux','terracotta','rust','coral','ochre','marigold','butter','lemon','tomato','cherry','lipstick','scarlet'];
+const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־10 לוקים
 function isTurquoiseLike(color){
-  return !!color && ['teal'].includes(color.id);
+  return !!color && ['teal','mint'].includes(color.id);
 }
 function recentShoeColors(count=8){
   return state.lookbook.slice(0,count).map(look => look.mapping?.shoes?.color?.id).filter(Boolean);
@@ -176,17 +176,17 @@ function isPinkShoeColor(color){
   return !!color && ['blush','dustyrose','mauve','lavgray','lilac','fuchsia'].includes(color.id);
 }
 function isGreenShoeColor(color){
-  return !!color && ['sage','eucalyptus','olive','moss','mint','emerald'].includes(color.id);
+  return !!color && ['sage','eucalyptus','olive','moss','emerald'].includes(color.id);
 }
 function pickShoeColorAvoidingRecent(colors){
   let options = (colors||[]).filter(c => c && SHOE_SAFE_IDS.includes(c.id) && !isTurquoiseLike(c));
-  if(!options.length) options = (colors||[]).filter(c => c && !isTurquoiseLike(c) && !isRedColor(c));
+  if(!options.length) options = (colors||[]).filter(c => c && !isTurquoiseLike(c) && c.id !== 'mint' && !isRedColor(c));
   if(!options.length) options = [COLORS.camel, COLORS.cognac, COLORS.espresso, COLORS.navy].filter(Boolean);
   const recent = recentShoeColors(6);
   const weighted = options.map(c => {
     let weight = 12;
     if(recent.includes(c.id)) weight -= 9;
-    // גיוון פשוט: כל צבע מקבל סיכוי דומה, עם קנס רק לחזרות קרובות.
+    // גיוון פשוט: כל צבע נעליים אפשרי חוץ מטורקיז/מנטה, עם קנס רק לחזרות קרובות.
     if(recent.includes(c.id)) weight -= 18;
     if(recentShoeColors(10).includes(c.id)) weight -= 8;
     if(c.family === 'red') weight += recentRedShoesCount(6) ? -45 : 3;
@@ -198,7 +198,7 @@ function fixShoeVariety(mapping, colors){
   if(!mapping || !mapping.shoes) return mapping;
   const shoe = mapping.shoes.color;
   const recentShoes = recentShoeColors(5);
-  const redOverload = isRedColor(shoe) && recentRedShoesCount(6) >= SHOE_RED_MAX_RECENT;
+  const redOverload = isRedColor(shoe) && recentRedShoesCount(10) >= SHOE_RED_MAX_RECENT;
   const repeatOverload = shoe && recentShoes.filter(id => id === shoe.id).length >= 1;
   const turquoiseBad = isTurquoiseLike(shoe);
   if(redOverload || repeatOverload || turquoiseBad){
@@ -229,15 +229,15 @@ function fixRedAccentFrequency(mapping, colors){
     mapping.accessory.text = roleText('accessory', repl);
   }
 
-  // אביזר אדום נדיר יותר: בערך פעם ב־10 לוקים.
-  if(isRedColor(mapping.accessory?.color) && recentRedAccessoryCount(10) >= 1){
+  // אביזר אדום מרוסן: בערך פעם ב־6 לוקים.
+  if(isRedColor(mapping.accessory?.color) && recentRedAccessoryCount(6) >= 1){
     const repl = pickAccessoryColorAvoidingRed(colors);
     mapping.accessory.color = repl;
     mapping.accessory.text = roleText('accessory', repl);
   }
 
-  // נעליים אדומות מותרות יותר מאביזר, אבל עדיין במרווח: בערך פעם ב־6 לוקים.
-  if(isRedColor(mapping.shoes?.color) && recentRedShoesCount(6) >= 1){
+  // נעליים אדומות נדירות יותר: בערך פעם ב־10 לוקים.
+  if(isRedColor(mapping.shoes?.color) && recentRedShoesCount(10) >= 1){
     const repl = pickShoeColorAvoidingRecent(colors);
     mapping.shoes.color = repl;
     mapping.shoes.text = roleText('shoes', repl);
@@ -890,7 +890,7 @@ function scoreLookWithTopVariety(look){
   if(look.mapping?.accessory?.color){
     const acc = look.mapping.accessory.color;
     if(isTurquoiseLike(acc)) s -= 999;
-    if(isRedColor(acc)) s += recentRedAccessoryCount(10) ? -220 : -8;
+    if(isRedColor(acc)) s += recentRedAccessoryCount(6) ? -220 : -8;
   }
   if(isRedColor(look.mapping?.shoes?.color) && isRedColor(look.mapping?.accessory?.color)) s -= 999;
 
@@ -1106,7 +1106,7 @@ function pickColor(groupName, previous, role=null){
     // Red is allowed only as shoes/accessory, never top/bottom.
     if(isRedColor(color) && (role === 'top' || role === 'bottom')) weight = 0.1;
     if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(6) ? -45 : 4;
-    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(10) ? -55 : 2;
+    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(6) ? -55 : 2;
     if(isTurquoiseLike(color)) weight = 0.05;
 
     // Push black/white to actually appear, not just sit politely in the palette.
