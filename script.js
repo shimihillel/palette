@@ -4,7 +4,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v23';
+const APP_VERSION = 'v25';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -156,7 +156,7 @@ function isRedColor(color){
 }
 
 const SHOE_SAFE_IDS = ['ivory','linen','oat','sand','camel','cognac','cocoa','espresso','bark','charcoal','black','white','opticwhite','pearl','fog','silver','stone','graphite','navy','cobalt','indigo','slate','denim','sky','sage','eucalyptus','olive','moss','mint','emerald','blush','dustyrose','mauve','lavgray','lilac','plum','fig','bordeaux','terracotta','rust','coral','ochre','marigold','butter','lemon','tomato','cherry','lipstick','scarlet'];
-const SHOE_RED_MAX_RECENT = 1; // אדום מותר, רק לא צפוף מדי
+const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־6 לוקים
 function isTurquoiseLike(color){
   return !!color && ['teal'].includes(color.id);
 }
@@ -166,6 +166,18 @@ function recentShoeColors(count=8){
 function recentRedShoesCount(count=8){
   return state.lookbook.slice(0,count).filter(look => isRedColor(look.mapping?.shoes?.color)).length;
 }
+function recentRedAccessoryCount(count=10){
+  return state.lookbook.slice(0,count).filter(look => isRedColor(look.mapping?.accessory?.color)).length;
+}
+function recentRedAccentCount(count=6){
+  return state.lookbook.slice(0,count).filter(look => isRedColor(look.mapping?.shoes?.color) || isRedColor(look.mapping?.accessory?.color)).length;
+}
+function isPinkShoeColor(color){
+  return !!color && ['blush','dustyrose','mauve','lavgray','lilac','fuchsia'].includes(color.id);
+}
+function isGreenShoeColor(color){
+  return !!color && ['sage','eucalyptus','olive','moss','mint','emerald'].includes(color.id);
+}
 function pickShoeColorAvoidingRecent(colors){
   let options = (colors||[]).filter(c => c && SHOE_SAFE_IDS.includes(c.id) && !isTurquoiseLike(c));
   if(!options.length) options = (colors||[]).filter(c => c && !isTurquoiseLike(c) && !isRedColor(c));
@@ -174,8 +186,10 @@ function pickShoeColorAvoidingRecent(colors){
   const weighted = options.map(c => {
     let weight = 12;
     if(recent.includes(c.id)) weight -= 9;
-    if(['camel','cognac','sand','cocoa','espresso','bark','navy','denim','sky','olive','bordeaux','black','graphite','stone','blush','dustyrose','ochre','butter','lemon'].includes(c.id)) weight += 5;
-    if(c.family === 'red') weight += recentRedShoesCount(5) ? -22 : 7;
+    // גיוון פשוט: כל צבע מקבל סיכוי דומה, עם קנס רק לחזרות קרובות.
+    if(recent.includes(c.id)) weight -= 18;
+    if(recentShoeColors(10).includes(c.id)) weight -= 8;
+    if(c.family === 'red') weight += recentRedShoesCount(6) ? -45 : 3;
     return {color:c, weight:Math.max(0.8, weight)};
   });
   return weightedPick(weighted);
@@ -184,13 +198,49 @@ function fixShoeVariety(mapping, colors){
   if(!mapping || !mapping.shoes) return mapping;
   const shoe = mapping.shoes.color;
   const recentShoes = recentShoeColors(5);
-  const redOverload = isRedColor(shoe) && recentRedShoesCount(5) >= SHOE_RED_MAX_RECENT;
+  const redOverload = isRedColor(shoe) && recentRedShoesCount(6) >= SHOE_RED_MAX_RECENT;
   const repeatOverload = shoe && recentShoes.filter(id => id === shoe.id).length >= 1;
   const turquoiseBad = isTurquoiseLike(shoe);
   if(redOverload || repeatOverload || turquoiseBad){
     const replacement = pickShoeColorAvoidingRecent(colors);
     mapping.shoes.color = replacement;
     mapping.shoes.text = roleText('shoes', replacement);
+  }
+  return mapping;
+}
+function pickAccessoryColorAvoidingRed(colors){
+  let options = (colors||[]).filter(c => c && !isTurquoiseLike(c) && !isRedColor(c));
+  if(!options.length) options = [COLORS.bordeaux, COLORS.olive, COLORS.cognac, COLORS.navy, COLORS.dustyrose].filter(Boolean);
+  return weightedPick(options.map(c=>{
+    let weight=10;
+    if(['bordeaux','cognac','olive','navy','dustyrose','ochre','graphite'].includes(c.id)) weight+=3;
+    return {color:c, weight};
+  }));
+}
+function fixRedAccentFrequency(mapping, colors){
+  if(!mapping) return mapping;
+  const shoeRed = isRedColor(mapping.shoes?.color);
+  const accessoryRed = isRedColor(mapping.accessory?.color);
+
+  // לא אדום גם נעליים וגם אביזר באותו לוק.
+  if(shoeRed && accessoryRed){
+    const repl = pickAccessoryColorAvoidingRed(colors);
+    mapping.accessory.color = repl;
+    mapping.accessory.text = roleText('accessory', repl);
+  }
+
+  // אביזר אדום נדיר יותר: בערך פעם ב־10 לוקים.
+  if(isRedColor(mapping.accessory?.color) && recentRedAccessoryCount(10) >= 1){
+    const repl = pickAccessoryColorAvoidingRed(colors);
+    mapping.accessory.color = repl;
+    mapping.accessory.text = roleText('accessory', repl);
+  }
+
+  // נעליים אדומות מותרות יותר מאביזר, אבל עדיין במרווח: בערך פעם ב־6 לוקים.
+  if(isRedColor(mapping.shoes?.color) && recentRedShoesCount(6) >= 1){
+    const repl = pickShoeColorAvoidingRecent(colors);
+    mapping.shoes.color = repl;
+    mapping.shoes.text = roleText('shoes', repl);
   }
   return mapping;
 }
@@ -728,7 +778,7 @@ function buildVariedMapping(colors){
     if(idx >= 0) remaining.splice(idx, 1);
   });
 
-  return fixShoeVariety(fixNoRedTopBottom(mapping, colors), colors);
+  return fixRedAccentFrequency(fixShoeVariety(fixNoRedTopBottom(mapping, colors), colors), colors);
 }
 
 
@@ -753,10 +803,10 @@ function generateBestLook(mode='super'){
   if(mode === 'super'){
     const bwRatio = blackWhiteRecentRatio();
     const bwSpecial = basePool.find(look => (look.colors || []).some(c => isBlackOrWhiteColor(c)) && !hasBlackWhiteConflict(look.mapping));
-    const redSpecial = basePool.find(look => (look.colors || []).some(c => isRedColor(c)) && !isRedColor(look.mapping?.shoes?.color));
+    const redSpecial = basePool.find(look => (look.colors || []).some(c => isRedColor(c)) && !isRedColor(look.mapping?.shoes?.color) && !isRedColor(look.mapping?.accessory?.color));
 
     if(bwRatio < 0.30 && bwSpecial && Math.random() < 0.22) return bwSpecial;
-    if(redSpecial && Math.random() < 0.07) return redSpecial;
+    if(redSpecial && Math.random() < 0.03) return redSpecial;
   }
 
   return basePool[0] || candidates[0];
@@ -823,7 +873,7 @@ function scoreLookWithTopVariety(look){
   if(look.mapping?.shoes?.color){
     const shoe = look.mapping.shoes.color;
     if(isTurquoiseLike(shoe)) s -= 999;
-    if(isRedColor(shoe)) s += recentRedShoesCount(5) ? -170 : 8;
+    if(isRedColor(shoe)) s += recentRedShoesCount(6) ? -190 : 4;
     const recentShoes = recentShoeColors(5);
     if(recentShoes.includes(shoe.id)) s -= 95;
     if(['camel','cognac','sand','cocoa','espresso','bark','navy','denim','olive','bordeaux','black','graphite','stone'].includes(shoe.id)) s += 32;
@@ -837,6 +887,13 @@ function scoreLookWithTopVariety(look){
     if(top.family === 'soft') s -= 18;
     if(['green','purple','blue','warm-accent','warm-neutral','neutral'].includes(top.family)) s += 22;
   }
+  if(look.mapping?.accessory?.color){
+    const acc = look.mapping.accessory.color;
+    if(isTurquoiseLike(acc)) s -= 999;
+    if(isRedColor(acc)) s += recentRedAccessoryCount(10) ? -220 : -8;
+  }
+  if(isRedColor(look.mapping?.shoes?.color) && isRedColor(look.mapping?.accessory?.color)) s -= 999;
+
   return s;
 }
 
@@ -933,9 +990,9 @@ function pickRelaxedSet(count){
 }
 
 function buildLookFromColors(colors, mode){
-  const mapping = fixShoeVariety(buildVariedMapping(colors), colors);
+  const mapping = fixRedAccentFrequency(fixShoeVariety(buildVariedMapping(colors), colors), colors);
   const modeLine = pick(MODE_LINES[mode] || MODE_LINES.super);
-  const signature = `meter-v23|${mode}|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
+  const signature = `meter-v25|${mode}|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
   return {
     title: buildTitle(colors),
     vibe: modeLine,
@@ -1048,8 +1105,8 @@ function pickColor(groupName, previous, role=null){
 
     // Red is allowed only as shoes/accessory, never top/bottom.
     if(isRedColor(color) && (role === 'top' || role === 'bottom')) weight = 0.1;
-    if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(5) ? -24 : 4;
-    if(isRedColor(color) && role === 'accessory') weight += 6;
+    if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(6) ? -45 : 4;
+    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(10) ? -55 : 2;
     if(isTurquoiseLike(color)) weight = 0.05;
 
     // Push black/white to actually appear, not just sit politely in the palette.
