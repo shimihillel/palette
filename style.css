@@ -381,3 +381,72 @@ button{cursor:pointer;border:0}
   .visual-stack{max-width:210px;margin:0 auto}
   .accessory-heart{left:-14px;top:118px}
 }
+
+
+/* v35 editorial top section */
+.app-shell{max-width:540px;padding:18px 16px calc(90px + env(safe-area-inset-bottom));}
+.topbar{grid-template-columns:56px 1fr 56px;align-items:center;margin-bottom:18px}
+.brand-block{display:flex;justify-content:center;align-items:center}
+.eyebrow,.subtitle{display:none}
+.topbar h1{font-size:32px;line-height:1;font-weight:600;letter-spacing:6px;font-family:'Cormorant Garamond',serif;text-transform:uppercase}
+.icon-btn{width:52px;height:52px;border-radius:18px;background:transparent;border:0;box-shadow:none;font-size:34px;color:var(--ink)}
+.menu-btn{font-size:30px}
+.calendar-btn{font-size:26px}
+.home-top-shell{background:transparent;border:0;box-shadow:none;padding:0;margin-bottom:0}
+.home-top-row{display:flex;justify-content:flex-start;align-items:center;margin-bottom:10px}
+.mode-pill{display:inline-flex;align-items:center;gap:10px;background:#efe7de;color:var(--ink);border:1px solid rgba(79,52,39,.04);padding:12px 18px;border-radius:999px;font-weight:800;font-size:18px;box-shadow:0 8px 24px rgba(79,52,39,.05)}
+.pill-sparkle{font-size:18px;color:var(--brown)}
+.home-title-wrap{text-align:center;padding:4px 10px 0}
+.look-day-label{display:none}
+.hero-card h2{font-size:68px;line-height:0.98;letter-spacing:-1px;margin:8px 0 12px}
+.home-subtitle{font-size:22px;line-height:1.35;color:#8d8074;margin:0 auto 20px;max-width:480px}
+.top-action-row-home{max-width:720px;margin:0 auto 20px;grid-template-columns:1fr 1fr;gap:18px}
+.top-action-row-home .primary-btn,.top-action-row-home .secondary-btn{padding:18px 16px;border-radius:999px;font-size:18px}
+.top-action-row-home .secondary-btn{background:rgba(255,255,255,.7)}
+.editorial-look-card{background:rgba(255,255,255,.68);border:1px solid rgba(79,52,39,.08);border-radius:30px;padding:18px 18px 10px;box-shadow:0 16px 40px rgba(79,52,39,.07)}
+.editorial-grid{grid-template-columns:minmax(230px,43%) 1fr;gap:18px;align-items:start}
+.editorial-stack{gap:12px;padding:14px}
+.color-block{border-radius:24px;position:relative;overflow:hidden;box-shadow:inset 0 2px 4px rgba(255,255,255,.35), 0 8px 20px rgba(79,52,39,.06);border:1px solid rgba(79,52,39,.05)}
+.color-block::after,.shoe-block::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(135deg, rgba(255,255,255,.06) 0 2px, rgba(0,0,0,.03) 2px 4px);mix-blend-mode:soft-light;pointer-events:none}
+.color-block.top{height:126px}
+.color-block.bottom{height:280px}
+.shoes-pair{gap:14px;width:100%}
+.shoe-block{position:relative;height:118px;border-radius:20px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(255,255,255,.35), 0 8px 20px rgba(79,52,39,.06);border:1px solid rgba(79,52,39,.05)}
+.accessory-heart{left:122px;top:322px;width:146px;height:146px;filter:drop-shadow(0 10px 18px rgba(79,52,39,.12));}
+.editorial-map{gap:0}
+.editorial-row{display:grid;grid-template-columns:56px 1fr;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid rgba(79,52,39,.1)}
+.editorial-row:last-child{border-bottom:0}
+.role-icon-badge{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:#f2ece5;color:var(--brown);font-size:27px;border:1px solid rgba(79,52,39,.06)}
+.visual-role{font-size:24px;font-weight:800;margin-bottom:3px}
+.visual-text{font-size:17px;font-weight:800;margin-bottom:4px}
+.visual-subtext{font-size:15px;color:var(--muted);line-height:1.35;max-width:18em}
+.editorial-why-card{display:block !important;background:rgba(255,255,255,.68);border-radius:28px;padding:20px 22px;margin-top:14px;box-shadow:0 16px 40px rgba(79,52,39,.07)}
+.editorial-why-card h3{font-size:28px;margin-bottom:10px}
+.editorial-why-card p{font-size:18px;line-height:1.5;color:var(--ink)}
+.engine-card{display:none !important}
+@media (max-width:900px){
+  .hero-card h2{font-size:52px}
+  .home-subtitle{font-size:18px}
+}
+@media (max-width:640px){
+  .topbar h1{font-size:26px;letter-spacing:4px}
+  .icon-btn{width:46px;height:46px;font-size:28px}
+  .mode-pill{padding:10px 15px;font-size:16px}
+  .hero-card h2{font-size:42px}
+  .home-subtitle{font-size:16px;margin-bottom:16px}
+  .top-action-row-home{gap:12px;margin-bottom:16px}
+  .top-action-row-home .primary-btn,.top-action-row-home .secondary-btn{padding:15px 14px;font-size:16px}
+  .editorial-grid{grid-template-columns:1fr;gap:8px}
+  .editorial-stack{padding:6px 6px 0;max-width:310px;margin:0 auto}
+  .color-block.top{height:104px}
+  .color-block.bottom{height:210px}
+  .shoe-block{height:94px}
+  .accessory-heart{left:-10px;top:228px;width:110px;height:110px}
+  .editorial-row{grid-template-columns:48px 1fr;gap:12px;padding:14px 0}
+  .role-icon-badge{width:48px;height:48px;font-size:22px}
+  .visual-role{font-size:20px}
+  .visual-text{font-size:16px}
+  .visual-subtext{font-size:14px}
+  .editorial-why-card h3{font-size:24px}
+  .editorial-why-card p{font-size:16px}
+}

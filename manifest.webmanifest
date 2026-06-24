@@ -3,11 +3,11 @@
   "short_name": "Looks",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=34",
+  "start_url": "./index.html?v=35",
   "display": "standalone",
   "background_color": "#f6f1ea",
   "theme_color": "#f6f1ea",
-  "description": "Shimi Looks v34 — drop-in overwrite package.",
+  "description": "Shimi Looks v35 – header and heart refined in editorial style.",
   "icons": [
     {
       "src": "assets/icon-192.png",

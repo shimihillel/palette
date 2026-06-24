@@ -22,55 +22,38 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <button class="icon-btn" id="infoBtn" aria-label="מידע">i</button>
+      <button class="icon-btn menu-btn" id="infoBtn" aria-label="מידע">☰</button>
       <div class="brand-block">
-        <p class="eyebrow">INFINITE COLOR COMBINATIONS</p>
-        <h1>Shimi Looks</h1>
-        <p class="subtitle">הסטייל שלך. כל יום מחדש.</p>
+        <h1>SHIMI LOOKS</h1>
       </div>
-      <div class="top-spacer"></div>
+      <button class="icon-btn calendar-btn" id="calendarBtn" aria-label="אהבתי">⌲</button>
     </header>
 
     <main>
       <section class="screen active" id="todayScreen">
-        <section class="hero-card card refined-hero-card">
-          <div class="hero-head">
-            <div>
-              <p class="tiny-label">הלוק של היום</p>
-              <h2 id="lookTitle">—</h2>
-              <p id="lookVibe" class="hero-copy look-line">שילוב צבעים חכם, מגוון ובלי דרמת בוקר.</p>
-            </div>
+        <section class="hero-card refined-hero-card home-top-shell">
+          <div class="home-top-row">
+            <button class="mode-pill" id="changeColorModeBtn" type="button"><span class="pill-sparkle">✦</span><span id="colorModeTitle">סופר צבע</span></button>
+            <p id="colorModeDesc" hidden>4 צבעים, בלי להתנצל</p>
           </div>
 
-          <section class="color-meter-card compact-meter" id="colorMeterCard">
-            <div>
-              <p class="tiny-label">מדד הצבע היומי</p>
-              <h3 id="colorModeTitle">סופר צבע</h3>
-              <p id="colorModeDesc">4 צבעים, בלי להתנצל</p>
-            </div>
-            <button class="meter-change-btn" id="changeColorModeBtn" type="button">שינוי מדד</button>
-          </section>
+          <div class="home-title-wrap">
+            <p class="tiny-label look-day-label">הלוק של היום</p>
+            <h2 id="lookTitle">—</h2>
+            <p id="lookVibe" class="hero-copy home-subtitle">לוק יומי עם נגיעה חמה ובולטת</p>
+          </div>
 
-          <div class="top-action-row">
+          <div class="top-action-row top-action-row-home">
             <button class="secondary-btn" id="saveLookBtn" type="button">שומרת ♡</button>
             <button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button>
           </div>
 
-          <section class="look-visual-card" id="lookVisual"></section>
+          <section class="look-visual-card editorial-look-card" id="lookVisual"></section>
 
-          <div class="why-card">
+          <div class="why-card editorial-why-card">
             <h3>למה זה עובד?</h3>
             <p id="whyWorks"></p>
           </div>
-        </section>
-
-        <section class="engine-card card">
-          <div>
-            <p class="tiny-label">WADA MIX ENGINE</p>
-            <h3>כמעט אינסוף שילובים לבישים</h3>
-            <p>המנוע מערבב בין משפחות צבע, תפקידי צבעים ומיפוי לבגדים — ומנסה לא לחזור על מה שכבר שמרת באהבתי.</p>
-          </div>
-          <div class="infinity">∞</div>
         </section>
       </section>
 
@@ -201,6 +184,6 @@
       caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
     }
   </script>
-  <script src="script.js?v=340-overwrite"></script>
+  <script src="script.js?v=350-overwrite"></script>
 </body>
 </html>

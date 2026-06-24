@@ -427,6 +427,7 @@ function bindEvents(){
 
   $('closeDialogBtn').addEventListener('click', () => $('lookDialog').close());
   $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
+  on('calendarBtn','click', () => showScreen('lookbookScreen'));
   $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
   $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
   $('changeColorModeBtn').addEventListener('click', () => openColorModeDialog('today'));
@@ -635,6 +636,7 @@ function renderLookbook(){
 function renderLookVisual(container, mapping, options={}){
   if(!container || !mapping) return;
   const labels = {top:'עליון', bottom:'תחתון', shoes:'נעליים', accessory:'אביזר'};
+  const icons = {top:'⌇', bottom:'║', shoes:'◡', accessory:'♡'};
   const descriptions = {
     top: mapping.top?.color?.he || '',
     bottom: mapping.bottom?.color?.he || '',
@@ -643,8 +645,8 @@ function renderLookVisual(container, mapping, options={}){
   };
   const heart = accessoryHeartSvg(mapping.accessory?.color?.hex || '#C94431');
   container.innerHTML = `
-    <div class="look-visual-grid">
-      <div class="visual-stack">
+    <div class="look-visual-grid editorial-grid">
+      <div class="visual-stack editorial-stack">
         <div class="color-block top" style="background:${mapping.top.color.hex}"></div>
         <div class="color-block bottom" style="background:${mapping.bottom.color.hex}"></div>
         <div class="accessory-heart" aria-hidden="true">${heart}</div>
@@ -653,13 +655,16 @@ function renderLookVisual(container, mapping, options={}){
           <div class="shoe-block" style="background:${mapping.shoes.color.hex}"></div>
         </div>
       </div>
-      <div class="visual-map">
+      <div class="visual-map editorial-map">
         ${['top','bottom','shoes','accessory'].map(role => {
           const locked = options.lockedRole === role ? ' · הפריט שלך' : '';
-          return `<div class="visual-row ${options.lockedRole === role ? 'locked' : ''}">
-            <div class="visual-role">${labels[role]}</div>
-            <div class="visual-text">${descriptions[role]}</div>
-            <div class="visual-subtext">${mapping[role].text}${locked}</div>
+          return `<div class="visual-row editorial-row ${options.lockedRole === role ? 'locked' : ''}">
+            <div class="role-icon-badge">${icons[role]}</div>
+            <div class="editorial-copy">
+              <div class="visual-role">${labels[role]}</div>
+              <div class="visual-text">${descriptions[role]}</div>
+              <div class="visual-subtext">${mapping[role].text}${locked}</div>
+            </div>
           </div>`;
         }).join('')}
       </div>
