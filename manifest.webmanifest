@@ -3,11 +3,11 @@
   "short_name": "Looks",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=38",
+  "start_url": "./index.html?v=39",
   "display": "standalone",
   "background_color": "#fbf6ee",
   "theme_color": "#fbf6ee",
-  "description": "Shimi Looks v38 one file reset.",
+  "description": "Shimi Looks v39 — מנטה וטורקיז חסומים לגמרי.",
   "icons": [
     {
       "src": "assets/icon-192.png",

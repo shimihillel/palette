@@ -9,8 +9,8 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks v38</title>
-  <link rel="manifest" href="manifest.webmanifest?v=38" />
+  <title>Shimi Looks v39</title>
+  <link rel="manifest" href="manifest.webmanifest?v=39" />
   <link rel="icon" type="image/png" href="assets/icon-32.png" />
   <link rel="apple-touch-icon" href="assets/icon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -76,7 +76,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v25';
+const APP_VERSION = 'v39-no-mint-turquoise';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -92,7 +92,6 @@ const COLORS = {
   cobalt:{id:'cobalt',he:'קובלט',en:'Cobalt',hex:'#29548A',family:'blue'},
   indigo:{id:'indigo',he:'אינדיגו',en:'Indigo',hex:'#3A3C73',family:'blue'},
   slate:{id:'slate',he:'אבן כחולה',en:'Slate',hex:'#677C96',family:'blue'},
-  teal:{id:'teal',he:'טיל כהה',en:'Deep Teal',hex:'#2B6264',family:'blue'},
   sage:{id:'sage',he:'מרווה',en:'Sage',hex:'#9AA68E',family:'green'},
   eucalyptus:{id:'eucalyptus',he:'אקליפטוס',en:'Eucalyptus',hex:'#819A87',family:'green'},
   olive:{id:'olive',he:'זית',en:'Olive',hex:'#7F7A4D',family:'green'},
@@ -127,7 +126,6 @@ const COLORS = {
   scarlet:{id:'scarlet',he:'אדום ארגמן',en:'Scarlet',hex:'#D54A35',family:'red'},
   denim:{id:'denim',he:'ג׳ינס',en:'Denim',hex:'#496F9B',family:'blue'},
   sky:{id:'sky',he:'תכלת',en:'Sky Blue',hex:'#86AFCB',family:'blue'},
-  mint:{id:'mint',he:'מנטה',en:'Mint',hex:'#A9CBB7',family:'green'},
   emerald:{id:'emerald',he:'ירוק אמרלד',en:'Emerald',hex:'#227A5A',family:'green'},
   lilac:{id:'lilac',he:'לילך',en:'Lilac',hex:'#B89AD4',family:'purple'},
   fuchsia:{id:'fuchsia',he:'פוקסיה',en:'Fuchsia',hex:'#C13E8A',family:'purple'},
@@ -142,7 +140,7 @@ const GROUPS = {
   darkNeutral:['cocoa','espresso','bark','graphite','charcoal','black'],
   neutral:['white','opticwhite','pearl','fog','silver','stone','graphite','charcoal','black'],
   blue:['navy','cobalt','indigo','slate','denim','sky'],
-  green:['sage','eucalyptus','olive','moss','mint','emerald'],
+  green:['sage','eucalyptus','olive','moss','emerald'],
   soft:['blush','dustyrose','mauve','lavgray','lilac'],
   purple:['plum','fig','bordeaux','lilac','fuchsia'],
   warmAccent:['terracotta','rust','coral','ochre','marigold','butter','lemon'],
@@ -227,10 +225,13 @@ function isRedColor(color){
   return !!color && (color.family === 'red' || RED_COLOR_IDS.includes(color.id));
 }
 
-const SHOE_SAFE_IDS = ['ivory','linen','oat','sand','camel','cognac','cocoa','espresso','bark','charcoal','black','white','opticwhite','pearl','fog','silver','stone','graphite','navy','cobalt','indigo','slate','denim','sky','sage','eucalyptus','olive','moss','mint','emerald','blush','dustyrose','mauve','lavgray','lilac','plum','fig','bordeaux','terracotta','rust','coral','ochre','marigold','butter','lemon','tomato','cherry','lipstick','scarlet'];
+const SHOE_SAFE_IDS = ['ivory','linen','oat','sand','camel','cognac','cocoa','espresso','bark','charcoal','black','white','opticwhite','pearl','fog','silver','stone','graphite','navy','cobalt','indigo','slate','denim','sky','sage','eucalyptus','olive','moss','emerald','blush','dustyrose','mauve','lavgray','lilac','plum','fig','bordeaux','terracotta','rust','coral','ochre','marigold','butter','lemon','tomato','cherry','lipstick','scarlet'];
 const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־6 לוקים
+function isBannedColor(color){
+  return !!color && ['mint','teal'].includes(color.id);
+}
 function isTurquoiseLike(color){
-  return !!color && ['teal'].includes(color.id);
+  return isBannedColor(color);
 }
 function recentShoeColors(count=8){
   return state.lookbook.slice(0,count).map(look => look.mapping?.shoes?.color?.id).filter(Boolean);
@@ -248,7 +249,7 @@ function isPinkShoeColor(color){
   return !!color && ['blush','dustyrose','mauve','lavgray','lilac','fuchsia'].includes(color.id);
 }
 function isGreenShoeColor(color){
-  return !!color && ['sage','eucalyptus','olive','moss','mint','emerald'].includes(color.id);
+  return !!color && ['sage','eucalyptus','olive','moss','emerald'].includes(color.id);
 }
 function pickShoeColorAvoidingRecent(colors){
   let options = (colors||[]).filter(c => c && SHOE_SAFE_IDS.includes(c.id) && !isTurquoiseLike(c));
@@ -317,7 +318,7 @@ function fixRedAccentFrequency(mapping, colors){
   return mapping;
 }
 function canUseColorForRole(color, role){
-  if(!color) return false;
+  if(!color || isBannedColor(color)) return false;
   if((role === 'top' || role === 'bottom') && isRedColor(color)) return false;
   return true;
 }
@@ -353,7 +354,7 @@ const RECIPES = [
   {title:'בורדו עם אדמה וכחול',roles:['purple','warmNeutral','blue','warmAccent'],map:{top:0,bottom:2,shoes:1,accessory:3}, weight:1.20},
   {title:'ירוק בקבוק ושוקולד',roles:['green','darkNeutral','warmNeutral','soft'],map:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.15},
   {title:'חלודה, קקאו וזית',roles:['warmAccent','darkNeutral','green','warmNeutral'],map:{top:0,bottom:1,shoes:3,accessory:2}, weight:1.15},
-  {title:'טיל, שזיף וחום',roles:['blue','purple','warmNeutral','green'],map:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.10},
+  {title:'כחול, שזיף וחום',roles:['blue','purple','warmNeutral','green'],map:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.10},
   {title:'אדמתי אבל צבעוני',roles:['warmNeutral','warmAccent','green','blue'],map:{top:2,bottom:0,shoes:1,accessory:3}, weight:1.10},
   {title:'עמוק עם אקסנט חם',roles:['darkNeutral','blue','warmAccent','green'],map:{top:1,bottom:0,shoes:3,accessory:2}, weight:1.05},
   {title:'בורדו, זית וקאמל',roles:['purple','green','warmNeutral','darkNeutral'],map:{top:0,bottom:1,shoes:2,accessory:3}, weight:1.10},
@@ -458,8 +459,29 @@ function saveState(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function lookHasBannedColor(look){
+  if(!look) return false;
+  const colors = [
+    ...(look.colors || []),
+    look.mapping?.top?.color,
+    look.mapping?.bottom?.color,
+    look.mapping?.shoes?.color,
+    look.mapping?.accessory?.color
+  ].filter(Boolean);
+  return colors.some(isBannedColor);
+}
+
+function sanitizeStoredLooks(){
+  if(isBannedColor(COLORS[state.anchorColorId])) state.anchorColorId = 'cocoa';
+  if(lookHasBannedColor(state.currentLook)) state.currentLook = null;
+  if(lookHasBannedColor(state.anchorLook)) state.anchorLook = null;
+  if(Array.isArray(state.lookbook)) state.lookbook = state.lookbook.filter(look => !lookHasBannedColor(look));
+  if(Array.isArray(state.recentHome)) state.recentHome = state.recentHome.filter(look => !lookHasBannedColor(look));
+}
+
 function init(){
   try{
+    sanitizeStoredLooks();
     if(!state.currentLook){
       state.currentLook = generateBestLook(state.colorMode || 'super');
       remember(state.currentLook, 'today');
@@ -1199,7 +1221,7 @@ function generateAnchoredLook(piece, anchorColor, mode='super'){
 
 function pickColor(groupName, previous, role=null){
   const ids = GROUPS[groupName] || GROUPS.blue;
-  let options = ids.map(id => COLORS[id]).filter(Boolean);
+  let options = ids.map(id => COLORS[id]).filter(c => c && !isBannedColor(c));
   if(role) options = safeColorsForRole(options, role);
   const previousFamilies = previous.map(c => c.family);
   const recentLooks = state.lookbook.slice(0,14);
@@ -1239,6 +1261,7 @@ function weightedPick(items){
 }
 
 function score(look){
+  if(lookHasBannedColor(look)) return -9999;
   let s = 100;
   if(state.recent.includes(look.signature)) s -= 60;
   if(state.lookbook.some(item => item.signature === look.signature)) s -= 80;
