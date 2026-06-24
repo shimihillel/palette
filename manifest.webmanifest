@@ -3,11 +3,11 @@
   "short_name": "Looks",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=32",
+  "start_url": "./index.html?v=33",
   "display": "standalone",
   "background_color": "#f6f1ea",
   "theme_color": "#f6f1ea",
-  "description": "שימי בסטייל — המסך הראשי עם לוק גרפי ישים וברור.",
+  "description": "Shimi Looks v33 – מסך ראשי מצומצם יותר עם לב צף ונעליים מעודנות.",
   "icons": [
     {
       "src": "assets/icon-192.png",
