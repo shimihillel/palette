@@ -3,11 +3,11 @@
   "short_name": "Looks",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html",
+  "start_url": "./index.html?v=23",
   "display": "standalone",
   "background_color": "#f6f1ea",
   "theme_color": "#f6f1ea",
-  "description": "מנוע שילובי צבעים לבגדים.",
+  "description": "שימי בסטייל — תכלת חזר, טורקיז בחוץ, אדום בנעליים במרווחים.",
   "icons": [
     {
       "src": "assets/icon-192.png",

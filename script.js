@@ -4,6 +4,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
+const APP_VERSION = 'v23';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -68,13 +69,13 @@ const GROUPS = {
   warmNeutral:['sand','camel','cognac','cocoa','bark'],
   darkNeutral:['cocoa','espresso','bark','graphite','charcoal','black'],
   neutral:['white','opticwhite','pearl','fog','silver','stone','graphite','charcoal','black'],
-  blue:['navy','cobalt','indigo','slate','teal','denim','sky'],
+  blue:['navy','cobalt','indigo','slate','denim','sky'],
   green:['sage','eucalyptus','olive','moss','mint','emerald'],
   soft:['blush','dustyrose','mauve','lavgray','lilac'],
   purple:['plum','fig','bordeaux','lilac','fuchsia'],
   warmAccent:['terracotta','rust','coral','ochre','marigold','butter','lemon'],
   red:['tomato','cherry','lipstick','scarlet'],
-  jewel:['cobalt','indigo','plum','fig','teal','bordeaux','emerald','fuchsia','cherry']
+  jewel:['cobalt','indigo','plum','fig','bordeaux','emerald','fuchsia','cherry']
 };
 
 const RED_COLOR_IDS = ['tomato','cherry','lipstick','scarlet'];
@@ -153,6 +154,46 @@ function overlapCount(a,b){
 function isRedColor(color){
   return !!color && (color.family === 'red' || RED_COLOR_IDS.includes(color.id));
 }
+
+const SHOE_SAFE_IDS = ['ivory','linen','oat','sand','camel','cognac','cocoa','espresso','bark','charcoal','black','white','opticwhite','pearl','fog','silver','stone','graphite','navy','cobalt','indigo','slate','denim','sky','sage','eucalyptus','olive','moss','mint','emerald','blush','dustyrose','mauve','lavgray','lilac','plum','fig','bordeaux','terracotta','rust','coral','ochre','marigold','butter','lemon','tomato','cherry','lipstick','scarlet'];
+const SHOE_RED_MAX_RECENT = 1; // אדום מותר, רק לא צפוף מדי
+function isTurquoiseLike(color){
+  return !!color && ['teal'].includes(color.id);
+}
+function recentShoeColors(count=8){
+  return state.lookbook.slice(0,count).map(look => look.mapping?.shoes?.color?.id).filter(Boolean);
+}
+function recentRedShoesCount(count=8){
+  return state.lookbook.slice(0,count).filter(look => isRedColor(look.mapping?.shoes?.color)).length;
+}
+function pickShoeColorAvoidingRecent(colors){
+  let options = (colors||[]).filter(c => c && SHOE_SAFE_IDS.includes(c.id) && !isTurquoiseLike(c));
+  if(!options.length) options = (colors||[]).filter(c => c && !isTurquoiseLike(c) && !isRedColor(c));
+  if(!options.length) options = [COLORS.camel, COLORS.cognac, COLORS.espresso, COLORS.navy].filter(Boolean);
+  const recent = recentShoeColors(6);
+  const weighted = options.map(c => {
+    let weight = 12;
+    if(recent.includes(c.id)) weight -= 9;
+    if(['camel','cognac','sand','cocoa','espresso','bark','navy','denim','sky','olive','bordeaux','black','graphite','stone','blush','dustyrose','ochre','butter','lemon'].includes(c.id)) weight += 5;
+    if(c.family === 'red') weight += recentRedShoesCount(5) ? -22 : 7;
+    return {color:c, weight:Math.max(0.8, weight)};
+  });
+  return weightedPick(weighted);
+}
+function fixShoeVariety(mapping, colors){
+  if(!mapping || !mapping.shoes) return mapping;
+  const shoe = mapping.shoes.color;
+  const recentShoes = recentShoeColors(5);
+  const redOverload = isRedColor(shoe) && recentRedShoesCount(5) >= SHOE_RED_MAX_RECENT;
+  const repeatOverload = shoe && recentShoes.filter(id => id === shoe.id).length >= 1;
+  const turquoiseBad = isTurquoiseLike(shoe);
+  if(redOverload || repeatOverload || turquoiseBad){
+    const replacement = pickShoeColorAvoidingRecent(colors);
+    mapping.shoes.color = replacement;
+    mapping.shoes.text = roleText('shoes', replacement);
+  }
+  return mapping;
+}
 function canUseColorForRole(color, role){
   if(!color) return false;
   if((role === 'top' || role === 'bottom') && isRedColor(color)) return false;
@@ -206,16 +247,16 @@ const RECIPES = [
   {title:'כהה דרמטי במינון',roles:['darkNeutral','purple','warmNeutral','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.32},
   // v17 — more contrast and real black/white/gray.
   {title:'שחור לבן עם צבע',roles:['neutral','blue','warmAccent','green'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.95},
-  {title:'אפור, כחול ואדום קטן',roles:['neutral','blue','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:1.15},
-  {title:'לבן, ירוק ונעל אדומה',roles:['neutral','green','red','purple'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.85},
+  {title:'אפור, כחול ואדום קטן',roles:['neutral','blue','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.65},
+  {title:'לבן, ירוק ונעל אדומה',roles:['neutral','green','red','purple'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.35},
   {title:'גרפיט עם צהוב ותכלת',roles:['neutral','warmAccent','blue','green'],map:{top:2,bottom:0,shoes:1,accessory:3}, weight:1.45},
   {title:'ג׳ינס, לבן ואביזר אדום',roles:['blue','neutral','red','warmAccent'],map:{top:0,bottom:1,shoes:3,accessory:2}, weight:0.90},
   {title:'אפור עם פוקסיה וזית',roles:['neutral','purple','green','warmNeutral'],map:{top:1,bottom:0,shoes:3,accessory:2}, weight:0.72}
 ,
   // v18 — intentional black/white/red moments.
-  {title:'שחור לבן ואדום קטן',roles:['neutral','neutral','red','blue'],map:{top:3,bottom:0,shoes:2,accessory:1}, weight:0.80},
+  {title:'שחור לבן ואדום קטן',roles:['neutral','neutral','red','blue'],map:{top:3,bottom:0,shoes:1,accessory:2}, weight:0.35},
   {title:'לבן נקי עם שחור וקורל',roles:['neutral','neutral','warmAccent','green'],map:{top:2,bottom:1,shoes:0,accessory:3}, weight:0.70},
-  {title:'שחור עם ירוק ונגיעה אדומה',roles:['neutral','green','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.85},
+  {title:'שחור עם ירוק ונגיעה אדומה',roles:['neutral','green','red','warmNeutral'],map:{top:1,bottom:0,shoes:2,accessory:3}, weight:0.45},
   {title:'לבן, דנים ואדום באקססורי',roles:['neutral','blue','red','purple'],map:{top:1,bottom:0,shoes:3,accessory:2}, weight:0.85},
   {title:'אפור גרפיט עם לבן וצהוב',roles:['neutral','neutral','warmAccent','blue'],map:{top:3,bottom:0,shoes:2,accessory:1}, weight:0.85}
 
@@ -231,7 +272,7 @@ const PIECES = [
 const COLOR_FAMILIES = {
   'חום':['camel','cognac','cocoa','espresso','bark'],
   'שמנת':['ivory','linen','oat','sand'],
-  'כחול':['navy','cobalt','indigo','slate','teal'],
+  'כחול':['navy','cobalt','indigo','slate','denim','sky'],
   'ירוק':['sage','eucalyptus','olive','moss'],
   'ורוד/סגול':['blush','dustyrose','mauve','lavgray','plum','fig'],
   'אדום/חם':['bordeaux','terracotta','rust','coral'],
@@ -687,7 +728,7 @@ function buildVariedMapping(colors){
     if(idx >= 0) remaining.splice(idx, 1);
   });
 
-  return fixNoRedTopBottom(mapping, colors);
+  return fixShoeVariety(fixNoRedTopBottom(mapping, colors), colors);
 }
 
 
@@ -712,10 +753,10 @@ function generateBestLook(mode='super'){
   if(mode === 'super'){
     const bwRatio = blackWhiteRecentRatio();
     const bwSpecial = basePool.find(look => (look.colors || []).some(c => isBlackOrWhiteColor(c)) && !hasBlackWhiteConflict(look.mapping));
-    const redSpecial = basePool.find(look => (look.colors || []).some(c => isRedColor(c)));
+    const redSpecial = basePool.find(look => (look.colors || []).some(c => isRedColor(c)) && !isRedColor(look.mapping?.shoes?.color));
 
     if(bwRatio < 0.30 && bwSpecial && Math.random() < 0.22) return bwSpecial;
-    if(redSpecial && Math.random() < 0.20) return redSpecial;
+    if(redSpecial && Math.random() < 0.07) return redSpecial;
   }
 
   return basePool[0] || candidates[0];
@@ -779,6 +820,15 @@ function scoreLookWithTopVariety(look){
   if(families.filter(f => f === 'light').length > 1) s -= 70;
   if(families.filter(f => f === 'soft').length > 1) s -= 36;
 
+  if(look.mapping?.shoes?.color){
+    const shoe = look.mapping.shoes.color;
+    if(isTurquoiseLike(shoe)) s -= 999;
+    if(isRedColor(shoe)) s += recentRedShoesCount(5) ? -170 : 8;
+    const recentShoes = recentShoeColors(5);
+    if(recentShoes.includes(shoe.id)) s -= 95;
+    if(['camel','cognac','sand','cocoa','espresso','bark','navy','denim','olive','bordeaux','black','graphite','stone'].includes(shoe.id)) s += 32;
+  }
+
   if(look.mapping && look.mapping.bottom && isRedColor(look.mapping.bottom.color)) s -= 999;
   if(look.mapping && look.mapping.top && look.mapping.top.color){
     const top = look.mapping.top.color;
@@ -804,7 +854,7 @@ function generateLook(mode='super'){
     if(bwRatio < 0.30 && Math.random() < 0.22){
       const forced = pick([COLORS.black, COLORS.white, COLORS.opticwhite]);
       colors[Math.floor(Math.random() * colors.length)] = forced;
-    }else if(Math.random() < 0.26){
+    }else if(Math.random() < 0.10){
       const forced = pick([COLORS.tomato, COLORS.cherry, COLORS.lipstick]);
       colors[Math.floor(Math.random() * colors.length)] = forced;
     }
@@ -883,9 +933,9 @@ function pickRelaxedSet(count){
 }
 
 function buildLookFromColors(colors, mode){
-  const mapping = buildVariedMapping(colors);
+  const mapping = fixShoeVariety(buildVariedMapping(colors), colors);
   const modeLine = pick(MODE_LINES[mode] || MODE_LINES.super);
-  const signature = `meter-v12|${mode}|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
+  const signature = `meter-v23|${mode}|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
   return {
     title: buildTitle(colors),
     vibe: modeLine,
@@ -998,7 +1048,9 @@ function pickColor(groupName, previous, role=null){
 
     // Red is allowed only as shoes/accessory, never top/bottom.
     if(isRedColor(color) && (role === 'top' || role === 'bottom')) weight = 0.1;
-    if(isRedColor(color) && (role === 'shoes' || role === 'accessory')) weight += 14;
+    if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(5) ? -24 : 4;
+    if(isRedColor(color) && role === 'accessory') weight += 6;
+    if(isTurquoiseLike(color)) weight = 0.05;
 
     // Push black/white to actually appear, not just sit politely in the palette.
     if(color.id === 'black') weight += 2;
@@ -1069,7 +1121,7 @@ function bestForRole(role, colors){
   const pref = {
     top:['blue','green','purple','warm-accent','soft','neutral','dark-neutral','warm-neutral','light'],
     bottom:['neutral','dark-neutral','blue','green','warm-neutral','purple','light'],
-    shoes:['red','warm-neutral','neutral','dark-neutral','light','blue','green','soft'],
+    shoes:['warm-neutral','dark-neutral','neutral','blue','green','purple','warm-accent','light','soft','red'],
     accessory:['red','warm-accent','purple','blue','soft','green','neutral','dark-neutral','warm-neutral','light']
   }[role] || [];
   return [...safe].sort((a,b) => {
