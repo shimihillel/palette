@@ -3,11 +3,11 @@
   "short_name": "Looks",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=33",
+  "start_url": "./index.html?v=34",
   "display": "standalone",
   "background_color": "#f6f1ea",
   "theme_color": "#f6f1ea",
-  "description": "Shimi Looks v33 – מסך ראשי מצומצם יותר עם לב צף ונעליים מעודנות.",
+  "description": "Shimi Looks v34 — drop-in overwrite package.",
   "icons": [
     {
       "src": "assets/icon-192.png",
