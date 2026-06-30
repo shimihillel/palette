@@ -9,8 +9,8 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks v40</title>
-  <link rel="manifest" href="manifest.webmanifest?v=40" />
+  <title>Shimi Looks v41</title>
+  <link rel="manifest" href="manifest.webmanifest?v=41" />
   <link rel="icon" type="image/png" href="assets/icon-32.png" />
   <link rel="apple-touch-icon" href="assets/icon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +36,53 @@
 
 /* v40 polish + learning */
 .today-title-block h2{font-size:36px;line-height:1.05}.today-title-block{margin-bottom:16px}.today-subtitle{font-size:15px}.top-action-row{margin-bottom:10px}.not-me-btn{display:block;margin:0 auto 18px;background:transparent;color:#8a766b;font-weight:800;font-size:15px;padding:8px 14px;border-radius:999px;border:1px solid rgba(79,52,39,.12)}.not-me-btn:active{transform:scale(.98)}.secondary-btn.saved{background:#fff4ef;border-color:rgba(201,68,49,.28);color:#9d3c2f}.secondary-btn.saved::after{content:' ♥';color:#c94431}.clean-look-card{margin-bottom:16px}.color-fabric-bar{transition:transform .18s ease, box-shadow .18s ease}.color-fabric-bar:hover{transform:translateY(-1px)}.wear-copy strong{letter-spacing:-.2px}.save-pop{animation:savePop .34s ease}@keyframes savePop{0%{transform:scale(1)}45%{transform:scale(1.05)}100%{transform:scale(1)}}@media(max-width:430px){.today-title-block h2{font-size:31px}.not-me-btn{margin-bottom:15px}.top-action-row{margin-bottom:8px}}
+
+/* v41 — clean Bcharati page */
+.anchor-clean-shell{display:grid;gap:14px;padding-bottom:12px}
+.anchor-title-block{text-align:right;margin:4px 0 2px}
+.anchor-title-block h2{margin:0 0 6px;font-size:30px;line-height:1.05;font-weight:900;color:var(--ink)}
+.anchor-title-block p:last-child{margin:0;color:var(--muted);font-size:15px;line-height:1.35;max-width:28em}
+.anchor-step-card,.anchor-build-panel,.anchor-result-card{background:rgba(255,255,255,.62);border:1px solid rgba(79,52,39,.08);border-radius:24px;padding:16px;box-shadow:var(--shadow)}
+.anchor-step-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.anchor-step-head span{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--brown);color:#fff;font-weight:900;font-size:14px}
+.anchor-step-head h3{margin:0;font-size:22px;font-weight:900}
+.piece-choice-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.piece-choice-btn{min-height:74px;text-align:right;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:3px;padding:14px 16px;border-radius:22px}
+.piece-choice-btn strong{font-size:20px;line-height:1}
+.piece-choice-btn small{font-size:12px;color:var(--muted);font-weight:700;line-height:1.2}
+.piece-choice-btn.selected small{color:rgba(255,255,255,.72)}
+.clean-family-strip{gap:8px;margin:0 0 12px;padding-bottom:2px;scrollbar-width:none}
+.clean-family-strip::-webkit-scrollbar{display:none}
+.clean-family-strip .family-btn{flex:0 0 auto;border-radius:999px;padding:10px 15px;font-size:15px}
+.clean-color-choice-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.clean-color-btn{min-height:66px;display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:right;border-radius:20px;padding:12px}
+.clean-color-btn .color-chip{grid-row:1/3;width:34px;height:34px;margin:0;border:1px solid rgba(0,0,0,.08)}
+.clean-color-btn strong{font-size:18px;line-height:1.05}
+.clean-color-btn small{font-size:12px;color:var(--muted);font-weight:700}
+.clean-color-btn.selected small{color:rgba(255,255,255,.72)}
+.anchor-build-panel{display:grid;gap:12px}
+.anchor-mode-pill{width:100%;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;text-align:right;align-items:center;background:rgba(255,255,255,.56);border:1px solid rgba(79,52,39,.1);border-radius:20px;padding:13px 14px;color:var(--ink)}
+.anchor-mode-pill span{grid-row:1/3;color:var(--muted);font-weight:900;font-size:13px}
+.anchor-mode-pill strong{font-size:20px;font-weight:900;line-height:1.05}
+.anchor-mode-pill small{font-size:12px;color:var(--muted);font-weight:700}
+.anchor-build-btn{margin:0;padding:17px 14px;font-size:18px}
+.anchor-result-card{padding:16px 16px 18px;margin-top:4px}
+.anchor-result-head{text-align:center;margin-bottom:14px}
+.anchor-result-head h2{margin:0 0 6px;font-size:30px;line-height:1.05;font-weight:900}
+.anchor-result-head .hero-copy{margin:0;color:var(--muted)}
+.anchor-why{margin-top:14px}
+.anchor-result-actions{margin:14px 0 0}
+@media(max-width:430px){
+  .anchor-title-block h2{font-size:28px}
+  .piece-choice-grid,.clean-color-choice-grid{grid-template-columns:repeat(2,1fr)}
+  .piece-choice-btn{min-height:68px;padding:12px 14px}
+  .piece-choice-btn strong{font-size:18px}
+  .anchor-step-card,.anchor-build-panel,.anchor-result-card{padding:14px;border-radius:22px}
+}
+@media(max-width:360px){
+  .piece-choice-grid,.clean-color-choice-grid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -57,12 +104,44 @@
         </section>
       </section>
       <section class="screen" id="anchorScreen">
-        <div class="section-header"><div><p class="eyebrow soft">BUILD AROUND ONE PIECE</p><h2>בחרתי משהו</h2><p class="screen-note">יש לך כבר פריט שבא לך ללבוש? בחרי מה הוא ובאיזה גוון, ואני אבנה סביבו שילוב מלא.</p></div></div>
-        <section class="card anchor-card"><h3>מה הפריט?</h3><div class="choice-grid" id="pieceChoices"></div></section>
-        <section class="card anchor-card"><h3>באיזה גוון?</h3><div class="family-strip" id="familyChoices"></div><div class="color-choice-grid" id="colorChoices"></div></section>
-        <section class="color-meter-card anchor-meter-card compact-meter" id="anchorColorMeterCard"><div><p class="tiny-label">מדד הצבע היומי</p><h3 id="anchorColorModeTitle">סופר צבע</h3><p id="anchorColorModeDesc">4 צבעים, בלי להתנצל</p></div><button class="meter-change-btn secondary-btn" id="anchorChangeColorModeBtn" type="button">שינוי מדד</button></section>
-        <button class="primary-btn full anchor-build-btn" id="buildAroundBtn" type="button">בני לי סביב זה ✨</button>
-        <section class="hero-card card anchor-result-card" id="anchorResultCard" hidden><div class="hero-head"><div><p class="tiny-label">נבנה סביב הפריט שלך</p><h2 id="anchorLookTitle">—</h2><p id="anchorLookVibe" class="hero-copy"></p></div></div><section class="look-visual-card clean-look-card" id="anchorLookVisual"></section><div class="why-card"><h3>למה זה עובד?</h3><p id="anchorWhyWorks"></p></div><div class="cta-row top-action-row"><button class="secondary-btn" id="anchorSaveBtn" type="button">שומרת ♡</button><button class="primary-btn" id="anchorNextBtn" type="button">הבא בתור ✦</button></div></section>
+        <section class="anchor-clean-shell">
+          <div class="anchor-title-block">
+            <p class="tiny-label">בחרתי משהו</p>
+            <h2>בונים סביב פריט</h2>
+            <p>יש לך כבר משהו שבא לך ללבוש? בחרי פריט וגוון — ואני אבנה סביבו לוק מלא.</p>
+          </div>
+
+          <section class="anchor-step-card piece-step">
+            <div class="anchor-step-head"><span>1</span><h3>מה כבר יש לך?</h3></div>
+            <div class="choice-grid piece-choice-grid" id="pieceChoices"></div>
+          </section>
+
+          <section class="anchor-step-card color-step">
+            <div class="anchor-step-head"><span>2</span><h3>באיזה גוון?</h3></div>
+            <div class="family-strip clean-family-strip" id="familyChoices"></div>
+            <div class="color-choice-grid clean-color-choice-grid" id="colorChoices"></div>
+          </section>
+
+          <section class="anchor-build-panel">
+            <button class="anchor-mode-pill" id="anchorChangeColorModeBtn" type="button">
+              <span>מדד צבע</span>
+              <strong id="anchorColorModeTitle">סופר צבע</strong>
+              <small id="anchorColorModeDesc">4 צבעים, בלי להתנצל</small>
+            </button>
+            <button class="primary-btn full anchor-build-btn" id="buildAroundBtn" type="button">בני לי לוק סביב זה ✨</button>
+          </section>
+
+          <section class="anchor-result-card" id="anchorResultCard" hidden>
+            <div class="anchor-result-head">
+              <p class="tiny-label">הלוק סביב הבחירה שלך</p>
+              <h2 id="anchorLookTitle">—</h2>
+              <p id="anchorLookVibe" class="hero-copy"></p>
+            </div>
+            <section class="look-visual-card clean-look-card" id="anchorLookVisual"></section>
+            <section class="why-card clean-why-card anchor-why"><div class="why-sparkle">✧</div><div><h3>למה זה עובד?</h3><p id="anchorWhyWorks"></p></div></section>
+            <div class="cta-row top-action-row anchor-result-actions"><button class="secondary-btn" id="anchorSaveBtn" type="button">שומרת ♡</button><button class="primary-btn" id="anchorNextBtn" type="button">הבא בתור ✦</button></div>
+          </section>
+        </section>
       </section>
       <section class="screen" id="lookbookScreen"><div class="section-header"><div><p class="eyebrow soft">כל מה שנבחר</p><h2>האהבתי שלי</h2></div><span class="count-badge" id="lookbookCount">0</span></div><div class="search-wrap card compact"><input id="lookbookSearch" placeholder="חיפוש לפי צבע, שם לוק או תיאור..." /></div><div class="lookbook-list" id="lookbookList"></div></section>
     </main>
@@ -532,7 +611,6 @@ function bindEvents(){
   $('changeColorModeBtn').addEventListener('click', () => openColorModeDialog('today'));
   $('closeColorModeBtn').addEventListener('click', () => $('colorModeDialog').close());
   on('anchorChangeColorModeBtn','click', () => openColorModeDialog('anchor'));
-  on('buildAroundBtn','click', buildAnchorLook);
 }
 
 function renderAll(){
@@ -622,15 +700,18 @@ function renderAnchor(){
 }
 
 function renderPieceChoices(){
+  const sub = {top:'חולצה / סריג / ג׳קט', bottom:'ג׳ינס / מכנס / חצאית', shoes:'סניקרס / סנדלים / מגפיים', accessory:'תיק / תכשיט / חגורה'};
   $('pieceChoices').innerHTML = PIECES.map(piece => `
-    <button class="choice-btn ${state.anchorPiece === piece.id ? 'selected' : ''}" data-piece="${piece.id}" type="button">
-      <span>${piece.icon}</span>
+    <button class="choice-btn piece-choice-btn ${state.anchorPiece === piece.id ? 'selected' : ''}" data-piece="${piece.id}" type="button">
       <strong>${piece.label}</strong>
+      <small>${sub[piece.id] || ''}</small>
     </button>
   `).join('');
   document.querySelectorAll('#pieceChoices .choice-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       state.anchorPiece = btn.dataset.piece;
+      state.anchorLook = null;
+      if(el('anchorResultCard')) $('anchorResultCard').hidden = true;
       saveState();
       renderAnchor();
     });
@@ -645,6 +726,8 @@ function renderFamilyChoices(){
     btn.addEventListener('click', () => {
       state.anchorFamily = btn.dataset.family;
       state.anchorColorId = COLOR_FAMILIES[state.anchorFamily][0];
+      state.anchorLook = null;
+      if(el('anchorResultCard')) $('anchorResultCard').hidden = true;
       saveState();
       renderAnchor();
     });
@@ -655,14 +738,17 @@ function renderColorChoices(){
   const ids = COLOR_FAMILIES[state.anchorFamily] || COLOR_FAMILIES['חום'];
   $('colorChoices').innerHTML = ids.map(id => {
     const c = COLORS[id];
-    return `<button class="color-btn ${state.anchorColorId === id ? 'selected' : ''}" data-color="${id}" type="button">
+    return `<button class="color-btn clean-color-btn ${state.anchorColorId === id ? 'selected' : ''}" data-color="${id}" type="button">
       <span class="color-chip" style="background:${c.hex}"></span>
       <strong>${c.he}</strong>
+      <small>${c.en}</small>
     </button>`;
   }).join('');
   document.querySelectorAll('#colorChoices .color-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       state.anchorColorId = btn.dataset.color;
+      state.anchorLook = null;
+      if(el('anchorResultCard')) $('anchorResultCard').hidden = true;
       saveState();
       renderAnchor();
     });
@@ -677,6 +763,7 @@ function buildAnchorLook(){
     remember(state.anchorLook, 'anchor');
     saveState();
     renderAnchorLook(state.anchorLook);
+    setTimeout(() => el('anchorResultCard')?.scrollIntoView({behavior:'smooth', block:'start'}), 80);
     toast('בנינו סביב הפריט שלך ✨');
   }catch(err){
     console.error('anchor build failed', err);

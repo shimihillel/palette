@@ -3,10 +3,10 @@
   "short_name": "Looks",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=40",
+  "start_url": "./index.html?v=41",
   "display": "standalone",
   "background_color": "#fbf6ee",
   "theme_color": "#fbf6ee",
-  "description": "Shimi Looks v40 polish and learning",
+  "description": "Shimi Looks v41 — Bcharati page fix and polish.",
   "icons": []
 }
