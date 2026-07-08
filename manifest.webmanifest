@@ -1,9 +1,9 @@
 {
   "name": "Shimi Looks",
   "short_name": "Shimi Looks",
-  "start_url": "./index.html?v=48",
+  "start_url": "./index.html?v=49",
   "display": "standalone",
   "background_color": "#fbf6ee",
   "theme_color": "#fbf6ee",
-  "description": "Shimi Looks v48 - cleaner Printz text on daily card."
+  "description": "Shimi Looks v49 - control buttons stay side by side."
 }
