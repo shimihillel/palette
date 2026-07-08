@@ -9,8 +9,8 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks v49</title>
-  <link rel="manifest" href="manifest.webmanifest?v=49" />
+  <title>Shimi Looks v52</title>
+  <link rel="manifest" href="manifest.webmanifest?v=52" />
   <link rel="icon" type="image/png" href="assets/icon-32.png" />
   <link rel="apple-touch-icon" href="assets/icon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -133,6 +133,10 @@ html,body{width:100%;overflow-x:hidden}body{max-width:100vw}main,.screen,.anchor
 /* v49 — keep control buttons side by side */
 .item-control-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;align-items:center}.item-control-row .mini-item-btn{width:100%!important;min-width:0!important;white-space:nowrap!important;padding:7px 8px!important;justify-content:center!important}.item-control-row .mini-item-btn.active,.item-control-row .mini-item-btn[aria-pressed="true"]{transform:none}.wear-row{overflow:visible}@media(max-width:430px){.item-control-row{grid-template-columns:1fr 1fr!important;gap:8px!important}.item-control-row .mini-item-btn{font-size:11.5px!important;padding:7px 6px!important;min-height:34px!important}}
 
+
+/* v50 — Printz storage stability */
+.printz-input[type="file"]{font-size:13px}.printz-card .storage-note{font-size:12px;color:var(--muted);font-weight:700}
+
 </style>
 </head>
 <body>
@@ -240,7 +244,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v49-control-buttons-row';
+const APP_VERSION = 'v52-printz-styling-rules';
 
 const COLORS = {
   ivory:{id:'ivory',he:'שנהב',en:'Ivory',hex:'#EADBC7',family:'light'},
@@ -628,6 +632,8 @@ const RELAXED_GROUPS = ['neutral','light','warmNeutral','darkNeutral','soft'];
 const COLORFUL_GROUPS = ['blue','green','purple','warmAccent','red'];
 
 const state = loadState();
+hydrateStatePrintzImages();
+setTimeout(optimizeStoredPrintzImages, 400);
 
 const $ = (id) => document.getElementById(id);
 
@@ -649,6 +655,8 @@ function loadState(){
       printz: parsed.printz || [],
       printzDraftImage: null,
       printzSelectedColors: parsed.printzSelectedColors || [],
+      printzMisses: Number.isFinite(parsed.printzMisses) ? parsed.printzMisses : 0,
+      printzRecentIds: Array.isArray(parsed.printzRecentIds) ? parsed.printzRecentIds.slice(0,4) : [],
       lockedRoles: parsed.lockedRoles || {},
       mood: parsed.mood || 'easy',
       purpose: parsed.purpose || 'day',
@@ -656,12 +664,95 @@ function loadState(){
       screen: parsed.screen || 'todayScreen'
     };
   }catch(e){
-    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],disliked:[],notToday:[],printz:[],printzDraftImage:null,printzSelectedColors:[],lockedRoles:{},mood:'easy',purpose:'day',colorMode:'super',screen:'todayScreen'};
+    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],disliked:[],notToday:[],printz:[],printzDraftImage:null,printzSelectedColors:[],printzMisses:0,printzRecentIds:[],lockedRoles:{},mood:'easy',purpose:'day',colorMode:'super',screen:'todayScreen'};
   }
 }
 
 function saveState(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const persist = buildPersistableState();
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
+    return true;
+  }catch(err){
+    try{
+      // Emergency trim: keep the important Printz list, but remove heavy history noise.
+      persist.lookbook = (persist.lookbook || []).slice(0,40);
+      persist.recent = [];
+      persist.recentHome = [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
+      return true;
+    }catch(err2){
+      toast('האחסון מלא. מחקי פרינט ישן או העלי צילום קטן יותר');
+      return false;
+    }
+  }
+}
+
+function buildPersistableState(){
+  return {
+    ...state,
+    // v50: never persist the temporary upload draft. This was the main thing choking Safari/localStorage.
+    printzDraftImage: null,
+    currentLook: stripPrintzImagesFromLook(state.currentLook),
+    anchorLook: stripPrintzImagesFromLook(state.anchorLook),
+    lookbook: (state.lookbook || []).map(stripPrintzImagesFromLook)
+  };
+}
+
+function stripPrintzImagesFromLook(look){
+  if(!look) return look;
+  const copy = JSON.parse(JSON.stringify(look));
+  Object.values(copy.mapping || {}).forEach(item => {
+    if(item && item.printz && item.printz.image){
+      delete item.printz.image;
+    }
+  });
+  return copy;
+}
+
+function hydrateStatePrintzImages(){
+  hydrateLookPrintzImages(state.currentLook);
+  hydrateLookPrintzImages(state.anchorLook);
+  (state.lookbook || []).forEach(hydrateLookPrintzImages);
+}
+
+function hydrateLookPrintzImages(look){
+  if(!look || !look.mapping) return look;
+  const byId = new Map((state.printz || []).map(item => [item.id, item]));
+  Object.values(look.mapping || {}).forEach(item => {
+    if(!item || !item.printz || item.printz.image) return;
+    const full = byId.get(item.printz.id);
+    if(full && full.image){
+      item.printz.image = full.image;
+      item.printz.name = item.printz.name || full.name;
+      item.printz.type = item.printz.type || full.type;
+      item.printz.colorIds = item.printz.colorIds || full.colorIds;
+      item.printz.colors = item.printz.colors || (full.colorIds || []).map(id => COLORS[id]).filter(Boolean);
+    }
+  });
+  return look;
+}
+
+async function optimizeStoredPrintzImages(){
+  const items = state.printz || [];
+  let changed = false;
+  for(const item of items){
+    if(item && typeof item.image === 'string' && item.image.startsWith('data:image') && item.image.length > 140000){
+      try{
+        const smaller = await resizePrintzImage(item.image, 460, 0.66);
+        if(smaller && smaller.length < item.image.length){
+          item.image = smaller;
+          changed = true;
+        }
+      }catch(e){}
+    }
+  }
+  if(changed){
+    hydrateStatePrintzImages();
+    saveState();
+    renderPrintz();
+    renderToday();
+  }
 }
 
 function lookHasBannedColor(look){
@@ -1363,9 +1454,14 @@ function notTodayPenalty(look){
 function dareMore(){
   const oldMood = state.mood;
   const oldMode = state.colorMode;
+  const activePrintz = getLookPrintz(state.currentLook);
   state.mood = 'wow';
   state.colorMode = 'super';
-  state.currentLook = generateBestLook('super');
+  let nextLook = generateBestLook('super');
+  if(activePrintz){
+    nextLook = injectSpecificPrintzIntoLook(nextLook, activePrintz, {fromDare:true});
+  }
+  state.currentLook = nextLook;
   state.mood = oldMood;
   state.colorMode = oldMode;
   remember(state.currentLook, 'today');
@@ -2085,19 +2181,18 @@ function handlePrintzImage(event){
   reader.readAsDataURL(file);
 }
 
-function resizePrintzImage(src){
+function resizePrintzImage(src, maxSize = 460, quality = 0.66){
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      const max = 700;
-      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
       const w = Math.max(1, Math.round(img.width * scale));
       const h = Math.max(1, Math.round(img.height * scale));
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', 0.78));
+      resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.onerror = reject;
     img.src = src;
@@ -2165,46 +2260,156 @@ function maybeApplyPrintzToLook(look){
   if(!look || !items.length || !look.mapping) return look;
   const available = items.filter(item => !state.lockedRoles?.[item.role]);
   if(!available.length) return look;
-  const mood = state.mood || 'easy';
-  let chance = 0.24;
-  if(mood === 'easy' || mood === 'calm') chance = 0.14;
-  if(mood === 'weird' || mood === 'wow') chance = 0.38;
-  if(Math.random() > chance) return look;
+  const misses = Number.isFinite(state.printzMisses) ? state.printzMisses : 0;
+  let chance = getPrintzUseChance();
+  if(misses >= 3) chance = 1;
+  if(Math.random() > chance){
+    state.printzMisses = misses + 1;
+    return look;
+  }
   const candidatePool = available.map(item => ({item, score: printzMatchScore(look, item)})).sort((a,b)=>b.score-a.score);
-  const chosen = (candidatePool.slice(0,4).find(x => Math.random() < 0.55) || candidatePool[0]).item;
-  const colors = (chosen.colorIds || []).map(id => COLORS[id]).filter(Boolean).filter(c => !isBannedColor(c));
-  if(!colors.length) return look;
-  const mainColor = bestForRole(chosen.role, colors);
-  const next = JSON.parse(JSON.stringify(look));
-  next.mapping[chosen.role] = {
-    color: mainColor,
-    text: `${chosen.type} עם ${colors.map(c=>c.he).join(' / ')}`,
-    printz:{id:chosen.id, image:chosen.image, name:chosen.name, role:chosen.role, type:chosen.type, colors}
-  };
-  const roleColors = ['top','bottom','shoes','accessory'].map(role => next.mapping[role].color).filter(Boolean);
-  const extras = (next.colors || []).filter(c => !roleColors.some(rc => rc.id === c.id));
-  next.colors = [...roleColors, ...extras].filter((c, idx, arr) => arr.findIndex(x => x.id === c.id) === idx).slice(0,4);
-  next.title = `${PRINTZ_ROLE_LABELS[chosen.role]} ${chosen.type} עם ${next.colors[0].he}`;
-  next.vibe = `${chosen.type} אמיתי מהפרינטז שלך, משולב לפי הצבעים שהכנסת.`;
-  next.why = `הפרינטז מביא את העניין, והצבעים ${colors.map(c=>c.he).join(', ')} נותנים למנוע בסיס להתאים סביבו בלי להעמיס.`;
-  next.signature = `printz-v46|${chosen.id}|${Date.now()}|${Object.values(next.mapping).map(item => item.color.id).join('|')}`;
+  if(!candidatePool.length){
+    state.printzMisses = misses + 1;
+    return look;
+  }
+  const chosen = (candidatePool.slice(0,3).find(x => Math.random() < 0.8) || candidatePool[0]).item;
+  const next = injectSpecificPrintzIntoLook(look, chosen);
+  if(next === look){
+    state.printzMisses = misses + 1;
+    return look;
+  }
+  state.printzMisses = 0;
+  rememberPrintzUse(chosen.id);
   return next;
+}
+
+function getPrintzUseChance(){
+  const mood = state.mood || 'easy';
+  const purpose = state.purpose || 'day';
+  let chance = 0.34;
+  if(['calm','easy','classic'].includes(mood)) chance = 0.24;
+  if(mood === 'color') chance = 0.32;
+  if(['weird','wow'].includes(mood)) chance = 0.52;
+  if(['home','work'].includes(purpose)) chance -= 0.06;
+  if(['evening','meeting'].includes(purpose)) chance += 0.08;
+  return Math.max(0.14, Math.min(0.75, chance));
 }
 
 function printzMatchScore(look, item){
   const printColors = (item.colorIds || []).map(id => COLORS[id]).filter(Boolean);
   const lookColors = look.colors || [];
+  const printFamilies = new Set(printColors.map(c => c.family));
   let s = 0;
   printColors.forEach(pc => {
     lookColors.forEach(lc => {
-      if(pc.id === lc.id) s += 8;
-      if(pc.family === lc.family) s += 4;
+      if(pc.id === lc.id) s += 10;
+      if(pc.family === lc.family) s += 5;
     });
   });
-  if(item.role === 'shoes' || item.role === 'accessory') s += 6;
-  if((state.mood === 'weird' || state.mood === 'wow') && ['מנומר','זברה','פרחוני'].includes(item.type)) s += 6;
-  if((state.mood === 'calm' || state.mood === 'easy') && ['פסים','נקודות','משבצות'].includes(item.type)) s += 4;
-  return s + Math.random() * 3;
+  if(item.role === 'shoes' || item.role === 'accessory') s += 5;
+  if(['weird','wow'].includes(state.mood) && isStrongPrintType(item.type)) s += 10;
+  if(['calm','easy','classic'].includes(state.mood) && isQuietPrintType(item.type)) s += 7;
+  if(['work','home'].includes(state.purpose) && isStrongPrintType(item.type)) s -= 16;
+  if(state.purpose === 'evening' && (item.role === 'shoes' || item.role === 'accessory')) s += 5;
+  const recentIds = state.printzRecentIds || [];
+  if(recentIds[0] === item.id) s -= 60;
+  else if(recentIds.includes(item.id)) s -= 28;
+  if(printFamilies.has('red') && !['weird','wow'].includes(state.mood)) s -= 7;
+  return s + Math.random() * 2;
+}
+
+function isStrongPrintType(type){
+  return ['מנומר','זברה','פרחוני','גיאומטרי'].includes(type);
+}
+
+function isQuietPrintType(type){
+  return ['פסים','נקודות','משבצות'].includes(type);
+}
+
+function getLookPrintz(look){
+  if(!look || !look.mapping) return null;
+  return Object.values(look.mapping).map(item => item && item.printz).find(Boolean) || null;
+}
+
+function rememberPrintzUse(id){
+  if(!id) return;
+  state.printzRecentIds = [id, ...((state.printzRecentIds || []).filter(x => x !== id))].slice(0,4);
+}
+
+function injectSpecificPrintzIntoLook(look, chosen, options={}){
+  if(!look || !chosen || !look.mapping || state.lockedRoles?.[chosen.role]) return look;
+  const colors = (chosen.colorIds || []).map(id => COLORS[id]).filter(Boolean).filter(c => !isBannedColor(c));
+  if(!colors.length) return look;
+  const next = JSON.parse(JSON.stringify(look));
+  const mainColor = bestForRole(chosen.role, colors);
+  next.mapping[chosen.role] = {
+    color: mainColor,
+    text: chosen.type,
+    printz:{id:chosen.id, image:chosen.image, name:chosen.name, role:chosen.role, type:chosen.type, colors, colorIds:chosen.colorIds}
+  };
+  calmLookAroundPrintz(next, chosen, colors, options);
+  const roleColors = ['top','bottom','shoes','accessory'].map(role => next.mapping[role].color).filter(Boolean);
+  const extras = (next.colors || []).filter(c => !roleColors.some(rc => rc.id === c.id));
+  next.colors = [...roleColors, ...extras].filter((c, idx, arr) => arr.findIndex(x => x.id === c.id) === idx).slice(0,4);
+  next.title = `${PRINTZ_ROLE_LABELS[chosen.role]} ${chosen.type} עם ${next.colors[0].he}`;
+  next.vibe = `${chosen.type} אמיתי מהפרינטז שלך, משולב לפי הצבעים שהכנסת.`;
+  next.why = buildPrintzWhy(chosen, colors, options);
+  next.signature = `printz-v52|${chosen.id}|${Date.now()}|${Object.values(next.mapping).map(item => item.color.id).join('|')}`;
+  return next;
+}
+
+function getPrintzSafePalette(chosen, colors){
+  const baseIds = ['ivory','pearl','stone','fog','camel','cognac','denim','navy','cocoa','graphite','black','olive','bordeaux'];
+  let pool = [...colors, ...baseIds.map(id => COLORS[id]).filter(Boolean)];
+  if(isQuietPrintType(chosen.type)){
+    pool.push(COLORS.scarlet, COLORS.coral);
+  }
+  if(['weird','wow'].includes(state.mood)){
+    pool.push(COLORS.bordeaux, COLORS.olive, COLORS.scarlet);
+  }
+  return pool.filter(Boolean).filter((c, i, arr) => arr.findIndex(x => x.id === c.id) === i).filter(c => !isBannedColor(c));
+}
+
+function calmLookAroundPrintz(next, chosen, colors, options={}){
+  const safePalette = getPrintzSafePalette(chosen, colors);
+  const strong = isStrongPrintType(chosen.type);
+  ['top','bottom','shoes','accessory'].forEach(role => {
+    if(role === chosen.role || state.lockedRoles?.[role]) return;
+    const current = next.mapping[role]?.color;
+    const printFamilies = new Set(colors.map(c => c.family));
+    const currentBold = current && ['red','warm-accent','purple'].includes(current.family) && !printFamilies.has(current.family);
+    if(strong){
+      if(role !== 'accessory' || currentBold || !['wow','weird'].includes(state.mood)){
+        const replacement = bestForRole(role, safePalette);
+        next.mapping[role].color = replacement;
+        next.mapping[role].text = replacement.he;
+      }
+    }else if(currentBold && !['wow','weird'].includes(state.mood)){
+      const replacement = bestForRole(role, safePalette);
+      next.mapping[role].color = replacement;
+      next.mapping[role].text = replacement.he;
+    }
+  });
+  if(options.fromDare){
+    const accentPool = safePalette.filter(c => ['red','warm-accent','purple','green'].includes(c.family));
+    const accentRole = !state.lockedRoles?.accessory && chosen.role !== 'accessory' ? 'accessory' : (!state.lockedRoles?.shoes && chosen.role !== 'shoes' ? 'shoes' : null);
+    if(accentRole && accentPool.length){
+      const accent = bestForRole(accentRole, accentPool);
+      next.mapping[accentRole].color = accent;
+      next.mapping[accentRole].text = accent.he;
+    }
+  }
+}
+
+function buildPrintzWhy(chosen, colors, options={}){
+  const names = colors.map(c=>c.he);
+  const parts = [];
+  parts.push(`${chosen.type} הוא הכוכב של הלוק.`);
+  if(isStrongPrintType(chosen.type)) parts.push('שאר הפריטים נרגעו כדי לא להעמיס.');
+  else parts.push('הפרינט מוסיף עניין בלי להשתלט על הכול.');
+  parts.push(`בנינו סביב ${names.join(', ')} כדי שהכול ידבר אחד עם השני.`);
+  if(options.fromDare) parts.push('ובתעזי יותר נתנו רק דחיפה קטנה מסביב — לא עוד בלגן.');
+  return parts.join(' ');
 }
 
 function formatDate(iso){
