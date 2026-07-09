@@ -9,7 +9,8 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks v52</title>
+  <title>Shimi Looks v64</title>
+  <link rel="manifest" href="manifest.webmanifest?v=52" />
   <link rel="icon" type="image/png" href="assets/icon-32.png" />
   <link rel="apple-touch-icon" href="assets/icon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -150,9 +151,9 @@ html,body{width:100%;overflow-x:hidden}body{max-width:100vw}main,.screen,.anchor
 
 
 /* v58 backup restore */
-.backup-card{display:grid;gap:12px}.backup-card h3{margin:0 0 2px}.backup-card p{margin:0;color:var(--muted);line-height:1.35}.backup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.backup-grid .secondary-btn,.backup-grid .primary-btn{font-size:15px;padding:13px 10px}.backup-grid .wide{grid-column:1 / -1}.backup-note{font-size:12px;color:var(--muted);font-weight:800;line-height:1.35}.backup-status{display:none;background:rgba(255,255,255,.68);border:1px solid rgba(79,52,39,.10);border-radius:16px;padding:11px 12px;font-size:13px;font-weight:900;line-height:1.35;color:var(--ink)}.backup-status.active{display:block}.version-chip{display:inline-flex;vertical-align:middle;margin-right:6px;padding:4px 8px;border-radius:999px;background:rgba(79,52,39,.08);font-size:12px;color:var(--brown);font-family:Assistant,system-ui,sans-serif}@media(max-width:360px){.backup-grid{grid-template-columns:1fr}}
+.backup-card{display:grid;gap:12px}.backup-card h3{margin:0 0 2px}.backup-card p{margin:0;color:var(--muted);line-height:1.35}.backup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.backup-grid .secondary-btn,.backup-grid .primary-btn{font-size:15px;padding:13px 10px}.backup-grid .wide{grid-column:1 / -1}.backup-note{font-size:12px;color:var(--muted);font-weight:800;line-height:1.35}@media(max-width:360px){.backup-grid{grid-template-columns:1fr}}
 
-</style>
+.backup-grid-clean{grid-template-columns:1fr 1fr}.backup-grid-clean .secondary-btn{width:100%}</style>
 </head>
 <body>
   <div class="app-shell">
@@ -216,7 +217,7 @@ html,body{width:100%;overflow-x:hidden}body{max-width:100vw}main,.screen,.anchor
 
       <section class="screen" id="printzScreen">
         <div class="section-header printz-hero"><div><p class="eyebrow soft">הפרינטים שלך</p><h2>פרינטז</h2><p>צלמי תקריב של פרינט, תני לו סוג וצבעים עיקריים — והאפליקציה תשלב אותו מדי פעם בלוק היומי.</p></div></div>
-        <section class="printz-card backup-card"><h3>גיבוי ושחזור <span class="version-chip">v63</span></h3><p>כדי שהפרינטים והצבעים שלך לא יעשו לנו הודיני שוב.</p><div class="backup-grid"><button class="secondary-btn" id="backupDataBtn" type="button">גיבוי לקובץ</button><button class="secondary-btn" id="restoreDataBtn" type="button">שחזור מקובץ</button><button class="primary-btn wide" id="recoverPrintzBtn" type="button">שחזור פרינטז חסרים</button></div><div class="backup-status" id="backupStatus"></div><div class="backup-note">השחזור מקובץ מחליף את הנתונים באפליקציה. כפתור השחזור סורק את הלוקים, הבחירות והאחסון בדפדפן, ומחזיר פרינטז שנמצאים בהצעות אבל נעלמו מרשימת העריכה.</div><input id="restoreDataInput" type="file" accept="application/json,.json" hidden></section>
+        <section class="printz-card backup-card"><h3>גיבוי ושחזור</h3><p>כדי שהפרינטים והצבעים שלך לא יעשו לנו הודיני שוב.</p><div class="backup-grid backup-grid-clean"><button class="secondary-btn" id="backupDataBtn" type="button">גיבוי לקובץ</button><button class="secondary-btn" id="restoreDataBtn" type="button">שחזור מקובץ</button></div><div class="backup-note">השחזור מקובץ מחליף את הנתונים באפליקציה. מומלץ לעשות גיבוי אחרי שמעלים פרינטים מחדש.</div><input id="restoreDataInput" type="file" accept="application/json,.json" hidden></section>
         <section class="printz-card">
           <h3 id="printzFormTitle">+ פרינט חדש</h3>
           <div class="printz-form">
@@ -252,7 +253,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v63-stable-printz-repair';
+const APP_VERSION = 'v64-clean-backup-only';
 
 const COLORS = {
   // Whites / creams
@@ -845,7 +846,6 @@ state.editingPrintzId = null;
 mergeCustomColorsIntoPalette();
 hydrateStatePrintzImages();
 setTimeout(optimizeStoredPrintzImages, 400);
-setTimeout(autoRepairPrintzList, 900);
 
 const $ = (id) => document.getElementById(id);
 
@@ -1052,7 +1052,6 @@ function bindEvents(){
   on('backupDataBtn','click', backupDataToFile);
   on('restoreDataBtn','click', () => el('restoreDataInput')?.click());
   on('restoreDataInput','change', restoreDataFromFile);
-  on('recoverPrintzBtn','click', recoverPrintzFromLocalStorage);
   on('printzImageInput','change', handlePrintzImage);
   on('printzColorSearch','input', handlePrintzSearch);
   on('addCustomPrintzColorBtn','click', addCustomPrintzColor);
@@ -2490,179 +2489,87 @@ function restoreDataFromFile(event){
   reader.readAsText(file);
 }
 
-
-function setBackupStatus(message){
-  const box = el('backupStatus');
-  if(!box) return;
-  box.classList.add('active');
-  box.textContent = message;
-}
-
-function looksLikeImage(value){
-  return typeof value === 'string' && (
-    value.startsWith('data:image/') ||
-    value.startsWith('blob:') ||
-    (value.length > 900 && (value.includes('base64') || value.includes('/9j/') || value.includes('iVBOR')))
-  );
-}
-
-function safePrintzColorIds(raw){
-  const p = raw && raw.printz && typeof raw.printz === 'object' ? raw.printz : raw;
-  const colors = Array.isArray(p?.colors) ? p.colors : (Array.isArray(raw?.colors) ? raw.colors : []);
-  let colorIds = Array.isArray(p?.colorIds) ? p.colorIds : (Array.isArray(raw?.colorIds) ? raw.colorIds : []);
-  if(!colorIds.length && colors.length){
-    colorIds = colors.map(c => typeof c === 'string' ? c : (c && c.id)).filter(Boolean);
-  }
-  colorIds = colorIds.filter(id => COLORS[id] && !isBannedColor(COLORS[id])).slice(0,3);
-  if(!colorIds.length){
-    if(COLORS.black) colorIds.push('black');
-    if(COLORS.white) colorIds.push('white');
-  }
-  return colorIds.slice(0,3);
-}
-
-function normalizeRecoveredPrintz(raw, source='unknown'){
-  if(!raw || typeof raw !== 'object') return null;
-  const p = raw.printz && typeof raw.printz === 'object' ? raw.printz : raw;
-  const image = p.image || raw.image || p.img || raw.img || p.src || raw.src || p.photo || raw.photo || '';
-  if(!looksLikeImage(image)) return null;
-  const roleCandidate = p.role || raw.role || raw.printzRole || 'top';
-  const role = ['top','bottom','shoes','accessory'].includes(roleCandidate) ? roleCandidate : 'top';
-  const imageKey = String(image).slice(0,140).replace(/[^a-zA-Z0-9]/g,'').slice(0,42);
-  const id = String(p.id || raw.id || raw.printzId || `recovered-${imageKey || Date.now()}`);
-  return {
-    id,
-    image,
-    name:p.name || raw.name || raw.title || 'פרינט משוחזר',
-    role,
-    type:p.type || raw.type || 'אחר',
-    colorIds:safePrintzColorIds(raw),
-    recoveredAt:new Date().toISOString(),
-    recoveredFrom:source
-  };
-}
-
-function collectPrintzFromLook(look, target=[], source='look'){
+function collectPrintzFromLook(look, target=[]){
   if(!look || !look.mapping) return target;
-  Object.entries(look.mapping || {}).forEach(([role, entry]) => {
-    if(!entry) return;
-    if(entry.printz){
-      const item = normalizeRecoveredPrintz({...entry.printz, role:entry.printz.role || role}, `${source}.${role}.printz`);
-      if(item) target.push(item);
-    }
-    const direct = normalizeRecoveredPrintz({...entry, role}, `${source}.${role}`);
-    if(direct) target.push(direct);
+  Object.values(look.mapping || {}).forEach(entry => {
+    const p = entry && entry.printz;
+    if(!p || !p.id) return;
+    const colorIds = Array.isArray(p.colorIds) ? p.colorIds : (Array.isArray(p.colors) ? p.colors.map(c => c && c.id).filter(Boolean) : []);
+    target.push({
+      id:p.id,
+      image:p.image || '',
+      name:p.name || '',
+      role:p.role || 'top',
+      type:p.type || 'אחר',
+      colorIds,
+      recoveredAt:new Date().toISOString()
+    });
   });
   return target;
 }
 
-function collectPrintzFromDataObject(data, target=[], source='state'){
+function collectPrintzFromDataObject(data, target=[]){
   if(!data || typeof data !== 'object') return target;
-  if(Array.isArray(data.printz)){
-    data.printz.forEach((item, idx) => {
-      const normalized = normalizeRecoveredPrintz(item, `${source}.printz.${idx}`);
-      if(normalized) target.push(normalized);
-    });
-  }
-  collectPrintzFromLook(data.currentLook, target, `${source}.currentLook`);
-  collectPrintzFromLook(data.anchorLook, target, `${source}.anchorLook`);
-  (data.lookbook || []).forEach((look, idx) => collectPrintzFromLook(look, target, `${source}.lookbook.${idx}`));
-  (data.recent || []).forEach((look, idx) => collectPrintzFromLook(look, target, `${source}.recent.${idx}`));
-  return target;
-}
-
-function deepCollectPrintz(value, target=[], source='deep', seen=new Set(), depth=0){
-  if(!value || typeof value !== 'object' || depth > 6) return target;
-  if(seen.has(value)) return target;
-  seen.add(value);
-  const direct = normalizeRecoveredPrintz(value, source);
-  if(direct) target.push(direct);
-  if(value.printz && typeof value.printz === 'object'){
-    const nested = normalizeRecoveredPrintz(value.printz, `${source}.printz`);
-    if(nested) target.push(nested);
-  }
-  if(Array.isArray(value)){
-    value.forEach((item, idx) => deepCollectPrintz(item, target, `${source}[${idx}]`, seen, depth + 1));
-  }else{
-    Object.keys(value).forEach(key => {
-      if(['image','img','src','photo'].includes(key)) return;
-      deepCollectPrintz(value[key], target, `${source}.${key}`, seen, depth + 1);
-    });
-  }
+  if(Array.isArray(data.printz)) target.push(...data.printz);
+  collectPrintzFromLook(data.currentLook, target);
+  collectPrintzFromLook(data.anchorLook, target);
+  (data.lookbook || []).forEach(look => collectPrintzFromLook(look, target));
   return target;
 }
 
 function recoverPrintzFromLocalStorage(silent=false){
   let recoveredPrintz = [];
   let recoveredCustom = [];
-  let scannedKeys = 0;
 
-  collectPrintzFromDataObject(state, recoveredPrintz, 'liveState');
-  deepCollectPrintz(state, recoveredPrintz, 'liveStateDeep');
+  // First scan the live state: sometimes the daily look still knows the print, but the Printz list lost it.
+  collectPrintzFromDataObject(state, recoveredPrintz);
 
+  // Then scan every old backup/state object still present in this browser.
   for(let i=0; i<localStorage.length; i++){
     const key = localStorage.key(i);
     if(!key) continue;
-    scannedKeys++;
     try{
       const raw = localStorage.getItem(key);
-      if(!raw) continue;
-      if(looksLikeImage(raw)){
-        const item = normalizeRecoveredPrintz({id:`raw-${key}`, image:raw, name:'פרינט משוחזר', type:'אחר'}, `raw.${key}`);
-        if(item) recoveredPrintz.push(item);
-        continue;
-      }
-      let parsed;
-      try{ parsed = JSON.parse(raw); }catch(err){ continue; }
+      const parsed = JSON.parse(raw || '{}');
       const data = parsed.data || parsed;
-      collectPrintzFromDataObject(data, recoveredPrintz, key);
-      deepCollectPrintz(data, recoveredPrintz, key);
+      collectPrintzFromDataObject(data, recoveredPrintz);
       if(Array.isArray(data.customColors)) recoveredCustom.push(...data.customColors);
-      if(Array.isArray(parsed.customColors)) recoveredCustom.push(...parsed.customColors);
     }catch(err){}
   }
 
-  const before = (state.printz || []).length;
-  const byKey = new Map();
-  (state.printz || []).forEach(item => {
-    if(!item) return;
-    const normalized = normalizeRecoveredPrintz(item, 'existing') || item;
-    const key = item.id || item.image?.slice(0,180);
-    if(key) byKey.set(key, {...item, ...normalized});
-  });
-
+  const byPrintzId = new Map((state.printz || []).map(item => [item.id, item]));
   recoveredPrintz.forEach(item => {
-    if(!item || !item.image) return;
-    const key = item.id || item.image.slice(0,180);
-    const existing = byKey.get(key);
-    byKey.set(key, {
+    if(!item || !item.id) return;
+    const existing = byPrintzId.get(item.id);
+    const image = item.image || existing?.image || '';
+    if(!image) return;
+    byPrintzId.set(item.id, {
       ...existing,
       ...item,
-      image:item.image || existing?.image || '',
-      colorIds:(Array.isArray(item.colorIds) && item.colorIds.length ? item.colorIds : existing?.colorIds || []).slice(0,3),
-      name:item.name || existing?.name || 'פרינט משוחזר',
+      image,
       role:item.role || existing?.role || 'top',
-      type:item.type || existing?.type || 'אחר'
+      type:item.type || existing?.type || 'אחר',
+      colorIds:(Array.isArray(item.colorIds) && item.colorIds.length ? item.colorIds : existing?.colorIds || []).slice(0,3),
+      name:item.name || existing?.name || ''
     });
   });
 
   const byColorId = new Map((state.customColors || []).map(item => [item.id, item]));
-  recoveredCustom.forEach(item => { if(item && item.id && item.hex && !byColorId.has(item.id)) byColorId.set(item.id, item); });
+  recoveredCustom.forEach(item => {
+    if(item && item.id && item.hex && !byColorId.has(item.id)) byColorId.set(item.id, item);
+  });
 
-  state.printz = Array.from(byKey.values()).filter(item => item && item.image).slice(0,80);
-  state.customColors = Array.from(byColorId.values()).slice(0,160);
+  const before = (state.printz || []).length;
+  state.printz = Array.from(byPrintzId.values()).slice(0,48);
+  state.customColors = Array.from(byColorId.values()).slice(0,120);
   mergeCustomColorsIntoPalette();
   hydrateStatePrintzImages();
   saveState();
   renderAll();
-
-  const added = Math.max(0, state.printz.length - before);
-  const message = `v63 · נסרקו ${scannedKeys} מקומות · נמצאו ${recoveredPrintz.length} מועמדים · עכשיו יש ${state.printz.length} פרינטז ברשימה`;
-  setBackupStatus(message);
+  const added = state.printz.length - before;
   if(!silent){
     if(added > 0) toast(`מצאתי והחזרתי ${added} פרינטז ✨`);
-    else if(state.printz.length) toast('הרשימה סונכרנה, לא נוספו חדשים');
-    else toast('לא מצאתי פרינטז לשחזור');
+    else toast('לא מצאתי עוד פרינטז לשחזור');
   }
   return added;
 }
