@@ -145,6 +145,10 @@ html,body{width:100%;overflow-x:hidden}body{max-width:100vw}main,.screen,.anchor
 /* v56 edit printz */
 .printz-actions{display:grid;grid-template-columns:1fr 118px;gap:10px;align-items:center}.printz-edit-note{display:none;padding:10px 12px;border-radius:16px;background:rgba(79,52,39,.06);color:#5a4136;font-size:13px;font-weight:900}.printz-edit-note.active{display:block}.is-hidden{display:none!important}.printz-item{grid-template-columns:72px 1fr 78px}.printz-item-actions{display:grid;gap:8px;align-content:center}.printz-mini-btn{width:100%;height:34px;border-radius:12px;background:rgba(60,40,30,.07);color:#6d5b50;font-size:15px;font-weight:900;border:1px solid rgba(79,52,39,.08)}.printz-mini-btn.delete{font-size:20px;line-height:1}.printz-mini-btn.edit{font-size:13px}.printz-mini-btn:hover{background:rgba(60,40,30,.1)}@media(max-width:430px){.printz-actions{grid-template-columns:1fr 106px}.printz-item{grid-template-columns:64px 1fr 70px}.printz-mini-btn{height:32px}.printz-mini-btn.edit{font-size:12px}}@media(max-width:360px){.printz-actions{grid-template-columns:1fr}.printz-item{grid-template-columns:64px 1fr}.printz-item-actions{grid-column:1 / -1;grid-template-columns:1fr 1fr}}
 
+
+/* v57 clean main screen */
+.daily-context-card{display:none!important}.clean-dare-row{display:block!important;margin:0 0 16px!important}.clean-dare-row .dare-btn{width:100%;max-width:220px;margin:0 auto;display:block}.not-me-btn{display:none!important}
+
 </style>
 </head>
 <body>
@@ -159,17 +163,9 @@ html,body{width:100%;overflow-x:hidden}body{max-width:100vw}main,.screen,.anchor
         <section class="today-layout">
           <button class="mode-pill" id="changeColorModeBtn" type="button"><span>✦</span><strong id="colorModeTitle">סופר צבע</strong></button>
           <p id="colorModeDesc" hidden>4 צבעים, בלי להתנצל</p>
-          <section class="daily-context-card" aria-label="כוונון יומי">
-            <div class="context-row"><small>מצב רוח</small><div class="context-chips" id="moodChips"></div></div>
-            <div class="context-row"><small>תפקיד הלוק</small><div class="context-chips" id="purposeChips"></div></div>
-          </section>
           <div class="today-title-block"><h2 id="lookTitle">—</h2><p id="lookVibe" class="today-subtitle">לוק יומי עם נגיעה חמה ובולטת</p></div>
           <div class="top-action-row clean-actions"><button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button><button class="secondary-btn" id="saveLookBtn" type="button">שומרת ♡</button></div>
-          <div class="feedback-row">
-            <button class="not-me-btn" id="notTodayBtn" type="button">לא היום</button>
-            <button class="not-me-btn" id="dislikeLookBtn" type="button">פחות אני</button>
-            <button class="dare-btn" id="dareMoreBtn" type="button">תעזי יותר ✦</button>
-          </div>
+          <div class="feedback-row clean-dare-row"><button class="dare-btn" id="dareMoreBtn" type="button">תעזי יותר ✦</button></div>
           <section class="look-visual-card clean-look-card" id="lookVisual"></section>
           <section class="why-card clean-why-card"><div class="why-sparkle">✧</div><div><h3>למה זה עובד?</h3><p id="whyWorks"></p></div></section>
         </section>
@@ -252,7 +248,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v56-edit-printz';
+const APP_VERSION = 'v57-clean-main';
 
 const COLORS = {
   // Whites / creams
@@ -1004,8 +1000,6 @@ function bindEvents(){
   });
 
   $('saveLookBtn').addEventListener('click', () => saveLook(state.currentLook));
-  on('dislikeLookBtn','click', markCurrentLookAsNotMe);
-  on('notTodayBtn','click', markCurrentLookAsNotToday);
   on('dareMoreBtn','click', dareMore);
   document.addEventListener('click', handleItemControlClick);
   on('anchorModeBtn','click', () => showScreen('anchorScreen'));
@@ -2653,15 +2647,10 @@ function maybeApplyPrintzToLook(look){
 }
 
 function getPrintzUseChance(){
-  const mood = state.mood || 'easy';
-  const purpose = state.purpose || 'day';
-  let chance = 0.34;
-  if(['calm','easy','classic'].includes(mood)) chance = 0.24;
-  if(mood === 'color') chance = 0.32;
-  if(['weird','wow'].includes(mood)) chance = 0.52;
-  if(['home','work'].includes(purpose)) chance -= 0.06;
-  if(['evening','meeting'].includes(purpose)) chance += 0.08;
-  return Math.max(0.14, Math.min(0.75, chance));
+  const mode = state.colorMode || 'super';
+  if(mode === 'tiny') return 0.18;
+  if(mode === 'half') return 0.34;
+  return 0.48;
 }
 
 function printzMatchScore(look, item){
@@ -2676,10 +2665,8 @@ function printzMatchScore(look, item){
     });
   });
   if(item.role === 'shoes' || item.role === 'accessory') s += 5;
-  if(['weird','wow'].includes(state.mood) && isStrongPrintType(item.type)) s += 10;
-  if(['calm','easy','classic'].includes(state.mood) && isQuietPrintType(item.type)) s += 7;
-  if(['work','home'].includes(state.purpose) && isStrongPrintType(item.type)) s -= 16;
-  if(state.purpose === 'evening' && (item.role === 'shoes' || item.role === 'accessory')) s += 5;
+  if((state.colorMode || 'super') === 'super' && isStrongPrintType(item.type)) s += 6;
+  if((state.colorMode || 'super') === 'tiny' && isQuietPrintType(item.type)) s += 5;
   const recentIds = state.printzRecentIds || [];
   if(recentIds[0] === item.id) s -= 60;
   else if(recentIds.includes(item.id)) s -= 28;
