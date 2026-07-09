@@ -149,6 +149,10 @@ html,body{width:100%;overflow-x:hidden}body{max-width:100vw}main,.screen,.anchor
 /* v57 clean main screen */
 .daily-context-card{display:none!important}.clean-dare-row{display:block!important;margin:0 0 16px!important}.clean-dare-row .dare-btn{width:100%;max-width:220px;margin:0 auto;display:block}.not-me-btn{display:none!important}
 
+
+/* v58 backup restore */
+.backup-card{display:grid;gap:12px}.backup-card h3{margin:0 0 2px}.backup-card p{margin:0;color:var(--muted);line-height:1.35}.backup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.backup-grid .secondary-btn,.backup-grid .primary-btn{font-size:15px;padding:13px 10px}.backup-grid .wide{grid-column:1 / -1}.backup-note{font-size:12px;color:var(--muted);font-weight:800;line-height:1.35}@media(max-width:360px){.backup-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -213,6 +217,7 @@ html,body{width:100%;overflow-x:hidden}body{max-width:100vw}main,.screen,.anchor
 
       <section class="screen" id="printzScreen">
         <div class="section-header printz-hero"><div><p class="eyebrow soft">הפרינטים שלך</p><h2>פרינטז</h2><p>צלמי תקריב של פרינט, תני לו סוג וצבעים עיקריים — והאפליקציה תשלב אותו מדי פעם בלוק היומי.</p></div></div>
+        <section class="printz-card backup-card"><h3>גיבוי ושחזור</h3><p>כדי שהפרינטים והצבעים שלך לא יעשו לנו הודיני שוב.</p><div class="backup-grid"><button class="secondary-btn" id="backupDataBtn" type="button">גיבוי לקובץ</button><button class="secondary-btn" id="restoreDataBtn" type="button">שחזור מקובץ</button><button class="primary-btn wide" id="recoverPrintzBtn" type="button">נסי להציל פרינטז שנעלמו</button></div><div class="backup-note">השחזור מקובץ מחליף את הנתונים באפליקציה. כפתור ההצלה רק מחפש נתונים ישנים בדפדפן וממזג פרינטז אם מצא.</div><input id="restoreDataInput" type="file" accept="application/json,.json" hidden></section>
         <section class="printz-card">
           <h3 id="printzFormTitle">+ פרינט חדש</h3>
           <div class="printz-form">
@@ -248,7 +253,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = 'v57-clean-main';
+const APP_VERSION = 'v58-backup-restore';
 
 const COLORS = {
   // Whites / creams
@@ -1022,6 +1027,10 @@ function bindEvents(){
   $('changeColorModeBtn').addEventListener('click', () => openColorModeDialog('today'));
   $('closeColorModeBtn').addEventListener('click', () => $('colorModeDialog').close());
   on('anchorChangeColorModeBtn','click', () => openColorModeDialog('anchor'));
+  on('backupDataBtn','click', backupDataToFile);
+  on('restoreDataBtn','click', () => el('restoreDataInput')?.click());
+  on('restoreDataInput','change', restoreDataFromFile);
+  on('recoverPrintzBtn','click', recoverPrintzFromLocalStorage);
   on('printzImageInput','change', handlePrintzImage);
   on('printzColorSearch','input', handlePrintzSearch);
   on('addCustomPrintzColorBtn','click', addCustomPrintzColor);
@@ -2371,6 +2380,97 @@ function renderPrintzFamilyFilters(){
   strip.innerHTML = PRINTZ_COLOR_GROUPS.map(group => `<button class="printz-family-chip ${active === group.id ? 'selected' : ''}" data-printz-family="${group.id}" type="button">${group.label}</button>`).join('');
   if(el('printzColorSearch')) el('printzColorSearch').value = state.printzColorSearch || '';
 }
+
+function makeBackupPayload(){
+  return {
+    app:'Shimi Looks',
+    version: APP_VERSION,
+    exportedAt: new Date().toISOString(),
+    storageKey: STORAGE_KEY,
+    data: buildPersistableState()
+  };
+}
+
+function backupDataToFile(){
+  try{
+    const payload = makeBackupPayload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0,10);
+    a.href = URL.createObjectURL(blob);
+    a.download = `shimi-looks-backup-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    toast('הורדתי גיבוי ✨');
+  }catch(err){
+    toast('לא הצלחתי ליצור גיבוי');
+  }
+}
+
+function restoreDataFromFile(event){
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const payload = JSON.parse(reader.result);
+      const incoming = payload.data || payload;
+      if(!incoming || typeof incoming !== 'object') throw new Error('bad backup');
+      const currentBackup = makeBackupPayload();
+      localStorage.setItem(`${STORAGE_KEY}-before-restore-${Date.now()}`, JSON.stringify(currentBackup));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(incoming));
+      Object.keys(state).forEach(key => delete state[key]);
+      Object.assign(state, loadState());
+      state.editingPrintzId = null;
+      mergeCustomColorsIntoPalette();
+      hydrateStatePrintzImages();
+      saveState();
+      renderAll();
+      toast('שוחזר מגיבוי ✨');
+    }catch(err){
+      toast('קובץ הגיבוי לא תקין');
+    }finally{
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function recoverPrintzFromLocalStorage(){
+  let recoveredPrintz = [];
+  let recoveredCustom = [];
+  for(let i=0; i<localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(!key) continue;
+    try{
+      const raw = localStorage.getItem(key);
+      const parsed = JSON.parse(raw || '{}');
+      const data = parsed.data || parsed;
+      if(Array.isArray(data.printz)) recoveredPrintz.push(...data.printz);
+      if(Array.isArray(data.customColors)) recoveredCustom.push(...data.customColors);
+    }catch(err){}
+  }
+  const byPrintzId = new Map((state.printz || []).map(item => [item.id, item]));
+  recoveredPrintz.forEach(item => {
+    if(item && item.id && item.image && !byPrintzId.has(item.id)) byPrintzId.set(item.id, item);
+  });
+  const byColorId = new Map((state.customColors || []).map(item => [item.id, item]));
+  recoveredCustom.forEach(item => {
+    if(item && item.id && item.hex && !byColorId.has(item.id)) byColorId.set(item.id, item);
+  });
+  const before = (state.printz || []).length;
+  state.printz = Array.from(byPrintzId.values()).slice(0,48);
+  state.customColors = Array.from(byColorId.values()).slice(0,120);
+  mergeCustomColorsIntoPalette();
+  hydrateStatePrintzImages();
+  saveState();
+  renderAll();
+  const added = state.printz.length - before;
+  if(added > 0) toast(`מצאתי והחזרתי ${added} פרינטז ✨`);
+  else toast('לא מצאתי פרינטז ישנים בדפדפן הזה');
+}
+
 
 function renderPrintzPreview(){
   const box = el('printzPreview');
