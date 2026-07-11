@@ -257,8 +257,8 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 
 'use strict';
 
-const STORAGE_KEY = 'shimi-looks-v11-earth-balanced';
-const APP_VERSION = '1.0.6-style-cleanup';
+const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
+const APP_VERSION = '1.1.0-full-spectrum';
 
 const COLORS = {
   // Whites / creams
@@ -584,7 +584,116 @@ const EXTRA_COLORS = {
   brick:{id:'brick',he:'אדום לבנים',en:'Brick Red',hex:'#A6463C',family:'red'},
   garnet:{id:'garnet',he:'גרנט',en:'Garnet',hex:'#7D1E2F',family:'red'}
 };
-Object.assign(COLORS, EXTRA_COLORS);
+const FULL_COLOR_EXPANSION = {
+  snow:{id:'snow',he:'שלג',en:'Snow',hex:'#FCFCFA',family:'light'},
+  porcelain:{id:'porcelain',he:'פורצלן',en:'Porcelain',hex:'#F8F5EF',family:'light'},
+  shell:{id:'shell',he:'צדף',en:'Shell',hex:'#F5EEE8',family:'light'},
+  ecru:{id:'ecru',he:'אקרו',en:'Ecru',hex:'#E8DCCB',family:'light'},
+  moon:{id:'moon',he:'ירח',en:'Moon',hex:'#EEE9E1',family:'neutral'},
+  lace:{id:'lace',he:'תחרה',en:'Lace',hex:'#FAF5EF',family:'light'},
+  frost:{id:'frost',he:'כפור',en:'Frost',hex:'#F4F7F8',family:'neutral'},
+  buttermilk:{id:'buttermilk',he:'חלב חמאה',en:'Buttermilk',hex:'#F5E7B8',family:'light'},
+  parchment:{id:'parchment',he:'קלף',en:'Parchment',hex:'#EDE2D0',family:'light'},
+  gesso:{id:'gesso',he:'גסו',en:'Gesso',hex:'#F7F1E7',family:'light'},
+  dune:{id:'dune',he:'דיונה',en:'Dune',hex:'#C9B299',family:'warm-neutral'},
+  flax:{id:'flax',he:'פשתן טבעי',en:'Flax',hex:'#D4C1A3',family:'warm-neutral'},
+  sesame:{id:'sesame',he:'שומשום',en:'Sesame',hex:'#C8B08E',family:'warm-neutral'},
+  fawn:{id:'fawn',he:'איילה',en:'Fawn',hex:'#B89B7A',family:'warm-neutral'},
+  putty:{id:'putty',he:'מרק',en:'Putty',hex:'#A99284',family:'neutral'},
+  truffle:{id:'truffle',he:'כמהין',en:'Truffle',hex:'#735A4D',family:'dark-neutral'},
+  coffee:{id:'coffee',he:'קפה',en:'Coffee',hex:'#6B4B3E',family:'dark-neutral'},
+  sepia:{id:'sepia',he:'ספיה',en:'Sepia',hex:'#7A5746',family:'dark-neutral'},
+  clay:{id:'clay',he:'חמרה',en:'Clay',hex:'#AA7B5A',family:'warm-neutral'},
+  driftwood:{id:'driftwood',he:'עץ סחף',en:'Driftwood',hex:'#8D7769',family:'neutral'},
+  pebble:{id:'pebble',he:'חלוק',en:'Pebble',hex:'#B1A79C',family:'neutral'},
+  cement:{id:'cement',he:'מלט',en:'Cement',hex:'#9A9B96',family:'neutral'},
+  pepper:{id:'pepper',he:'פלפל',en:'Pepper',hex:'#5C5A59',family:'dark-neutral'},
+  raven:{id:'raven',he:'עורב',en:'Raven',hex:'#2F3135',family:'dark-neutral'},
+  licorice:{id:'licorice',he:'ליקריץ',en:'Licorice',hex:'#1F2024',family:'dark-neutral'},
+  sable:{id:'sable',he:'סייבל',en:'Sable',hex:'#5A463D',family:'dark-neutral'},
+  arctic:{id:'arctic',he:'כחול ארקטי',en:'Arctic Blue',hex:'#D9ECF7',family:'blue'},
+  robin:{id:'robin',he:'כחול רובין',en:'Robin Egg Blue',hex:'#B8E0F2',family:'blue'},
+  horizon:{id:'horizon',he:'כחול אופק',en:'Horizon Blue',hex:'#9DC7E8',family:'blue'},
+  airyblue:{id:'airyblue',he:'כחול אוויר',en:'Airy Blue',hex:'#C3DDF0',family:'blue'},
+  capri:{id:'capri',he:'כחול קפרי',en:'Capri Blue',hex:'#5FA9DD',family:'blue'},
+  cerulean2:{id:'cerulean2',he:'כחול סרוליאן עמוק',en:'Deep Cerulean',hex:'#2D84C6',family:'blue'},
+  marine:{id:'marine',he:'כחול מרין',en:'Marine Blue',hex:'#2C6C9E',family:'blue'},
+  harbor:{id:'harbor',he:'כחול נמל',en:'Harbor Blue',hex:'#5D7EA3',family:'blue'},
+  cadet:{id:'cadet',he:'כחול קדט',en:'Cadet Blue',hex:'#6E8FA8',family:'blue'},
+  lapis:{id:'lapis',he:'לפיס',en:'Lapis Blue',hex:'#315D9B',family:'blue'},
+  mazarine:{id:'mazarine',he:'מזארין',en:'Mazarine',hex:'#273C8A',family:'blue'},
+  sapphire2:{id:'sapphire2',he:'ספיר כחול',en:'Blue Sapphire',hex:'#18508A',family:'blue'},
+  atlantic:{id:'atlantic',he:'אטלנטי',en:'Atlantic Blue',hex:'#214C74',family:'blue'},
+  stormblue:{id:'stormblue',he:'כחול סערה',en:'Storm Blue',hex:'#4E627A',family:'blue'},
+  prussian:{id:'prussian',he:'כחול פרוסי',en:'Prussian Blue',hex:'#20344F',family:'blue'},
+  celery:{id:'celery',he:'ירוק סלרי',en:'Celery',hex:'#C1D56B',family:'green'},
+  chartreuse:{id:'chartreuse',he:'שרטרז',en:'Chartreuse',hex:'#B9D63B',family:'green'},
+  oliveleaf:{id:'oliveleaf',he:'עלה זית',en:'Olive Leaf',hex:'#8E9851',family:'green'},
+  meadow:{id:'meadow',he:'ירוק אחו',en:'Meadow Green',hex:'#63A24D',family:'green'},
+  clover:{id:'clover',he:'תלתן',en:'Clover Green',hex:'#4B8A44',family:'green'},
+  kelly:{id:'kelly',he:'ירוק קלי',en:'Kelly Green',hex:'#2F9B52',family:'green'},
+  jade:{id:'jade',he:'ג׳ייד',en:'Jade',hex:'#3A8F6E',family:'green'},
+  ivy:{id:'ivy',he:'ירוק קיסוס',en:'Ivy',hex:'#416B45',family:'green'},
+  loden:{id:'loden',he:'לודן',en:'Loden Green',hex:'#586246',family:'green'},
+  spruce:{id:'spruce',he:'ירוק אשוח',en:'Spruce',hex:'#2F5C45',family:'green'},
+  crocodile:{id:'crocodile',he:'ירוק תנין',en:'Crocodile',hex:'#4E5A3C',family:'green'},
+  shamrock:{id:'shamrock',he:'שמרוק',en:'Shamrock',hex:'#33A65C',family:'green'},
+  fernlight:{id:'fernlight',he:'שרך בהיר',en:'Light Fern',hex:'#7BA06A',family:'green'},
+  pearleaf:{id:'pearleaf',he:'עלה אגס',en:'Pear Leaf',hex:'#95B45B',family:'green'},
+  laurel:{id:'laurel',he:'דפנה',en:'Laurel',hex:'#768A63',family:'green'},
+  seashellpink:{id:'seashellpink',he:'ורוד צדף',en:'Seashell Pink',hex:'#F4D7D7',family:'soft'},
+  babyrose:{id:'babyrose',he:'ורוד רוזה',en:'Baby Rose',hex:'#F1C7D4',family:'soft'},
+  cameo:{id:'cameo',he:'קמאו',en:'Cameo Pink',hex:'#E6B8B1',family:'soft'},
+  balletslipper:{id:'balletslipper',he:'נעלי בלט',en:'Ballet Slipper',hex:'#F0C6CF',family:'soft'},
+  pinksand:{id:'pinksand',he:'חול ורוד',en:'Pink Sand',hex:'#D8B0AA',family:'soft'},
+  tearose:{id:'tearose',he:'תה ורוד',en:'Tea Rose',hex:'#F2B9B2',family:'soft'},
+  carnation:{id:'carnation',he:'ציפורן',en:'Carnation Pink',hex:'#F78FB3',family:'soft'},
+  peony:{id:'peony',he:'פיוני',en:'Peony Pink',hex:'#E87EA1',family:'soft'},
+  rosebud:{id:'rosebud',he:'ניצן ורד',en:'Rosebud',hex:'#D7708C',family:'soft'},
+  cottoncandy:{id:'cottoncandy',he:'צמר גפן',en:'Cotton Candy',hex:'#F7A8C4',family:'soft'},
+  cerisepink:{id:'cerisepink',he:'צריסה',en:'Cerise Pink',hex:'#D84C7F',family:'soft'},
+  nudeblush:{id:'nudeblush',he:'ניוד סומק',en:'Nude Blush',hex:'#D0A09A',family:'soft'},
+  heather:{id:'heather',he:'הת׳ר',en:'Heather',hex:'#C7B2D9',family:'purple'},
+  lilacmist:{id:'lilacmist',he:'ערפל לילך',en:'Lilac Mist',hex:'#D6C7EA',family:'purple'},
+  hyacinth:{id:'hyacinth',he:'יקינתון',en:'Hyacinth',hex:'#A887D9',family:'purple'},
+  iris:{id:'iris',he:'איריס',en:'Iris',hex:'#8F73C9',family:'purple'},
+  pansy:{id:'pansy',he:'אמנון ותמר',en:'Pansy',hex:'#7156B5',family:'purple'},
+  mulberry:{id:'mulberry',he:'תות עץ',en:'Mulberry',hex:'#7E4A7F',family:'purple'},
+  thistle:{id:'thistle',he:'דרדר',en:'Thistle',hex:'#B79DC8',family:'purple'},
+  mauvedust:{id:'mauvedust',he:'אבק מאוב',en:'Mauve Dust',hex:'#9E86A8',family:'purple'},
+  royalplum:{id:'royalplum',he:'שזיף מלכותי',en:'Royal Plum',hex:'#5C356F',family:'purple'},
+  boysenberry:{id:'boysenberry',he:'בויסנברי',en:'Boysenberry',hex:'#6B3A60',family:'purple'},
+  aubergine:{id:'aubergine',he:'אוברג׳ין',en:'Aubergine',hex:'#4B2849',family:'purple'},
+  blackcurrant:{id:'blackcurrant',he:'קסיס',en:'Blackcurrant',hex:'#3D2344',family:'purple'},
+  primrose:{id:'primrose',he:'פרימרוז',en:'Primrose',hex:'#F5E58A',family:'warm-accent'},
+  daffodil:{id:'daffodil',he:'נרקיס צהוב',en:'Daffodil',hex:'#F3D64B',family:'warm-accent'},
+  sunflower:{id:'sunflower',he:'חמנייה',en:'Sunflower',hex:'#EABF2E',family:'warm-accent'},
+  amber:{id:'amber',he:'ענבר',en:'Amber',hex:'#D99A1E',family:'warm-accent'},
+  saffron:{id:'saffron',he:'זעפרן',en:'Saffron',hex:'#D8891C',family:'warm-accent'},
+  honey:{id:'honey',he:'דבש',en:'Honey',hex:'#C78A22',family:'warm-accent'},
+  butterscotch:{id:'butterscotch',he:'בוטרסקטש',en:'Butterscotch',hex:'#C98B45',family:'warm-accent'},
+  cantaloupe:{id:'cantaloupe',he:'מלון כתום',en:'Cantaloupe',hex:'#F4A66A',family:'warm-accent'},
+  tangerine:{id:'tangerine',he:'קלמנטינה',en:'Tangerine',hex:'#F38B2A',family:'warm-accent'},
+  marmalade:{id:'marmalade',he:'מרמלדה',en:'Marmalade',hex:'#E97A1F',family:'warm-accent'},
+  pumpkin:{id:'pumpkin',he:'דלעת',en:'Pumpkin',hex:'#D96C1B',family:'warm-accent'},
+  paprika2:{id:'paprika2',he:'פפריקה',en:'Paprika',hex:'#C95C29',family:'warm-accent'},
+  persimmon:{id:'persimmon',he:'אפרסמון',en:'Persimmon',hex:'#DF6B45',family:'warm-accent'},
+  ginger:{id:'ginger',he:'ג׳ינג׳ר',en:'Ginger',hex:'#B86A3A',family:'warm-accent'},
+  cider:{id:'cider',he:'סיידר',en:'Cider',hex:'#A35A24',family:'warm-accent'},
+  clayorange:{id:'clayorange',he:'כתום חמרה',en:'Clay Orange',hex:'#B86D48',family:'warm-accent'},
+  ruby:{id:'ruby',he:'רובי',en:'Ruby',hex:'#B51E3A',family:'red'},
+  vermilion:{id:'vermilion',he:'ורמיליון',en:'Vermilion',hex:'#D84B2A',family:'red'},
+  currant:{id:'currant',he:'דומדמנית',en:'Currant Red',hex:'#9F263E',family:'red'},
+  pomegranate:{id:'pomegranate',he:'רימון',en:'Pomegranate',hex:'#A62D35',family:'red'},
+  merlot:{id:'merlot',he:'מרלו',en:'Merlot',hex:'#6E2430',family:'red'},
+  oxblood:{id:'oxblood',he:'אוקסבלד',en:'Oxblood',hex:'#5A1F29',family:'red'},
+  sangria:{id:'sangria',he:'סנגריה',en:'Sangria',hex:'#7C233A',family:'red'},
+  garnet2:{id:'garnet2',he:'גרנט עמוק',en:'Deep Garnet',hex:'#6A1A2F',family:'red'},
+  poppy:{id:'poppy',he:'פרג',en:'Poppy Red',hex:'#E24A3B',family:'red'},
+  raspberryred:{id:'raspberryred',he:'אדום פטל',en:'Raspberry Red',hex:'#C12F59',family:'red'}
+};
+
+Object.assign(COLORS, EXTRA_COLORS, FULL_COLOR_EXPANSION);
 COLORS.transparent = {id:'transparent',he:'שקוף (PVC)',en:'Transparent PVC',hex:'linear-gradient(135deg,#ffffff 0 42%,#d8dde3 43% 48%,#ffffff 49% 100%)',family:'neutral',special:'transparent'};
 
 const SHOE_SAFE_IDS = Object.keys(COLORS).filter(id => !['mint','teal','turquoise'].includes(id));
@@ -778,16 +887,34 @@ const PIECES = [
 ];
 
 const COLOR_FAMILIES = {
-  'לבן / שמנת':['opticwhite','white','milk','ivory','cream','pearl','champagne','linen','oat','sand'],
-  'אפור / שחור':['fog','silver','dove','stone','pewter','graphite','charcoal','black'],
-  'בז׳ / חום':['beige','khaki','camel','tan','caramel','cognac','tobacco','chestnut','cocoa','chocolate','espresso','bark'],
-  'כחול / תכלת':['powderblue','iceblue','sky','babyblue','cornflower','periwinkle','denim','steelblue','slate','royal','cobalt','ultramarine','indigo','navy','midnight'],
-  'ירוק':['pistachio','lime','apple','grass','fern','sage','eucalyptus','avocado','artichoke','olive','army','moss','leaf','emerald','bottle','forest','pine'],
-  'ורוד':['ballet','blush','rose','dustyrose','salmon','mauve','orchid','fuchsia','magenta'],
-  'סגול':['lavender','lavgray','lilac','amethyst','violet','plum','eggplant','fig','bordeaux'],
-  'צהוב / כתום':['butter','vanilla','lemon','straw','mustard','ochre','marigold','gold','orange','apricot','peach','coral','terracotta','rust','copper'],
-  'אדום מוגבל':['tomato','cherry','lipstick','scarlet','wine']
+  'לבן / שמנת':['opticwhite','white','milk','snow','porcelain','shell','lace','frost','moon','pearl','ivory','cream','champagne','linen','oat','sand','alabaster','bone','ecru','buttermilk','parchment','gesso','vanilla','butter'],
+  'אפור / שחור':['fog','silver','dove','stone','pewter','graphite','charcoal','black','ash','smoke','cement','pebble','putty','mushroom','slate','pepper','raven','licorice'],
+  'בז׳ / חום':['beige','khaki','camel','tan','caramel','cognac','tobacco','chestnut','cocoa','chocolate','espresso','bark','biscuit','almond','latte','toffee','mocha','hazelnut','walnut','umber','dune','flax','sesame','fawn','truffle','coffee','sepia','clay','driftwood','sable'],
+  'כחול / תכלת':['powderblue','iceblue','arctic','robin','babyblue','sky','skyblue','airyblue','cloudblue','horizon','cornflower','periwinkle','capri','cerulean','cerulean2','azure','frenchblue','denimlight','denim','denimmid','harbor','steelblue','cadet','slateblue','slate','royal','royalblue','cobalt','cobalt2','ultramarine','ultramarine2','lapis','sapphire','sapphire2','indigo','indigo2','marine','atlantic','ink','midnight','nightblue','stormblue','prussian','mazarine','navy'],
+  'ירוק':['pistachio','celery','lime','chartreuse','pear','pearleaf','apple','applegreen','grass','meadow','clover','kelly','shamrock','fernlight','fern','leaf','sage','eucalyptus','matcha','avocado','artichoke','cactus','laurel','olivebright','olive','oliveleaf','army','moss','ivy','loden','jade','jungle','hunter','forest','bottle','pine','spruce','crocodile','emerald','parsley','basil'],
+  'ורוד':['ballet','babypink','babyrose','powderpink','petalpink','blushpink','blush','rose','rosepink','dustypink','dustyrose','seashellpink','cameo','balletslipper','pinksand','tearose','salmon','peachpink','nudepink','nudeblush','carnation','bubblegum','cottoncandy','peony','flamingo','watermelon','rosebud','cerisepink','raspberrypink','mauvepink','mauve','antiquepink','barbie'],
+  'סגול':['lavender','lavgray','heather','lilacmist','lilac','wisteria','hyacinth','orchidlight','orchid','amethyst','violet','violet2','iris','pansy','plum','royalplum','mulberry','boysenberry','aubergine','eggplant','fig','mauvedust','thistle','blackcurrant','bordeaux','fuchsia','magenta'],
+  'צהוב / כתום':['butter','vanilla','primrose','lemon','daffodil','straw','mustard','ochre','marigold','sunflower','gold','amber','saffron','honey','butterscotch','orange','tangerine','marmalade','apricot','peach','cantaloupe','coral','persimmon','terracotta','rust','copper','pumpkin','paprika2','ginger','cider','clayorange'],
+  'אדום מוגבל':['tomato','cherry','lipstick','scarlet','wine','ruby','vermilion','currant','pomegranate','merlot','oxblood','sangria','cranberry','brick','garnet','garnet2','poppy','raspberryred']
 };
+
+const SPECTRUM_COUNT = Object.keys(COLORS).length;
+
+Object.assign(GROUPS, {
+  light:[...COLOR_FAMILIES['לבן / שמנת']],
+  warmLight:['cream','champagne','oat','sand','alabaster','bone','ecru','buttermilk','parchment','gesso','butter','vanilla','apricot','peach'],
+  warmNeutral:[...COLOR_FAMILIES['בז׳ / חום']],
+  darkNeutral:['black','charcoal','graphite','espresso','chocolate','cocoa','chestnut','bark','truffle','coffee','sepia','sable','raven','licorice','midnight'],
+  neutral:['opticwhite','white','milk','snow','porcelain','shell','pearl','ivory','cream','linen','fog','silver','dove','stone','pewter','graphite','charcoal','black','taupe','greige','ash','smoke','cement','pebble','putty','mushroom','slate'],
+  blue:[...COLOR_FAMILIES['כחול / תכלת']],
+  green:[...COLOR_FAMILIES['ירוק']],
+  soft:[...COLOR_FAMILIES['ורוד'],'lavgray','lilac','lavender','heather','thistle'],
+  purple:[...COLOR_FAMILIES['סגול']],
+  warmAccent:[...COLOR_FAMILIES['צהוב / כתום']],
+  red:[...COLOR_FAMILIES['אדום מוגבל']],
+  jewel:['royal','royalblue','cobalt','cobalt2','ultramarine','ultramarine2','lapis','sapphire','sapphire2','indigo','indigo2','navy','midnight','emerald','jade','bottle','forest','pine','spruce','plum','royalplum','aubergine','eggplant','fig','bordeaux','fuchsia','magenta','cherry','wine','ruby','merlot','sangria']
+});
+RED_COLOR_IDS.splice(0, RED_COLOR_IDS.length, ...COLOR_FAMILIES['אדום מוגבל']);
 
 const COLOR_MODES = {
   super:{id:'super', title:'סופר צבע', desc:'4 צבעים, בלי להתנצל', detail:'לימים שבא לך שהלוק ייכנס לפנייך.'},
@@ -896,7 +1023,7 @@ function loadState(){
       openedPearls: Array.isArray(parsed.openedPearls) ? parsed.openedPearls : []
     };
   }catch(e){
-    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],disliked:[],notToday:[],printz:[],printzDraftImage:null,printzSelectedColors:[],printzMisses:0,printzRecentIds:[],customColors:[],printzColorSearch:'',printzColorFamily:'all',lockedRoles:{},mood:'easy',purpose:'day',colorMode:'super',screen:'todayScreen',installDate:new Date().toISOString(),wearAnswers:[],nextWearChallengeAt:new Date(Date.now()+3*86400000).toISOString(),openedPearls:[]};
+    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'בז׳ / חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],disliked:[],notToday:[],printz:[],printzDraftImage:null,printzSelectedColors:[],printzMisses:0,printzRecentIds:[],customColors:[],printzColorSearch:'',printzColorFamily:'all',lockedRoles:{},mood:'easy',purpose:'day',colorMode:'super',screen:'todayScreen',installDate:new Date().toISOString(),wearAnswers:[],nextWearChallengeAt:new Date(Date.now()+3*86400000).toISOString(),openedPearls:[]};
   }
 }
 
@@ -1271,7 +1398,7 @@ function renderFamilyChoices(){
 }
 
 function renderColorChoices(){
-  const ids = COLOR_FAMILIES[state.anchorFamily] || COLOR_FAMILIES['חום'];
+  const ids = COLOR_FAMILIES[state.anchorFamily] || COLOR_FAMILIES['בז׳ / חום'];
   $('colorChoices').innerHTML = ids.map(id => {
     const c = COLORS[id];
     return `<button class="color-btn clean-color-btn ${state.anchorColorId === id ? 'selected' : ''}" data-color="${id}" type="button">

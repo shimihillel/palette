@@ -9,3 +9,8 @@
 
 העלאה: Replace / Overwrite
 פתיחה: ?v=117
+
+
+## v1.1 Full Spectrum
+- Expanded color library to 256+ shades for clothing suggestions and the 'בחרתי' screen.
+- Kept the styling rules: all colors allowed, red only for shoes/accessories, mint and turquoise excluded.
