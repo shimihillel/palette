@@ -1,16 +1,10 @@
-# Shimi Looks 1.0.6 — Style Cleanup
+# Shimi Looks 1.2 — Editorial Boutique
 
-תיקון ממוקד:
-- מסך "הסטייל שלי" לא מרחיב יותר את העמוד
-- הכרטיסים עוברים לטור אחד במובייל
-- הפנינים גוללות בתוך הכרטיס בלבד
-- אפקטי שמירה/קונפטי נמחקים מיד במעבר מסך
-- נוסף ניקוי אוטומטי גם בסיום האנימציה
+עיצוב מחדש בלבד, בלי פיצ׳רים חדשים ובלי שינוי במנוע הצבעים.
 
-העלאה: Replace / Overwrite
-פתיחה: ?v=117
-
-
-## v1.1 Full Spectrum
-- Expanded color library to 256+ shades for clothing suggestions and the 'בחרתי' screen.
-- Kept the styling rules: all colors allowed, red only for shoes/accessories, mint and turquoise excluded.
+- נשמרה ספריית 275 הגוונים של Full Spectrum.
+- מסך היום עבר לעיצוב בוטיק חם, נקי ומגזיני.
+- כרטיסי הלוק הפכו לדוגמיות בד רחבות עם פעולות החלף/נעל.
+- מסך "בחרתי" הפך לספריית צבעים עם עיגולי גוון גדולים.
+- מסך "הסטייל שלי" קיבל היררכיה מגזינית וריווח משופר.
+- כל חוקי הצבע והפונקציות הקיימות נשמרו.

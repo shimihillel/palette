@@ -1,10 +1,10 @@
 {
-  "name": "Shimi Looks",
+  "name": "Shimi Looks — Editorial Boutique",
   "short_name": "Shimi Looks",
   "start_url": "./?v=114",
   "display": "standalone",
-  "background_color": "#fbf6ee",
-  "theme_color": "#fbf6ee",
+  "background_color": "#f6efe6",
+  "theme_color": "#f6efe6",
   "icons": [
     {
       "src": "assets/icon-192.png",

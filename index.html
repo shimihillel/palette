@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#fbf6ee" />
+  <meta name="theme-color" content="#f6efe6" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks 1.0.6</title>
-  <link rel="manifest" href="manifest.webmanifest?v=52" />
+  <title>Shimi Looks 1.2 — Editorial Boutique</title>
+  <link rel="manifest" href="manifest.webmanifest?v=53" />
   <link rel="icon" type="image/png" href="assets/icon-32.png" />
   <link rel="apple-touch-icon" href="assets/icon-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -179,21 +179,185 @@ html,body{max-width:100%;overflow-x:hidden}
   .pearls-strip{padding-inline:0 2px}
 }
 .save-sparkles,.mini-confetti{contain:layout paint;will-change:transform,opacity}
+
+
+/* Shimi Looks 1.2 — Editorial Boutique */
+:root{
+  --bg:#f6efe6;
+  --paper:#fffdf9;
+  --ink:#34231d;
+  --muted:#8d7e72;
+  --line:#e6d8c9;
+  --brown:#3b281f;
+  --brown2:#5a3c2f;
+  --gold:#c79a55;
+  --gold-soft:#ead7b5;
+  --blush:#ead8d2;
+  --pill:#f3ece3;
+  --shadow:0 18px 50px rgba(68,43,29,.075);
+}
+html,body{background:#f6efe6}
+body{
+  background:
+    radial-gradient(circle at 12% 5%,rgba(255,255,255,.9),transparent 28%),
+    radial-gradient(circle at 88% 18%,rgba(232,214,190,.35),transparent 30%),
+    linear-gradient(180deg,#fbf7f1 0%,#f4ece2 100%);
+}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.16;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E")}
+.app-shell{max-width:500px;padding:15px 18px calc(104px + env(safe-area-inset-bottom))}
+.topbar{grid-template-columns:46px 1fr 46px;margin:3px 0 25px;min-height:58px}
+.brand-block{position:relative;align-self:stretch;align-items:center}
+.brand-block::after{content:'◆';position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);font-size:8px;color:var(--gold);text-shadow:-27px 0 0 rgba(199,154,85,.72),27px 0 0 rgba(199,154,85,.72)}
+.topbar h1{font-size:25px;letter-spacing:5.5px;font-weight:600;color:#3a2922}
+.icon-btn{width:42px;height:42px;border:1px solid rgba(73,46,31,.08);border-radius:50%;background:rgba(255,255,255,.34);font-size:21px;color:#4a352c;box-shadow:0 7px 20px rgba(64,40,27,.04)}
+.calendar-btn{font-size:25px}
+.mode-pill{width:100%;justify-content:center;margin:0 0 23px;padding:12px 16px;border-radius:18px;background:rgba(255,253,249,.72);border:1px solid rgba(199,154,85,.28);box-shadow:0 10px 28px rgba(70,43,29,.045);font-size:15px;color:#5b4439}
+.mode-pill::before{content:'מדד צבע יומי';font-size:12px;font-weight:700;color:#9a887b;margin-left:auto}
+.mode-pill span{color:var(--gold);font-size:15px}.mode-pill strong{font-weight:900}
+.today-title-block{text-align:center;margin:0 10px 19px}
+.today-eyebrow,.eyebrow,.tiny-label{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;font-weight:800;color:#aa8b62;margin:0 0 8px}
+.today-title-block h2{font-family:'Cormorant Garamond','Assistant',serif;font-size:36px;line-height:1.03;font-weight:600;letter-spacing:0;color:#39271f;margin:0 0 8px}
+.today-subtitle{font-size:15px;color:#827267;line-height:1.5}
+.top-action-row{gap:12px;margin:0 0 22px}
+.primary-btn,.secondary-btn{min-height:50px;border-radius:14px;padding:13px 14px;font-size:16px;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+.primary-btn{background:#3b281f;color:#fff;box-shadow:0 10px 24px rgba(59,40,31,.17)}
+.secondary-btn{background:rgba(255,253,249,.68);color:#4b352c;border:1px solid rgba(75,53,44,.28);box-shadow:none}
+.primary-btn:active,.secondary-btn:active,.mini-item-btn:active,.choice-btn:active,.family-btn:active,.color-btn:active{transform:scale(.985)}
+.clean-look-card{margin:0 0 20px}
+.look-card-title{display:block;margin:0 0 10px;font-size:15px;font-weight:900;color:#4d382f}
+.editorial-look-list{display:grid;gap:10px}
+.editorial-look-row{direction:rtl;display:grid;grid-template-columns:42% 58%;min-height:102px;background:rgba(255,253,249,.76);border:1px solid rgba(79,52,39,.075);border-radius:19px;overflow:hidden;box-shadow:0 10px 30px rgba(69,43,28,.045);transition:transform .2s ease,box-shadow .2s ease}
+.editorial-look-row:active{transform:scale(.995)}
+.editorial-look-copy{padding:13px 14px 12px 11px;display:flex;flex-direction:column;justify-content:center;min-width:0;background:linear-gradient(135deg,rgba(255,255,255,.46),rgba(255,253,249,.18))}
+.editorial-role{display:block;font-size:12px;color:#8d7b6e;font-weight:800;margin-bottom:4px}
+.editorial-look-copy strong{font-size:19px;line-height:1.12;font-weight:900;color:#36251e;overflow-wrap:anywhere}
+.editorial-swatch{position:relative;min-height:102px;background-position:center!important;background-size:cover!important;box-shadow:inset 0 1px 1px rgba(255,255,255,.28)}
+.editorial-swatch::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(125deg,rgba(255,255,255,.08) 0 1px,rgba(0,0,0,.028) 1px 3px),linear-gradient(90deg,rgba(255,255,255,.08),transparent 32%,rgba(0,0,0,.035));mix-blend-mode:soft-light}
+.editorial-look-row.locked{box-shadow:0 0 0 2px rgba(199,154,85,.32),0 12px 32px rgba(69,43,28,.055)}
+.editorial-look-row.locked .editorial-role::after{content:'  ◆';color:var(--gold);font-size:8px}
+.item-control-row{display:flex!important;grid-template-columns:none!important;gap:6px!important;margin-top:9px!important;flex-wrap:nowrap!important}
+.item-control-row .mini-item-btn{width:auto!important;min-width:52px!important;min-height:27px!important;padding:5px 9px!important;border-radius:9px!important;background:rgba(255,255,255,.78)!important;border:1px solid rgba(77,53,43,.18)!important;color:#5d4438!important;font-size:11px!important;font-weight:900!important}
+.item-control-row .mini-item-btn.lock.active{background:#3b281f!important;color:#fff!important;border-color:#3b281f!important}
+.clean-why-card{grid-template-columns:50px 1fr;gap:13px;padding:16px 17px;border-radius:18px;background:rgba(255,253,249,.58);border:1px solid rgba(199,154,85,.22);box-shadow:none}
+.why-sparkle{width:42px;height:42px;border-radius:50%;border:1px solid rgba(199,154,85,.35);font-size:20px;color:var(--gold);background:rgba(255,255,255,.42)}
+.clean-why-card h3{font-size:17px}.clean-why-card p{font-size:14px;color:#6b584e;line-height:1.5}
+
+/* Chosen / color library */
+.anchor-clean-shell{gap:20px}
+.anchor-title-block{text-align:center;margin:4px 10px 3px}
+.anchor-title-block h2,.lookbook-header h2{font-family:'Cormorant Garamond','Assistant',serif;font-size:38px;font-weight:600;line-height:1;margin:0 0 9px;color:#39271f}
+.anchor-title-block p:last-child{font-size:14px;line-height:1.5;color:#87766a;margin:0 auto;max-width:31em}
+.anchor-step-card{padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
+.anchor-step-card + .anchor-step-card{padding-top:18px;border-top:1px solid rgba(199,154,85,.25)}
+.anchor-step-head{justify-content:center;margin-bottom:13px}
+.anchor-step-head span{display:none}
+.anchor-step-head h3{font-size:18px;font-weight:900;color:#4b362d}
+.piece-choice-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.piece-choice-btn{min-height:45px;padding:10px 8px;align-items:center;text-align:center;border-radius:14px;background:rgba(255,253,249,.55);border:1px solid rgba(76,52,42,.18);box-shadow:none}
+.piece-choice-btn strong{font-size:15px}.piece-choice-btn small{display:none}
+.piece-choice-btn.selected{background:#3b281f;color:#fff;border-color:#3b281f;box-shadow:0 8px 20px rgba(59,40,31,.13)}
+.clean-family-strip{display:flex!important;flex-wrap:nowrap!important;gap:7px;margin:0 -2px 16px;padding:2px 2px 7px;overflow-x:auto!important;max-width:100%;scrollbar-width:none;overscroll-behavior-inline:contain}
+.clean-family-strip .family-btn{flex:0 0 auto!important;width:auto!important;padding:8px 12px!important;border-radius:999px!important;font-size:12px!important;white-space:nowrap!important;background:transparent;border:1px solid rgba(79,52,39,.15)}
+.clean-family-strip .family-btn.selected{background:#3b281f;color:#fff;border-color:#3b281f}
+.clean-color-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 8px}
+.clean-color-btn{min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:4px 2px;background:transparent!important;border:0!important;border-radius:16px;box-shadow:none;color:var(--ink)!important}
+.clean-color-btn .color-chip{width:54px;height:54px;border-radius:50%;margin:0 0 8px;border:1px solid rgba(0,0,0,.08);box-shadow:inset 0 1px 2px rgba(255,255,255,.45),0 5px 14px rgba(58,36,27,.07);transition:transform .18s ease,box-shadow .18s ease}
+.clean-color-btn strong{font-size:13px;line-height:1.18;font-weight:800}.clean-color-btn small{display:none}
+.clean-color-btn.selected .color-chip{transform:scale(.93);box-shadow:0 0 0 3px #fff,0 0 0 5px #3b281f,0 7px 16px rgba(58,36,27,.12)}
+.clean-color-btn.selected strong{color:#3b281f}
+.anchor-build-panel{padding:14px;background:rgba(255,253,249,.62);border:1px solid rgba(199,154,85,.2);border-radius:18px;box-shadow:none}
+.anchor-mode-pill{border-radius:14px;background:rgba(255,255,255,.48);border:1px solid rgba(79,52,39,.09);padding:11px 13px}
+.anchor-build-btn{border-radius:14px}
+.anchor-result-card{padding:18px;background:rgba(255,253,249,.67);border:1px solid rgba(199,154,85,.22);border-radius:22px;box-shadow:var(--shadow)}
+.anchor-result-head h2{font-family:'Cormorant Garamond','Assistant',serif;font-size:34px;font-weight:600}
+
+/* My style — editorial magazine */
+#lookbookScreen{overflow:visible}
+.lookbook-header{align-items:center;margin:3px 0 22px;padding-bottom:18px;border-bottom:1px solid rgba(199,154,85,.26)}
+.lookbook-header-copy{flex:1;text-align:right}.lookbook-header h2{font-size:38px;margin:0 0 7px}
+.lookbook-meta{font-size:13px;font-weight:700;color:#8f7d70}
+.lookbook-count-pill{width:54px;height:54px;border-radius:50%;padding:0;justify-content:center;gap:4px;background:rgba(255,253,249,.7);border:1px solid rgba(199,154,85,.3);box-shadow:none;color:#593e31}
+.lookbook-count-pill span{font-size:17px}.lookbook-count-pill strong{font-size:14px}
+.style-dashboard{gap:16px;margin-bottom:22px;overflow:visible}
+.style-card{padding:0 0 17px;background:transparent;border:0;border-bottom:1px solid rgba(199,154,85,.24);border-radius:0;box-shadow:none}
+.style-signature{padding:0 0 20px}
+.style-signature h3{font-family:'Cormorant Garamond','Assistant',serif;font-size:27px;line-height:1.18;font-weight:600;margin:3px 0 0;color:#3b2921}
+.style-grid{grid-template-columns:1fr 1fr;gap:12px}
+.style-grid .style-card{padding:15px;background:rgba(255,253,249,.58);border:1px solid rgba(79,52,39,.075);border-radius:17px;min-height:130px;box-shadow:0 9px 26px rgba(65,40,26,.035)}
+.style-card small{font-size:12px;color:#8c796c}
+.style-dots{gap:8px}.style-dot,.suggest-dot{width:34px;height:34px;border:1px solid rgba(0,0,0,.08);box-shadow:0 4px 12px rgba(50,30,20,.07),inset 0 1px 2px rgba(255,255,255,.5)}
+.style-dots.large .style-dot{width:37px;height:37px}.big-stat{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:600;color:#3b2921}
+.pearls-card{padding:4px 0 0;border:0}
+.pearls-head h3{font-family:'Cormorant Garamond','Assistant',serif;font-size:27px;font-weight:600}
+.pearls-head>span{background:transparent;border:1px solid rgba(199,154,85,.32);color:#6b4c39;padding:7px 10px}
+.pearls-strip{gap:10px;padding:13px 1px 4px}
+.pearl{flex-basis:124px;min-height:128px;padding:14px 10px;border-radius:50% 50% 20px 20px;background:linear-gradient(160deg,rgba(255,255,255,.82),rgba(246,236,222,.7));border:1px solid rgba(199,154,85,.25);box-shadow:0 8px 22px rgba(62,38,24,.045)}
+.pearl>span{font-size:28px}.pearl strong{font-size:13px}.pearl small{font-size:10.5px;color:#8e7b6e}
+.pearl.locked{opacity:.48;filter:grayscale(.55)}
+.wear-challenge{padding:20px;border-radius:20px;background:linear-gradient(145deg,rgba(255,253,249,.86),rgba(239,222,203,.72));border:1px solid rgba(199,154,85,.26);box-shadow:0 12px 34px rgba(65,40,26,.05)}
+.wear-challenge h3{font-family:'Cormorant Garamond','Assistant',serif;font-size:30px;font-weight:600;text-align:center}
+.challenge-dots{gap:10px}.challenge-dot{width:46px;height:46px}
+.challenge-actions{grid-template-columns:1fr;gap:7px}.challenge-actions button{border-radius:13px;background:rgba(255,255,255,.64)}
+.lookbook-section-title{margin:24px 0 11px}.lookbook-section-title h3{font-family:'Cormorant Garamond','Assistant',serif;font-size:29px;font-weight:600;margin:0}
+.lookbook-search{padding:12px 14px;border-radius:15px;background:rgba(255,253,249,.58);border:1px solid rgba(79,52,39,.09);box-shadow:none}
+.lookbook-search input{font-size:14px}
+.liked-card{padding:10px 11px;border-radius:16px;background:rgba(255,253,249,.66);border:1px solid rgba(79,52,39,.075);box-shadow:0 8px 24px rgba(58,36,27,.035)}
+.liked-title{font-size:15px}.liked-date{font-size:11.5px}.liked-dot{width:24px;height:24px}
+.liked-delete{background:transparent;font-size:18px;color:#a08e81}
+.clean-backup-card{margin-top:24px;padding:16px!important;background:rgba(255,253,249,.44)!important;border:1px dashed rgba(79,52,39,.18)!important;border-radius:18px!important;box-shadow:none!important}
+.clean-backup-card h3{font-size:18px}.clean-backup-card p{font-size:13px}
+.backup-grid-clean .secondary-btn{min-height:42px;padding:10px;font-size:13px;border-radius:12px}
+
+/* Dialogs & navigation */
+dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,25,.25)}
+.dialog-inner{padding:25px}.dialog-close{background:rgba(255,255,255,.66);border:1px solid rgba(79,52,39,.08)}
+.mode-card{border-radius:15px;background:rgba(255,255,255,.55)}.mode-card.selected{background:#3b281f}
+.bottom-nav{width:min(500px,100%);gap:5px;padding:9px 12px calc(9px + env(safe-area-inset-bottom));background:rgba(255,252,247,.91);border-top:1px solid rgba(79,52,39,.075);box-shadow:0 -10px 32px rgba(66,42,27,.045)}
+.nav-btn{min-height:58px;border-radius:16px;color:#817063;padding:7px 4px;gap:2px}
+.nav-btn span{font-size:21px}.nav-btn small{font-size:11.5px;font-weight:800}
+.nav-btn.active{background:#f1e7d9;color:#3c2a22;box-shadow:none}
+.toast{border:1px solid rgba(199,154,85,.28);background:#fffaf4}
+
+@media(max-width:430px){
+  .app-shell{padding-left:14px;padding-right:14px}
+  .topbar{margin-bottom:21px}.topbar h1{font-size:22px;letter-spacing:4.5px}
+  .today-title-block h2{font-size:32px}
+  .editorial-look-row{grid-template-columns:43% 57%;min-height:98px}
+  .editorial-swatch{min-height:98px}
+  .editorial-look-copy{padding:11px 11px 10px 9px}.editorial-look-copy strong{font-size:17px}
+  .item-control-row .mini-item-btn{min-width:47px!important;padding:5px 7px!important;font-size:10.5px!important}
+  .piece-choice-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px}
+  .piece-choice-btn{padding:9px 4px;min-height:42px}.piece-choice-btn strong{font-size:13px}
+  .clean-color-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:15px 6px}
+  .clean-color-btn .color-chip{width:50px;height:50px}.clean-color-btn strong{font-size:12px}
+  .style-grid{grid-template-columns:1fr 1fr}
+  .style-grid .style-card{padding:13px;min-height:123px}
+  .pearl{flex-basis:116px}
+}
+@media(max-width:360px){
+  .mode-pill::before{display:none}.mode-pill{justify-content:center}
+  .editorial-look-row{grid-template-columns:45% 55%}
+  .piece-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .clean-color-choice-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .clean-color-btn .color-chip{width:44px;height:44px}
+  .style-grid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <button class="icon-btn menu-btn" id="infoBtn" aria-label="מידע">☰</button>
+      <button class="icon-btn menu-btn" id="infoBtn" aria-label="מידע">ⓘ</button>
       <div class="brand-block"><h1>SHIMI LOOKS</h1></div>
-      <button class="icon-btn calendar-btn" id="calendarBtn" aria-label="אהבתי">▢</button>
+      <button class="icon-btn calendar-btn" id="calendarBtn" aria-label="הסטייל שלי">♡</button>
     </header>
     <main>
       <section class="screen active" id="todayScreen">
         <section class="today-layout">
           <button class="mode-pill" id="changeColorModeBtn" type="button"><span>✦</span><strong id="colorModeTitle">סופר צבע</strong></button>
           <p id="colorModeDesc" hidden>4 צבעים, בלי להתנצל</p>
-          <div class="today-title-block"><h2 id="lookTitle">—</h2><p id="lookVibe" class="today-subtitle">לוק יומי עם נגיעה חמה ובולטת</p></div>
+          <div class="today-title-block"><p class="today-eyebrow">הלוק שלך להיום ✦</p><h2 id="lookTitle">—</h2><p id="lookVibe" class="today-subtitle">לוק יומי עם נגיעה חמה ובולטת</p></div>
           <div class="top-action-row clean-actions"><button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button><button class="secondary-btn" id="saveLookBtn" type="button">שומרת ♡</button></div>
           <section class="look-visual-card clean-look-card" id="lookVisual"></section>
           <section class="why-card clean-why-card"><div class="why-sparkle">✧</div><div><h3>למה זה עובד?</h3><p id="whyWorks"></p></div></section>
@@ -202,9 +366,9 @@ html,body{max-width:100%;overflow-x:hidden}
       <section class="screen" id="anchorScreen">
         <section class="anchor-clean-shell">
           <div class="anchor-title-block">
-            <p class="tiny-label">בחרתי משהו</p>
-            <h2>בונים סביב פריט</h2>
-            <p>יש לך כבר משהו שבא לך ללבוש? בחרי פריט וגוון — ואני אבנה סביבו לוק מלא.</p>
+            <p class="tiny-label">COLOR LIBRARY</p>
+            <h2>בחרתי</h2>
+            <p>בחרי פריט וגוון שכבר בא לך ללבוש — ואני אבנה סביבו את כל השאר.</p>
           </div>
 
           <section class="anchor-step-card piece-step">
@@ -240,10 +404,18 @@ html,body{max-width:100%;overflow-x:hidden}
         </section>
       </section>
 
-      <section class="screen" id="lookbookScreen"><div class="section-header lookbook-header"><div class="lookbook-header-copy"><p class="eyebrow soft">ה־DNA הצבעוני שלך</p><h2>הסטייל שלי</h2><p class="lookbook-meta"><span id="lookbookSavedCount">0</span> לוקים שמורים</p></div><div class="lookbook-count-pill"><span>♡</span><strong id="lookbookCount">0</strong></div></div><section class="card backup-card clean-backup-card"><h3>גיבוי ושחזור</h3><p>שומר את הלוקים, הצבעים וההעדפות — בלי פרינטז ובלי דרמות של תמונות.</p><div class="backup-grid backup-grid-clean"><button class="secondary-btn" id="backupDataBtn" type="button">גיבוי לקובץ</button><button class="secondary-btn" id="restoreDataBtn" type="button">שחזור מקובץ</button></div><div class="backup-note">השחזור מקובץ מחליף את הנתונים באפליקציה.</div><input id="restoreDataInput" type="file" accept="application/json,.json" hidden></section><div class="search-wrap card compact lookbook-search" id="lookbookSearchWrap"><input id="lookbookSearch" placeholder="חיפוש בלוקים ששמרת..." /></div><section class="style-dashboard" id="styleDashboard"></section>
-<section class="wear-challenge is-hidden" id="wearChallenge"></section>
-<div class="lookbook-section-title"><h3>הלוקים ששמרת</h3></div>
-<div class="lookbook-list" id="lookbookList"></div></section>
+      <section class="screen" id="lookbookScreen">
+        <div class="section-header lookbook-header">
+          <div class="lookbook-header-copy"><p class="eyebrow soft">YOUR COLOR SIGNATURE</p><h2>הסטייל שלי</h2><p class="lookbook-meta"><span id="lookbookSavedCount">0</span> לוקים שמורים</p></div>
+          <div class="lookbook-count-pill"><span>♡</span><strong id="lookbookCount">0</strong></div>
+        </div>
+        <section class="style-dashboard" id="styleDashboard"></section>
+        <section class="wear-challenge is-hidden" id="wearChallenge"></section>
+        <div class="lookbook-section-title"><p class="tiny-label">THE LOOKBOOK</p><h3>הלוקים ששמרת</h3></div>
+        <div class="search-wrap card compact lookbook-search" id="lookbookSearchWrap"><input id="lookbookSearch" placeholder="חיפוש בלוקים ששמרת..." /></div>
+        <div class="lookbook-list" id="lookbookList"></div>
+        <section class="card backup-card clean-backup-card"><h3>גיבוי ושחזור</h3><p>שומר את הלוקים, הצבעים וההעדפות שלך בקובץ אחד.</p><div class="backup-grid backup-grid-clean"><button class="secondary-btn" id="backupDataBtn" type="button">גיבוי לקובץ</button><button class="secondary-btn" id="restoreDataBtn" type="button">שחזור מקובץ</button></div><div class="backup-note">השחזור מקובץ מחליף את הנתונים באפליקציה.</div><input id="restoreDataInput" type="file" accept="application/json,.json" hidden></section>
+      </section>
     </main>
     <nav class="bottom-nav"><button class="nav-btn active" data-screen="todayScreen" type="button"><span>☀︎</span><small>היום</small></button><button class="nav-btn" data-screen="anchorScreen" type="button"><span>◐</span><small>בחרתי</small></button><button class="nav-btn" data-screen="lookbookScreen" type="button"><span>♡</span><small>הסטייל שלי</small></button></nav>
   </div>
@@ -258,7 +430,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.1.0-full-spectrum';
+const APP_VERSION = '1.2.0-editorial-boutique';
 
 const COLORS = {
   // Whites / creams
@@ -1785,42 +1957,27 @@ function renderLookVisual(container, mapping, options={}){
   ];
   const showControls = options.controls !== false && container.id === 'lookVisual';
   container.innerHTML = `
-    <div class="look-card-title">הלוק שלך</div>
-    <div class="look-card-grid">
-      <div class="color-bar-stack" aria-hidden="true">
-        ${rows.map(({role}) => {
-          const item = mapping[role];
-          if(item.printz){
-            return `<div class="color-fabric-bar printz-bar" style="background-image:url('${item.printz.image}')"><span class="printz-tag">${escapeHtml(item.printz.type || 'פרינט')}</span></div>`;
-          }
-          return `<div class="color-fabric-bar" style="background:${item.color.hex}"></div>`;
-        }).join('')}
-      </div>
-      <div class="wearing-list">
-        ${rows.map(({role,label}) => {
-          const item = mapping[role];
-          const isLocked = !!state.lockedRoles?.[role] || options.lockedRole === role;
-          const locked = options.lockedRole === role ? ' · הפריט שלך' : '';
-          const controls = showControls ? `<div class="item-control-row">
-            <button class="mini-item-btn" data-replace-role="${role}" type="button">להחליף</button>
-            <button class="mini-item-btn lock ${isLocked ? 'active' : ''}" data-lock-role="${role}" type="button">${isLocked ? 'נעול' : 'נעול לי'}</button>
-          </div>` : '';
-          const dotStyle = item.printz ? `background-image:url('${item.printz.image}')` : `background:${item.color.hex}`;
-          const colorText = item.printz ? escapeHtml(item.printz.name || item.printz.type || 'פרינט') : item.color.he;
-          const extraName = ''; // v48: keep printz rows cleaner
-          return `<div class="wear-row ${isLocked ? 'locked' : ''} ${item.printz ? 'printz-wear' : ''}" data-role-row="${role}">
-            <span class="wear-line"></span>
-            <span class="wear-dot" style="${dotStyle}"></span>
-            <div class="wear-copy">
-              <strong>${label}</strong>
-              <span>${colorText}</span>
-              ${extraName}
-              <small>${item.text}${locked}</small>
-              ${controls}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
+    <div class="look-card-title">פירוט הלוק</div>
+    <div class="editorial-look-list">
+      ${rows.map(({role,label}) => {
+        const item = mapping[role];
+        const isLocked = !!state.lockedRoles?.[role] || options.lockedRole === role;
+        const locked = options.lockedRole === role ? ' · הפריט שלך' : '';
+        const controls = showControls ? `<div class="item-control-row">
+          <button class="mini-item-btn" data-replace-role="${role}" type="button">החלף</button>
+          <button class="mini-item-btn lock ${isLocked ? 'active' : ''}" data-lock-role="${role}" type="button">${isLocked ? 'שחרר' : 'נעל'}</button>
+        </div>` : '';
+        const swatchStyle = item.printz ? `background-image:url('${item.printz.image}')` : `background:${item.color.hex}`;
+        const colorText = item.printz ? escapeHtml(item.printz.name || item.printz.type || 'פרינט') : item.color.he;
+        return `<article class="editorial-look-row ${isLocked ? 'locked' : ''}" data-role-row="${role}">
+          <div class="editorial-look-copy">
+            <span class="editorial-role">${label}${locked}</span>
+            <strong>${colorText}</strong>
+            ${controls}
+          </div>
+          <div class="editorial-swatch" style="${swatchStyle}" aria-label="${colorText}"></div>
+        </article>`;
+      }).join('')}
     </div>
   `;
 }
