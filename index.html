@@ -343,6 +343,12 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
   .style-grid{grid-template-columns:1fr}
 }
 
+
+/* v1.4 SMART CLEAN — single-screen edition */
+.mode-pill,#colorModeDesc,#anchorScreen,#lookbookScreen,.bottom-nav,#calendarBtn,#saveLookBtn,#infoBtn,#colorModeDialog{display:none!important}
+.topbar{grid-template-columns:1fr!important;justify-items:center;margin-bottom:14px}.brand-block{grid-column:1}.app-shell{padding-bottom:28px!important}
+.today-title-block{margin-top:2px}.top-action-row.clean-actions{grid-template-columns:1fr!important;max-width:280px;margin:0 auto 20px}.primary-btn#nextLookBtn{width:100%}
+@media(max-width:430px){.app-shell{padding-bottom:24px!important}.topbar{margin-bottom:10px}.top-action-row.clean-actions{max-width:none}}
 </style>
 </head>
 <body>
@@ -357,8 +363,8 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
         <section class="today-layout">
           <button class="mode-pill" id="changeColorModeBtn" type="button"><span>✦</span><strong id="colorModeTitle">סופר צבע</strong></button>
           <p id="colorModeDesc" hidden>4 צבעים, בלי להתנצל</p>
-          <div class="today-title-block"><p class="today-eyebrow">הלוק שלך להיום ✦</p><h2 id="lookTitle">—</h2><p id="lookVibe" class="today-subtitle">לוק יומי עם נגיעה חמה ובולטת</p></div>
-          <div class="top-action-row clean-actions"><button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button><button class="secondary-btn" id="saveLookBtn" type="button">שומרת ♡</button></div>
+          <div class="today-title-block"><p class="today-eyebrow">SHIMI PICKS ✦</p><h2 id="lookTitle">—</h2><p id="lookVibe" class="today-subtitle">צבעוני, מעניין, ואף פעם לא אותו דבר</p></div>
+          <div class="top-action-row clean-actions"><button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button></div>
           <section class="look-visual-card clean-look-card" id="lookVisual"></section>
           <section class="why-card clean-why-card"><div class="why-sparkle">✧</div><div><h3>למה זה עובד?</h3><p id="whyWorks"></p></div></section>
         </section>
@@ -430,7 +436,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.2.0-editorial-boutique';
+const APP_VERSION = '1.4.0-smart-clean';
 
 const COLORS = {
   // Whites / creams
@@ -1149,6 +1155,15 @@ const RELAXED_GROUPS = ['neutral','light','warmNeutral','darkNeutral','soft'];
 const COLORFUL_GROUPS = ['blue','green','purple','warmAccent','red'];
 
 const state = loadState();
+// v1.4: visible history/achievements are retired. Keep only hidden engine memory.
+state.lookbook = [];
+state.disliked = [];
+state.notToday = [];
+state.wearAnswers = [];
+state.openedPearls = [];
+state.screen = 'todayScreen';
+state.colorMode = 'super';
+state.anchorColorMode = 'super';
 state.editingPrintzId = null;
 state.printz = [];
 state.printzDraftImage = null;
@@ -1170,7 +1185,7 @@ function loadState(){
       anchorPiece: parsed.anchorPiece || 'bottom',
       anchorFamily: parsed.anchorFamily || 'חום',
       anchorColorId: parsed.anchorColorId || 'cocoa',
-      anchorColorMode: parsed.anchorColorMode || parsed.colorMode || 'super',
+      anchorColorMode: 'super',
       lookbook: parsed.lookbook || [],
       recent: parsed.recent || [],
       recentHome: parsed.recentHome || [],
@@ -1187,7 +1202,9 @@ function loadState(){
       lockedRoles: parsed.lockedRoles || {},
       mood: parsed.mood || 'easy',
       purpose: parsed.purpose || 'day',
-      colorMode: parsed.colorMode || 'super',
+      colorMode: 'super',
+      colorUsage: parsed.colorUsage || {},
+      suggestionSeq: parsed.suggestionSeq || 0,
       screen: parsed.screen || 'todayScreen',
       installDate: parsed.installDate || new Date().toISOString(),
       wearAnswers: Array.isArray(parsed.wearAnswers) ? parsed.wearAnswers : [],
@@ -1195,7 +1212,7 @@ function loadState(){
       openedPearls: Array.isArray(parsed.openedPearls) ? parsed.openedPearls : []
     };
   }catch(e){
-    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'בז׳ / חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],disliked:[],notToday:[],printz:[],printzDraftImage:null,printzSelectedColors:[],printzMisses:0,printzRecentIds:[],customColors:[],printzColorSearch:'',printzColorFamily:'all',lockedRoles:{},mood:'easy',purpose:'day',colorMode:'super',screen:'todayScreen',installDate:new Date().toISOString(),wearAnswers:[],nextWearChallengeAt:new Date(Date.now()+3*86400000).toISOString(),openedPearls:[]};
+    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'בז׳ / חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],disliked:[],notToday:[],printz:[],printzDraftImage:null,printzSelectedColors:[],printzMisses:0,printzRecentIds:[],customColors:[],printzColorSearch:'',printzColorFamily:'all',lockedRoles:{},mood:'easy',purpose:'day',colorMode:'super',screen:'todayScreen',installDate:new Date().toISOString(),wearAnswers:[],nextWearChallengeAt:new Date(Date.now()+3*86400000).toISOString(),openedPearls:[],colorUsage:{},suggestionSeq:0};
   }
 }
 
@@ -1213,7 +1230,7 @@ function saveState(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(persist));
       return true;
     }catch(err2){
-      toast('האחסון מלא. נסי למחוק כמה לוקים שמורים או לבצע גיבוי.');
+      toast('האחסון המקומי מלא. נסי לרענן את האפליקציה.');
       return false;
     }
   }
@@ -1347,7 +1364,7 @@ function init(){
   try{
     sanitizeStoredLooks();
     if(!state.currentLook){
-      state.currentLook = generateBestLook(state.colorMode || 'super');
+      state.currentLook = generateBestLook('super');
       remember(state.currentLook, 'today');
       saveState();
     }
@@ -1363,15 +1380,13 @@ function init(){
 
 function bindEvents(){
   $('nextLookBtn').addEventListener('click', () => {
-    state.currentLook = generateBestLook(state.colorMode || 'super');
+    state.currentLook = generateBestLook('super');
     remember(state.currentLook, 'today');
     saveState();
     animateLookChange();
     renderToday();
     toast('הבא בתור ✨');
   });
-
-  $('saveLookBtn').addEventListener('click', () => saveLook(state.currentLook));
   document.addEventListener('click', handleItemControlClick);
   on('anchorModeBtn','click', () => showScreen('anchorScreen'));
   $('buildAroundBtn').addEventListener('click', () => buildAnchorLook());
@@ -1390,8 +1405,8 @@ function bindEvents(){
   on('calendarBtn','click', () => showScreen('lookbookScreen'));
   $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
   $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
-  $('changeColorModeBtn').addEventListener('click', () => openColorModeDialog('today'));
-  $('closeColorModeBtn').addEventListener('click', () => $('colorModeDialog').close());
+  on('changeColorModeBtn','click', () => openColorModeDialog('today'));
+  on('closeColorModeBtn','click', () => el('colorModeDialog')?.close());
   on('anchorChangeColorModeBtn','click', () => openColorModeDialog('anchor'));
   on('backupDataBtn','click', backupDataToFile);
   on('restoreDataBtn','click', () => el('restoreDataInput')?.click());
@@ -1457,7 +1472,7 @@ function openColorModeDialog(context='today'){
   document.querySelectorAll('#colorModeOptions .mode-card').forEach(btn => {
     btn.addEventListener('click', () => {
       if(context === 'anchor'){
-        state.anchorColorMode = btn.dataset.mode;
+        state.anchorColorMode = 'super';
         renderAnchorColorModeCard();
         if(state.anchorLook){
           const anchorColor = COLORS[state.anchorColorId] || COLORS.cocoa;
@@ -1467,8 +1482,8 @@ function openColorModeDialog(context='today'){
         }
         saveState();
       }else{
-        state.colorMode = btn.dataset.mode;
-        state.currentLook = generateBestLook(state.colorMode);
+        state.colorMode = 'super';
+        state.currentLook = generateBestLook('super');
         remember(state.currentLook, 'today');
         saveState();
         renderToday();
@@ -1486,7 +1501,7 @@ function renderDailyControls(){
     $('moodChips').innerHTML = MOOD_OPTIONS.map(item => `<button class="context-chip ${state.mood === item.id ? 'selected' : ''}" data-mood="${item.id}" type="button">${item.label}</button>`).join('');
     document.querySelectorAll('[data-mood]').forEach(btn => btn.addEventListener('click', () => {
       state.mood = btn.dataset.mood;
-      state.currentLook = generateBestLook(state.colorMode || 'super');
+      state.currentLook = generateBestLook('super');
       remember(state.currentLook, 'today');
       saveState();
       renderToday();
@@ -1497,7 +1512,7 @@ function renderDailyControls(){
     $('purposeChips').innerHTML = PURPOSE_OPTIONS.map(item => `<button class="context-chip ${state.purpose === item.id ? 'selected' : ''}" data-purpose="${item.id}" type="button">${item.label}</button>`).join('');
     document.querySelectorAll('[data-purpose]').forEach(btn => btn.addEventListener('click', () => {
       state.purpose = btn.dataset.purpose;
-      state.currentLook = generateBestLook(state.colorMode || 'super');
+      state.currentLook = generateBestLook('super');
       remember(state.currentLook, 'today');
       saveState();
       renderToday();
@@ -2113,7 +2128,8 @@ function saveLook(look){
   saveState();
   renderLookbook();
   renderSaveButtonState();
-  const btn = $('saveLookBtn');
+  const btn = el('saveLookBtn');
+  if(!btn) return;
   if(btn){
     btn.classList.add('save-pop');
     saveSparkleBurst(btn);
@@ -2127,7 +2143,8 @@ function isLookSaved(look){
 }
 
 function renderSaveButtonState(){
-  const btn = $('saveLookBtn');
+  const btn = el('saveLookBtn');
+  if(!btn) return;
   if(!btn) return;
   const saved = isLookSaved(state.currentLook);
   btn.classList.toggle('saved', saved);
@@ -2150,7 +2167,7 @@ function markCurrentLookAsNotMe(){
   };
   state.disliked.unshift(item);
   state.disliked = state.disliked.slice(0, 24);
-  state.currentLook = generateBestLook(state.colorMode || 'super');
+  state.currentLook = generateBestLook('super');
   remember(state.currentLook, 'today');
   saveState();
   renderToday();
@@ -2173,7 +2190,7 @@ function markCurrentLookAsNotToday(){
     createdAt: new Date().toISOString()
   });
   state.notToday = state.notToday.slice(0, 18);
-  state.currentLook = generateBestLook(state.colorMode || 'super');
+  state.currentLook = generateBestLook('super');
   remember(state.currentLook, 'today');
   saveState();
   renderToday();
@@ -2306,12 +2323,17 @@ function dislikedPenalty(look){
 
 function compactLookForHistory(look){
   return {
-    signature: look.signature,
-    ids: (look.colors || []).map(c => c.id),
-    top: look.mapping?.top?.color?.id || '',
-    bottom: look.mapping?.bottom?.color?.id || '',
-    topFamily: look.mapping?.top?.color?.family || '',
-    bottomFamily: look.mapping?.bottom?.color?.family || ''
+    signature:look.signature,
+    ids:(look.colors || []).map(c => c.id),
+    top:look.mapping?.top?.color?.id || '',
+    bottom:look.mapping?.bottom?.color?.id || '',
+    shoes:look.mapping?.shoes?.color?.id || '',
+    accessory:look.mapping?.accessory?.color?.id || '',
+    topFamily:look.mapping?.top?.color?.family || '',
+    bottomFamily:look.mapping?.bottom?.color?.family || '',
+    shoesFamily:look.mapping?.shoes?.color?.family || '',
+    accessoryFamily:look.mapping?.accessory?.color?.family || '',
+    familySignature:lookFamilySignature(look)
   };
 }
 
@@ -2319,34 +2341,44 @@ function recentHomeHistory(count=3){
   return (state.recentHome || []).slice(0, count);
 }
 
-function violatesThreeClickRule(look, history=recentHomeHistory(3)){
+function lookFamilySignature(look){
+  return ['top','bottom','shoes','accessory']
+    .map(role => look.mapping?.[role]?.color?.family || '')
+    .join('|');
+}
+
+function violatesThreeClickRule(look, history=recentHomeHistory(7)){
   if(!history.length) return false;
   const ids = (look.colors || []).map(c => c.id);
-  const top = look.mapping?.top?.color?.id || '';
-  const bottom = look.mapping?.bottom?.color?.id || '';
-  const topFamily = look.mapping?.top?.color?.family || '';
-  const bottomFamily = look.mapping?.bottom?.color?.family || '';
-  const recentMainIds = new Set(history.flatMap(item => [item.top, item.bottom]).filter(Boolean));
-
-  if(recentMainIds.has(top) || recentMainIds.has(bottom)) return true;
+  const roleIds = {
+    top:look.mapping?.top?.color?.id || '',
+    bottom:look.mapping?.bottom?.color?.id || '',
+    shoes:look.mapping?.shoes?.color?.id || '',
+    accessory:look.mapping?.accessory?.color?.id || ''
+  };
+  const famSig = lookFamilySignature(look);
 
   for(const item of history){
     if(item.signature === look.signature) return true;
-    const overlap = ids.filter(id => item.ids.includes(id)).length;
+    const overlap = ids.filter(id => (item.ids || []).includes(id)).length;
     if(overlap >= 2) return true;
-    if(item.topFamily === topFamily && item.bottomFamily === bottomFamily) return true;
+    if(item.familySignature && item.familySignature === famSig) return true;
+    if(item.top === roleIds.top || item.bottom === roleIds.bottom || item.shoes === roleIds.shoes || item.accessory === roleIds.accessory) return true;
+    const sameMainFamilies = item.topFamily === look.mapping?.top?.color?.family && item.bottomFamily === look.mapping?.bottom?.color?.family;
+    if(sameMainFamilies) return true;
   }
   return false;
 }
 
-function softlyRepeatsRecentLook(look, history=recentHomeHistory(3)){
+function softlyRepeatsRecentLook(look, history=recentHomeHistory(7)){
   if(!history.length) return false;
   const ids = (look.colors || []).map(c => c.id);
-  const top = look.mapping?.top?.color?.id || '';
-  const bottom = look.mapping?.bottom?.color?.id || '';
+  const famSig = lookFamilySignature(look);
   return history.some(item => {
-    const overlap = ids.filter(id => item.ids.includes(id)).length;
-    return item.top === top || item.bottom === bottom || overlap >= 3;
+    const overlap = ids.filter(id => (item.ids || []).includes(id)).length;
+    const familyOverlap = [look.mapping?.top?.color?.family,look.mapping?.bottom?.color?.family,look.mapping?.shoes?.color?.family,look.mapping?.accessory?.color?.family]
+      .filter(f => [item.topFamily,item.bottomFamily,item.shoesFamily,item.accessoryFamily].includes(f)).length;
+    return overlap >= 2 || familyOverlap >= 3 || (item.familySignature && item.familySignature === famSig);
   });
 }
 
@@ -2356,7 +2388,19 @@ function remember(look, source='today'){
   if(source === 'today'){
     state.recentHome = state.recentHome || [];
     state.recentHome.unshift(compactLookForHistory(look));
-    state.recentHome = state.recentHome.slice(0, 12);
+    state.recentHome = state.recentHome.slice(0, 14);
+    state.colorUsage = state.colorUsage || {};
+    state.suggestionSeq = (state.suggestionSeq || 0) + 1;
+    ['top','bottom','shoes','accessory'].forEach(role => {
+      const color = look.mapping?.[role]?.color;
+      if(!color) return;
+      const prev = state.colorUsage[color.id] || {count:0,lastSeq:0,roles:{}};
+      prev.count = (prev.count || 0) + 1;
+      prev.lastSeq = state.suggestionSeq;
+      prev.roles = prev.roles || {};
+      prev.roles[role] = (prev.roles[role] || 0) + 1;
+      state.colorUsage[color.id] = prev;
+    });
   }
 }
 
@@ -2370,33 +2414,94 @@ function shuffleArray(arr){
   return copy;
 }
 
+
+function recentFamilyPressure(family, role=null, count=8){
+  const history = recentHomeHistory(count);
+  if(!history.length) return 0;
+  let hits = 0;
+  history.forEach(item => {
+    if(role === 'top') hits += item.topFamily === family ? 1 : 0;
+    else if(role === 'bottom') hits += item.bottomFamily === family ? 1 : 0;
+    else {
+      hits += item.topFamily === family ? 0.6 : 0;
+      hits += item.bottomFamily === family ? 0.6 : 0;
+      (item.ids || []).forEach(id => {
+        if(COLORS[id]?.family === family) hits += 0.22;
+      });
+    }
+  });
+  return hits;
+}
+
+
+function shadeCoverageWeight(color, role=null){
+  if(!color) return 0;
+  const usage = (state.colorUsage || {})[color.id];
+  const seq = state.suggestionSeq || 0;
+  if(!usage) return 42; // unseen shades go to the front of the queue
+  const age = Math.max(0, seq - (usage.lastSeq || 0));
+  let bonus = Math.min(34, age * 2.4);
+  bonus -= Math.min(22, (usage.count || 0) * 1.4);
+  if(role && (usage.roles || {})[role]) bonus -= Math.min(18, usage.roles[role] * 3);
+  return bonus;
+}
+function familyBalanceWeight(color, role=null){
+  if(!color) return 0;
+  const f = color.family;
+  let bonus = 0;
+  // The new full spectrum should actually be used: blue/brown stay important,
+  // but pink/purple/green/warm accents need a fair turn.
+  if(f === 'soft') bonus += 8;
+  if(f === 'purple') bonus += 7;
+  if(f === 'green') bonus += 6;
+  if(f === 'warm-accent') bonus += 7;
+  if(f === 'blue') bonus -= 3;
+  if(f === 'warm-neutral' || f === 'dark-neutral') bonus -= 3;
+
+  const pressure = recentFamilyPressure(f, role, 8);
+  bonus -= pressure * 6.5;
+
+  // Main garments should not default to blue/brown every time.
+  if(role === 'top' || role === 'bottom'){
+    if(['soft','purple','green','warm-accent'].includes(f)) bonus += 9;
+    if(['blue','warm-neutral','dark-neutral'].includes(f)) bonus -= 4;
+  }
+  return bonus;
+}
+
 function buildVariedMapping(colors){
   const topPool = safeColorsForRole(colors.filter(c => c.family !== 'light'), 'top');
   const actualTopPool = topPool.length ? topPool : safeColorsForRole(colors, 'top');
 
   const topPreferred = actualTopPool.filter(c =>
-    ['warm-neutral','green','purple','blue','warm-accent','neutral','dark-neutral'].includes(c.family)
+    ['soft','green','purple','warm-accent','neutral','blue','warm-neutral','dark-neutral'].includes(c.family)
   );
-  const topColor = pick(topPreferred.length ? topPreferred : actualTopPool);
+  const topOptions = topPreferred.length ? topPreferred : actualTopPool;
+  const topColor = weightedPick(topOptions.map(color => ({
+    color,
+    weight:Math.max(0.5, 14 + familyBalanceWeight(color, 'top'))
+  })));
 
   const remaining = colors.filter(c => c.id !== topColor.id);
   const mapping = { top:{color:topColor, text:roleText('top', topColor)} };
 
   const preferred = {
-    bottom:['neutral','dark-neutral','blue','green','warm-neutral','purple','warm-accent','soft','light'],
-    shoes:['red','warm-neutral','neutral','dark-neutral','green','blue','warm-accent','purple','light','soft'],
-    accessory:['red','warm-accent','purple','blue','green','neutral','warm-neutral','soft','light','dark-neutral']
+    bottom:['green','purple','soft','warm-accent','neutral','blue','warm-neutral','dark-neutral','light'],
+    shoes:['red','green','purple','warm-accent','neutral','warm-neutral','blue','dark-neutral','soft','light'],
+    accessory:['red','warm-accent','purple','soft','green','blue','neutral','warm-neutral','light','dark-neutral']
   };
 
   ['bottom','shoes','accessory'].forEach(role => {
     const options = safeColorsForRole(remaining.length ? remaining : colors, role);
     const pref = preferred[role] || [];
-    const sorted = [...options].sort((a,b) => {
-      const ai = pref.indexOf(a.family);
-      const bi = pref.indexOf(b.family);
-      return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+    const weighted = options.map(color => {
+      const prefIndex = pref.indexOf(color.family);
+      let weight = 14 + (prefIndex >= 0 ? Math.max(0, 10 - prefIndex) : 0);
+      weight += familyBalanceWeight(color, role);
+    weight += shadeCoverageWeight(color, role);
+      return {color, weight:Math.max(0.5, weight)};
     });
-    const color = Math.random() < 0.70 ? sorted[0] : pick(options);
+    const color = weightedPick(weighted);
     mapping[role] = {color, text:roleText(role, color)};
     const idx = remaining.findIndex(c => c.id === color.id);
     if(idx >= 0) remaining.splice(idx, 1);
@@ -2420,8 +2525,8 @@ function generateBestLook(mode='super'){
   const candidates = Array.from({length:260}, () => generateLook(mode));
   candidates.sort((a,b) => scoreLookWithTopVariety(b) - scoreLookWithTopVariety(a));
 
-  const strictPool = candidates.filter(look => !violatesThreeClickRule(look));
-  const softPool = candidates.filter(look => !softlyRepeatsRecentLook(look));
+  const strictPool = candidates.filter(look => !violatesThreeClickRule(look, recentHomeHistory(7)));
+  const softPool = candidates.filter(look => !softlyRepeatsRecentLook(look, recentHomeHistory(7)));
   const basePool = strictPool.length ? strictPool : (softPool.length ? softPool : candidates);
 
   if(mode === 'super'){
@@ -2466,7 +2571,7 @@ function scoreLookWithTopVariety(look){
   s -= overlapCount(recentIds, ids) * 16;
   s -= overlapCount(recentFamilies, families) * 5;
 
-  const recentHome = recentHomeHistory(3);
+  const recentHome = recentHomeHistory(7);
   recentHome.forEach(item => {
     const overlap = ids.filter(id => item.ids.includes(id)).length;
     s -= overlap * 18;
@@ -2476,12 +2581,14 @@ function scoreLookWithTopVariety(look){
     if(item.bottomFamily === look.mapping?.bottom?.color?.family) s -= 10;
   });
 
-  // Preferred Shimi zone, but now neutrals and red accents are invited too.
+  // Full-spectrum balance: reward underused families and stop blue/brown dominance.
   families.forEach(f => {
-    if(['warm-neutral','green','purple','blue','warm-accent','neutral'].includes(f)) s += 14;
-    if(f === 'light') s -= 18;
-    if(f === 'soft') s -= 10;
+    if(['green','purple','warm-accent','soft'].includes(f)) s += 18;
+    if(['blue','warm-neutral','dark-neutral'].includes(f)) s += 5;
+    if(f === 'neutral') s += 8;
+    if(f === 'light') s -= 10;
     if(f === 'red') s += 18;
+    s -= recentFamilyPressure(f, null, 8) * 4.5;
   });
 
   if(ids.includes('black')) s += 8;
@@ -2497,7 +2604,7 @@ function scoreLookWithTopVariety(look){
   // Avoid all-neutral boredom.
   if(families.filter(f => f === 'neutral').length >= 3) s -= 18;
   if(families.filter(f => f === 'light').length > 1) s -= 70;
-  if(families.filter(f => f === 'soft').length > 1) s -= 36;
+  if(families.filter(f => f === 'soft').length > 2) s -= 14;
 
   if(look.mapping?.shoes?.color){
     const shoe = look.mapping.shoes.color;
@@ -2505,7 +2612,8 @@ function scoreLookWithTopVariety(look){
     if(isRedColor(shoe)) s += recentRedShoesCount(6) ? -90 : 70;
     const recentShoes = recentShoeColors(5);
     if(recentShoes.includes(shoe.id)) s -= 95;
-    if(['camel','cognac','sand','cocoa','espresso','bark','navy','denim','olive','bordeaux','black','graphite','stone'].includes(shoe.id)) s += 32;
+    if(['olive','bordeaux','black','graphite','stone','plum','lilac','rose','dustyrose','mustard','orange','emerald','forest','cobalt','navy','camel','cognac'].includes(shoe.id)) s += 12;
+    s += familyBalanceWeight(shoe, 'shoes');
   }
 
   if(look.mapping && look.mapping.bottom && isRedColor(look.mapping.bottom.color)) s -= 999;
@@ -2513,8 +2621,10 @@ function scoreLookWithTopVariety(look){
     const top = look.mapping.top.color;
     if(isRedColor(top)) s -= 999;
     if(top.family === 'light') s -= 62;
-    if(top.family === 'soft') s -= 18;
-    if(['green','purple','blue','warm-accent','warm-neutral','neutral','dark-neutral'].includes(top.family)) s += 22;
+    if(top.family === 'soft') s += 14;
+    if(['green','purple','warm-accent','soft'].includes(top.family)) s += 24;
+    if(['blue','warm-neutral','neutral','dark-neutral'].includes(top.family)) s += 9;
+    s += familyBalanceWeight(top, 'top');
     if(top.id === 'black') s += 38;
   }
   if(look.mapping?.accessory?.color){
@@ -2553,7 +2663,7 @@ function generateLook(mode='super'){
   const blackishCount = colors.filter(c => c.id === 'black' || c.id === 'charcoal').length;
 
   if(lightCount > 1 || softCount > 1 || blackishCount > 1){
-    const shimiGroups = ['neutral','warmNeutral','green','purple','blue','warmAccent','darkNeutral','red'];
+    const shimiGroups = ['green','purple','soft','warmAccent','neutral','blue','warmNeutral','darkNeutral','red'];
     colors = [];
     while(colors.length < 4){
       const c = pickColor(pick(shimiGroups), colors);
@@ -2755,6 +2865,7 @@ function pickColor(groupName, previous, role=null){
     if(color.id === 'white' || color.id === 'opticwhite') weight += 2;
 
     if(color.family === 'neutral') weight += 2;
+    weight += familyBalanceWeight(color, role);
     return {color, weight:Math.max(0.4, weight)};
   });
   return weightedPick(weighted);
@@ -3345,7 +3456,7 @@ function maybeApplyPrintzToLook(look){
 }
 
 function getPrintzUseChance(){
-  const mode = state.colorMode || 'super';
+  const mode = 'super';
   if(mode === 'tiny') return 0.18;
   if(mode === 'half') return 0.34;
   return 0.48;
