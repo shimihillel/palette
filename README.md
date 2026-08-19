@@ -27,9 +27,8 @@
 - מנטה, טורקיז ושקוף נשארים בחוץ
 
 
-## v1.5 Seasons
-- Added a tiny settings button with Summer / Winter mode.
-- Summer keeps 4 roles. Winter adds Jacket / Coat as a fifth role.
-- Jacket / Coat supports Replace and Lock and participates in hidden rotation memory.
-- Red, mint, turquoise and transparent are excluded from outerwear.
-- No history, saved looks, achievements or backup UI were reintroduced.
+## v1.5.1 Shoe Balance
+- Fixed red-shoe overuse caused by the visible lookbook being removed while red-frequency checks still read from it.
+- Red shoes are now capped to at most one in six suggestions; red accessories at most one in ten.
+- Shoe colors rotate through the full palette with no special red priority.
+- Internal recent-history memory remains hidden and drives repetition control.

@@ -349,26 +349,14 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
 .topbar{grid-template-columns:1fr!important;justify-items:center;margin-bottom:14px}.brand-block{grid-column:1}.app-shell{padding-bottom:28px!important}
 .today-title-block{margin-top:2px}.top-action-row.clean-actions{grid-template-columns:1fr!important;max-width:280px;margin:0 auto 20px}.primary-btn#nextLookBtn{width:100%}
 @media(max-width:430px){.app-shell{padding-bottom:24px!important}.topbar{margin-bottom:10px}.top-action-row.clean-actions{max-width:none}}
-
-/* v1.5 SEASONS — summer / winter, still single-screen */
-#settingsBtn{display:grid!important}
-.topbar{grid-template-columns:44px 1fr 44px!important;align-items:center}
-.brand-block{grid-column:2}
-#settingsBtn{grid-column:3;font-size:22px;color:#4f3427}
-.season-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 8px}
-.season-option{padding:16px 12px;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(79,52,39,.12);color:var(--ink);font-weight:900;font-size:17px}
-.season-option.active{background:linear-gradient(145deg,var(--brown),var(--brown2));color:#fff}
-.settings-note{margin:10px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
-@media(max-width:430px){.topbar{grid-template-columns:40px 1fr 40px!important}.brand-block{grid-column:2}#settingsBtn{grid-column:3}}
-
 </style>
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <span aria-hidden="true"></span>
+      <button class="icon-btn menu-btn" id="infoBtn" aria-label="מידע">ⓘ</button>
       <div class="brand-block"><h1>SHIMI LOOKS</h1></div>
-      <button class="icon-btn" id="settingsBtn" aria-label="הגדרות" type="button">⚙︎</button>
+      <button class="icon-btn calendar-btn" id="calendarBtn" aria-label="הסטייל שלי">♡</button>
     </header>
     <main>
       <section class="screen active" id="todayScreen">
@@ -440,8 +428,6 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
   <dialog id="lookDialog"><div class="dialog-inner"><button class="dialog-close" id="closeDialogBtn" type="button">×</button><p class="eyebrow soft" id="dialogDate"></p><h3 id="dialogTitle"></h3><p id="dialogVibe" class="dialog-vibe"></p><div class="palette-row large" id="dialogPalette"></div><div class="mapping-list dialog-map" id="dialogMapping"></div><div class="why-card dialog-why"><h3>למה זה עובד?</h3><p id="dialogWhy"></p></div></div></dialog>
   <dialog id="infoDialog"><div class="dialog-inner info-inner"><button class="dialog-close" id="closeInfoBtn" type="button">×</button><p class="eyebrow soft">ABOUT THE ENGINE</p><h3>איך זה עובד?</h3><p>האפליקציה בונה שילובי צבעים מתוך מבני השראה, וריאציות גוונים ומיפוי לבגדים.</p><ul class="info-list"><li>כל לחיצה על <b>הבא בתור</b> מייצרת שילוב חדש.</li><li><b>שומרת ♡</b> מכניס את הלוק לאהבתי.</li><li><b>בחרתי</b> בונה שילוב סביב פריט שכבר בא לך ללבוש.</li></ul><button class="primary-btn full" id="closeInfoCta" type="button">הבנתי</button></div></dialog>
   <dialog id="colorModeDialog"><div class="dialog-inner info-inner"><button class="dialog-close" id="closeColorModeBtn" type="button">×</button><p class="eyebrow soft">COLOR MOOD</p><h3>מדד הצבע היומי</h3><p class="dialog-vibe">בחרי כמה צבע יש לך כוח להיות היום. שינוי מדד מייצר לוק חדש אוטומטית.</p><div class="mode-options" id="colorModeOptions"></div></div></dialog>
-
-  <dialog id="settingsDialog"><div class="dialog-inner info-inner"><button class="dialog-close" id="closeSettingsBtn" type="button">×</button><p class="eyebrow soft">SEASON MODE</p><h3>איך מתלבשים עכשיו?</h3><p class="dialog-vibe">בקיץ ארבעה פריטים. בחורף מתווסף גם ג׳קט / מעיל.</p><div class="season-options"><button class="season-option" data-season="summer" type="button">☀︎ קיץ</button><button class="season-option" data-season="winter" type="button">❄︎ חורף</button></div><p class="settings-note">במעיל אין אדום, מנטה או טורקיז. כל שאר הגוונים יכולים להיכנס לרוטציה.</p></div></dialog>
   <div class="toast" id="toast"></div>
   <script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(reg=>reg.unregister()));} if(window.caches){caches.keys().then(keys=>keys.forEach(key=>caches.delete(key)));}</script>
   <script>function el(id){ return document.getElementById(id); }
@@ -450,7 +436,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.5.0-seasons';
+const APP_VERSION = '1.4.0-smart-clean';
 
 const COLORS = {
   // Whites / creams
@@ -886,27 +872,25 @@ const FULL_COLOR_EXPANSION = {
 };
 
 Object.assign(COLORS, EXTRA_COLORS, FULL_COLOR_EXPANSION);
-COLORS.transparent = {id:'transparent',he:'שקוף (PVC)',en:'Transparent PVC',hex:'linear-gradient(135deg,#ffffff 0 42%,#d8dde3 43% 48%,#ffffff 49% 100%)',family:'neutral',special:'transparent'};
-
 const SHOE_SAFE_IDS = Object.keys(COLORS).filter(id => !['mint','teal','turquoise'].includes(id));
-const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־6 לוקים
+const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: לכל היותר פעם אחת בכל 6 הצעות
 function isBannedColor(color){
-  return !!color && ['mint','teal','turquoise','transparent'].includes(color.id);
+  return !!color && ['mint','teal','turquoise'].includes(color.id);
 }
 function isTurquoiseLike(color){
   return isBannedColor(color);
 }
 function recentShoeColors(count=8){
-  return state.lookbook.slice(0,count).map(look => look.mapping?.shoes?.color?.id).filter(Boolean);
+  return recentHomeHistory(count).map(item => item.shoes).filter(Boolean);
 }
 function recentRedShoesCount(count=8){
-  return state.lookbook.slice(0,count).filter(look => isRedColor(look.mapping?.shoes?.color)).length;
+  return recentHomeHistory(count).filter(item => isRedColor(COLORS[item.shoes])).length;
 }
 function recentRedAccessoryCount(count=10){
-  return state.lookbook.slice(0,count).filter(look => isRedColor(look.mapping?.accessory?.color)).length;
+  return recentHomeHistory(count).filter(item => isRedColor(COLORS[item.accessory])).length;
 }
 function recentRedAccentCount(count=6){
-  return state.lookbook.slice(0,count).filter(look => isRedColor(look.mapping?.shoes?.color) || isRedColor(look.mapping?.accessory?.color)).length;
+  return recentHomeHistory(count).filter(item => isRedColor(COLORS[item.shoes]) || isRedColor(COLORS[item.accessory])).length;
 }
 function isPinkShoeColor(color){
   return !!color && ['blush','dustyrose','mauve','lavgray','lilac','fuchsia'].includes(color.id);
@@ -925,7 +909,7 @@ function pickShoeColorAvoidingRecent(colors){
     // גיוון פשוט: כל צבע מקבל סיכוי דומה, עם קנס רק לחזרות קרובות.
     if(recent.includes(c.id)) weight -= 18;
     if(recentShoeColors(10).includes(c.id)) weight -= 8;
-    if(c.family === 'red') weight += recentRedShoesCount(6) ? -45 : 3;
+    if(c.family === 'red') weight += recentRedShoesCount(5) ? -90 : -5;
     return {color:c, weight:Math.max(0.8, weight)};
   });
   return weightedPick(weighted);
@@ -934,11 +918,15 @@ function fixShoeVariety(mapping, colors){
   if(!mapping || !mapping.shoes) return mapping;
   const shoe = mapping.shoes.color;
   const recentShoes = recentShoeColors(5);
-  const redOverload = isRedColor(shoe) && recentRedShoesCount(6) >= SHOE_RED_MAX_RECENT;
+  const redOverload = isRedColor(shoe) && recentRedShoesCount(5) >= SHOE_RED_MAX_RECENT;
   const repeatOverload = shoe && recentShoes.filter(id => id === shoe.id).length >= 1;
   const turquoiseBad = isTurquoiseLike(shoe);
   if(redOverload || repeatOverload || turquoiseBad){
-    const replacement = pickShoeColorAvoidingRecent(colors);
+    let replacementPool = colors;
+    if(redOverload){
+      replacementPool = Object.values(COLORS).filter(c => c && !isBannedColor(c) && !isRedColor(c));
+    }
+    const replacement = pickShoeColorAvoidingRecent(replacementPool);
     mapping.shoes.color = replacement;
     mapping.shoes.text = roleText('shoes', replacement);
   }
@@ -966,14 +954,14 @@ function fixRedAccentFrequency(mapping, colors){
   }
 
   // אביזר אדום נדיר יותר, אבל לא נעלם לגמרי.
-  if(isRedColor(mapping.accessory?.color) && recentRedAccessoryCount(10) >= 2){
+  if(isRedColor(mapping.accessory?.color) && recentRedAccessoryCount(9) >= 1){
     const repl = pickAccessoryColorAvoidingRed(colors);
     mapping.accessory.color = repl;
     mapping.accessory.text = roleText('accessory', repl);
   }
 
   // נעליים אדומות מותרות, במרווח סביר.
-  if(isRedColor(mapping.shoes?.color) && recentRedShoesCount(6) >= 2){
+  if(isRedColor(mapping.shoes?.color) && recentRedShoesCount(5) >= 1){
     const repl = pickShoeColorAvoidingRecent(colors);
     mapping.shoes.color = repl;
     mapping.shoes.text = roleText('shoes', repl);
@@ -982,15 +970,7 @@ function fixRedAccentFrequency(mapping, colors){
 }
 
 function fixRedAccentPresence(mapping, colors){
-  if(!mapping || !colors) return mapping;
-  const reds = (colors || []).filter(c => isRedColor(c));
-  if(!reds.length) return mapping;
-  if(isRedColor(mapping.shoes?.color) || isRedColor(mapping.accessory?.color)) return mapping;
-  const red = pick(reds);
-  const target = recentRedShoesCount(6) < 2 ? 'shoes' : (recentRedAccessoryCount(10) < 2 ? 'accessory' : null);
-  if(!target) return mapping;
-  mapping[target].color = red;
-  mapping[target].text = roleText(target, red);
+  // Red is allowed, never mandatory. Let the engine choose it naturally.
   return mapping;
 }
 
@@ -1004,8 +984,7 @@ function fixBlackPresence(mapping, colors){
 }
 function canUseColorForRole(color, role){
   if(!color || isBannedColor(color)) return false;
-  if(color.id === 'transparent') return role === 'shoes';
-  if((role === 'top' || role === 'bottom' || role === 'outerwear') && isRedColor(color)) return false;
+  if((role === 'top' || role === 'bottom') && isRedColor(color)) return false;
   return true;
 }
 function safeColorsForRole(colors, role){
@@ -1178,7 +1157,6 @@ state.openedPearls = [];
 state.screen = 'todayScreen';
 state.colorMode = 'super';
 state.anchorColorMode = 'super';
-state.seasonMode = state.seasonMode === 'winter' ? 'winter' : 'summer';
 state.editingPrintzId = null;
 state.printz = [];
 state.printzDraftImage = null;
@@ -1220,7 +1198,6 @@ function loadState(){
       colorMode: 'super',
       colorUsage: parsed.colorUsage || {},
       suggestionSeq: parsed.suggestionSeq || 0,
-      seasonMode: parsed.seasonMode === 'winter' ? 'winter' : 'summer',
       screen: parsed.screen || 'todayScreen',
       installDate: parsed.installDate || new Date().toISOString(),
       wearAnswers: Array.isArray(parsed.wearAnswers) ? parsed.wearAnswers : [],
@@ -1228,7 +1205,7 @@ function loadState(){
       openedPearls: Array.isArray(parsed.openedPearls) ? parsed.openedPearls : []
     };
   }catch(e){
-    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'בז׳ / חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],disliked:[],notToday:[],printz:[],printzDraftImage:null,printzSelectedColors:[],printzMisses:0,printzRecentIds:[],customColors:[],printzColorSearch:'',printzColorFamily:'all',lockedRoles:{},mood:'easy',purpose:'day',colorMode:'super',screen:'todayScreen',installDate:new Date().toISOString(),wearAnswers:[],nextWearChallengeAt:new Date(Date.now()+3*86400000).toISOString(),openedPearls:[],colorUsage:{},suggestionSeq:0,seasonMode:'summer'};
+    return {currentLook:null,anchorLook:null,anchorPiece:'bottom',anchorFamily:'בז׳ / חום',anchorColorId:'cocoa',anchorColorMode:'super',lookbook:[],recent:[],recentHome:[],disliked:[],notToday:[],printz:[],printzDraftImage:null,printzSelectedColors:[],printzMisses:0,printzRecentIds:[],customColors:[],printzColorSearch:'',printzColorFamily:'all',lockedRoles:{},mood:'easy',purpose:'day',colorMode:'super',screen:'todayScreen',installDate:new Date().toISOString(),wearAnswers:[],nextWearChallengeAt:new Date(Date.now()+3*86400000).toISOString(),openedPearls:[],colorUsage:{},suggestionSeq:0};
   }
 }
 
@@ -1362,8 +1339,7 @@ function lookHasBannedColor(look){
     look.mapping?.top?.color,
     look.mapping?.bottom?.color,
     look.mapping?.shoes?.color,
-    look.mapping?.accessory?.color,
-    look.mapping?.outerwear?.color
+    look.mapping?.accessory?.color
   ].filter(Boolean);
   return colors.some(isBannedColor);
 }
@@ -1380,9 +1356,8 @@ function sanitizeStoredLooks(){
 function init(){
   try{
     sanitizeStoredLooks();
-    if(state.currentLook) state.currentLook = applySeasonToLook(state.currentLook);
     if(!state.currentLook){
-      state.currentLook = applySeasonToLook(generateBestLook('super'));
+      state.currentLook = generateBestLook('super');
       remember(state.currentLook, 'today');
       saveState();
     }
@@ -1397,11 +1372,8 @@ function init(){
 }
 
 function bindEvents(){
-  on('settingsBtn','click', () => { renderSeasonSettings(); el('settingsDialog')?.showModal(); });
-  on('closeSettingsBtn','click', () => el('settingsDialog')?.close());
-  document.querySelectorAll('[data-season]').forEach(btn => btn.addEventListener('click', () => setSeasonMode(btn.dataset.season)));
   $('nextLookBtn').addEventListener('click', () => {
-    state.currentLook = applySeasonToLook(generateBestLook('super'));
+    state.currentLook = generateBestLook('super');
     remember(state.currentLook, 'today');
     saveState();
     animateLookChange();
@@ -1988,7 +1960,6 @@ function renderLookVisual(container, mapping, options={}){
   const rows = [
     {role:'top', label:'עליון'},
     {role:'bottom', label:'תחתון'},
-    ...(state.seasonMode === 'winter' && mapping.outerwear ? [{role:'outerwear', label:'ג׳קט / מעיל'}] : []),
     {role:'shoes', label:'נעליים'},
     {role:'accessory', label:'אביזר'}
   ];
@@ -2072,16 +2043,16 @@ function roleReplacementWeight(role, color){
   const recent = recentShoeColors(8);
   if(role === 'shoes' && recent.includes(color.id)) weight -= 6;
   if(role === 'accessory' && isRedColor(color) && recentRedAccessoryCount(10) >= 1) weight -= 20;
-  if((role === 'top' || role === 'bottom' || role === 'outerwear') && isRedColor(color)) weight = 0.1;
+  if((role === 'top' || role === 'bottom') && isRedColor(color)) weight = 0.1;
   if(['cognac','bordeaux','olive','navy','denim','graphite','camel','cocoa','plum','ochre'].includes(color.id)) weight += 3;
   return Math.max(0.3, weight);
 }
 
 function refreshLookAfterManualEdit(){
   const mapping = state.currentLook.mapping;
-  const roleColors = activeRoleIds().map(role => mapping[role]?.color).filter(Boolean);
+  const roleColors = ['top','bottom','shoes','accessory'].map(role => mapping[role].color);
   const extras = (state.currentLook.colors || []).filter(c => !roleColors.some(rc => rc.id === c.id));
-  state.currentLook.colors = [...roleColors, ...extras].filter((c, idx, arr) => arr.findIndex(x => x.id === c.id) === idx).slice(0,activeRoleIds().length);
+  state.currentLook.colors = [...roleColors, ...extras].filter((c, idx, arr) => arr.findIndex(x => x.id === c.id) === idx).slice(0,4);
   state.currentLook.title = buildTitle(state.currentLook.colors);
   state.currentLook.why = buildWhyByMode(state.currentLook.colors, state.currentLook.colorMode || state.colorMode || 'super');
   state.currentLook.signature = `manual-v44|${Date.now()}|${Object.values(mapping).map(item => item.color.id).join('|')}`;
@@ -2089,15 +2060,15 @@ function refreshLookAfterManualEdit(){
 
 function applyLockedRolesToLook(look){
   if(!look || !state.currentLook || !state.lockedRoles) return look;
-  const roles = activeRoleIds().filter(role => state.lockedRoles[role] && state.currentLook.mapping?.[role]);
+  const roles = ['top','bottom','shoes','accessory'].filter(role => state.lockedRoles[role] && state.currentLook.mapping?.[role]);
   if(!roles.length) return look;
   const next = JSON.parse(JSON.stringify(look));
   roles.forEach(role => {
     next.mapping[role] = JSON.parse(JSON.stringify(state.currentLook.mapping[role]));
   });
-  const roleColors = activeRoleIds().map(role => next.mapping[role]?.color).filter(Boolean);
+  const roleColors = ['top','bottom','shoes','accessory'].map(role => next.mapping[role].color);
   const extras = (next.colors || []).filter(c => !roleColors.some(rc => rc.id === c.id));
-  next.colors = [...roleColors, ...extras].filter((c, idx, arr) => arr.findIndex(x => x.id === c.id) === idx).slice(0,activeRoleIds().length);
+  next.colors = [...roleColors, ...extras].filter((c, idx, arr) => arr.findIndex(x => x.id === c.id) === idx).slice(0,4);
   next.title = buildTitle(next.colors);
   next.why = buildWhyByMode(next.colors, next.colorMode || state.colorMode || 'super');
   next.signature = `locked-v44|${next.colorMode || state.colorMode}|${roles.join(',')}|${next.colors.map(c => c.id).join('|')}|${Object.values(next.mapping).map(item => item.color.id).join('|')}`;
@@ -2351,12 +2322,10 @@ function compactLookForHistory(look){
     bottom:look.mapping?.bottom?.color?.id || '',
     shoes:look.mapping?.shoes?.color?.id || '',
     accessory:look.mapping?.accessory?.color?.id || '',
-    outerwear:look.mapping?.outerwear?.color?.id || '',
     topFamily:look.mapping?.top?.color?.family || '',
     bottomFamily:look.mapping?.bottom?.color?.family || '',
     shoesFamily:look.mapping?.shoes?.color?.family || '',
     accessoryFamily:look.mapping?.accessory?.color?.family || '',
-    outerwearFamily:look.mapping?.outerwear?.color?.family || '',
     familySignature:lookFamilySignature(look)
   };
 }
@@ -2366,7 +2335,7 @@ function recentHomeHistory(count=3){
 }
 
 function lookFamilySignature(look){
-  return activeRoleIds()
+  return ['top','bottom','shoes','accessory']
     .map(role => look.mapping?.[role]?.color?.family || '')
     .join('|');
 }
@@ -2378,8 +2347,7 @@ function violatesThreeClickRule(look, history=recentHomeHistory(7)){
     top:look.mapping?.top?.color?.id || '',
     bottom:look.mapping?.bottom?.color?.id || '',
     shoes:look.mapping?.shoes?.color?.id || '',
-    accessory:look.mapping?.accessory?.color?.id || '',
-    outerwear:look.mapping?.outerwear?.color?.id || ''
+    accessory:look.mapping?.accessory?.color?.id || ''
   };
   const famSig = lookFamilySignature(look);
 
@@ -2388,7 +2356,7 @@ function violatesThreeClickRule(look, history=recentHomeHistory(7)){
     const overlap = ids.filter(id => (item.ids || []).includes(id)).length;
     if(overlap >= 2) return true;
     if(item.familySignature && item.familySignature === famSig) return true;
-    if(item.top === roleIds.top || item.bottom === roleIds.bottom || item.shoes === roleIds.shoes || item.accessory === roleIds.accessory || (roleIds.outerwear && item.outerwear === roleIds.outerwear)) return true;
+    if(item.top === roleIds.top || item.bottom === roleIds.bottom || item.shoes === roleIds.shoes || item.accessory === roleIds.accessory) return true;
     const sameMainFamilies = item.topFamily === look.mapping?.top?.color?.family && item.bottomFamily === look.mapping?.bottom?.color?.family;
     if(sameMainFamilies) return true;
   }
@@ -2401,8 +2369,8 @@ function softlyRepeatsRecentLook(look, history=recentHomeHistory(7)){
   const famSig = lookFamilySignature(look);
   return history.some(item => {
     const overlap = ids.filter(id => (item.ids || []).includes(id)).length;
-    const familyOverlap = activeRoleIds().map(role => look.mapping?.[role]?.color?.family).filter(Boolean)
-      .filter(f => [item.topFamily,item.bottomFamily,item.shoesFamily,item.accessoryFamily,item.outerwearFamily].includes(f)).length;
+    const familyOverlap = [look.mapping?.top?.color?.family,look.mapping?.bottom?.color?.family,look.mapping?.shoes?.color?.family,look.mapping?.accessory?.color?.family]
+      .filter(f => [item.topFamily,item.bottomFamily,item.shoesFamily,item.accessoryFamily].includes(f)).length;
     return overlap >= 2 || familyOverlap >= 3 || (item.familySignature && item.familySignature === famSig);
   });
 }
@@ -2416,7 +2384,7 @@ function remember(look, source='today'){
     state.recentHome = state.recentHome.slice(0, 14);
     state.colorUsage = state.colorUsage || {};
     state.suggestionSeq = (state.suggestionSeq || 0) + 1;
-    activeRoleIds().forEach(role => {
+    ['top','bottom','shoes','accessory'].forEach(role => {
       const color = look.mapping?.[role]?.color;
       if(!color) return;
       const prev = state.colorUsage[color.id] || {count:0,lastSeq:0,roles:{}};
@@ -2512,8 +2480,8 @@ function buildVariedMapping(colors){
 
   const preferred = {
     bottom:['green','purple','soft','warm-accent','neutral','blue','warm-neutral','dark-neutral','light'],
-    shoes:['red','green','purple','warm-accent','neutral','warm-neutral','blue','dark-neutral','soft','light'],
-    accessory:['red','warm-accent','purple','soft','green','blue','neutral','warm-neutral','light','dark-neutral']
+    shoes:['green','purple','warm-accent','neutral','warm-neutral','blue','dark-neutral','soft','light','red'],
+    accessory:['warm-accent','purple','soft','green','blue','neutral','warm-neutral','light','dark-neutral','red']
   };
 
   ['bottom','shoes','accessory'].forEach(role => {
@@ -2612,13 +2580,13 @@ function scoreLookWithTopVariety(look){
     if(['blue','warm-neutral','dark-neutral'].includes(f)) s += 5;
     if(f === 'neutral') s += 8;
     if(f === 'light') s -= 10;
-    if(f === 'red') s += 18;
+    if(f === 'red') s += 2;
     s -= recentFamilyPressure(f, null, 8) * 4.5;
   });
 
   if(ids.includes('black')) s += 8;
   if(ids.includes('white') || ids.includes('opticwhite')) s += 8;
-  if(ids.some(id => RED_COLOR_IDS.includes(id))) s += 22;
+  if(ids.some(id => RED_COLOR_IDS.includes(id))) s += 3;
   if(ids.includes('charcoal')) s += 6;
 
   // Keep black/white special: around 30% overall, and never as top+bottom opposite combo.
@@ -2634,7 +2602,7 @@ function scoreLookWithTopVariety(look){
   if(look.mapping?.shoes?.color){
     const shoe = look.mapping.shoes.color;
     if(isTurquoiseLike(shoe)) s -= 999;
-    if(isRedColor(shoe)) s += recentRedShoesCount(6) ? -90 : 70;
+    if(isRedColor(shoe)) s += recentRedShoesCount(5) ? -220 : -6;
     const recentShoes = recentShoeColors(5);
     if(recentShoes.includes(shoe.id)) s -= 95;
     if(['olive','bordeaux','black','graphite','stone','plum','lilac','rose','dustyrose','mustard','orange','emerald','forest','cobalt','navy','camel','cognac'].includes(shoe.id)) s += 12;
@@ -2655,7 +2623,7 @@ function scoreLookWithTopVariety(look){
   if(look.mapping?.accessory?.color){
     const acc = look.mapping.accessory.color;
     if(isTurquoiseLike(acc)) s -= 999;
-    if(isRedColor(acc)) s += recentRedAccessoryCount(10) ? -120 : 38;
+    if(isRedColor(acc)) s += recentRedAccessoryCount(9) ? -220 : -8;
   }
   if(isRedColor(look.mapping?.shoes?.color) && isRedColor(look.mapping?.accessory?.color)) s -= 999;
 
@@ -2881,8 +2849,8 @@ function pickColor(groupName, previous, role=null){
 
     // Red is allowed only as shoes/accessory, never top/bottom.
     if(isRedColor(color) && (role === 'top' || role === 'bottom')) weight = 0.1;
-    if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(6) ? -35 : 36;
-    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(10) ? -42 : 26;
+    if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(5) ? -80 : -4;
+    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(9) ? -90 : -6;
     if(isTurquoiseLike(color)) weight = 0.05;
 
     // Push black/white to actually appear, not just sit politely in the palette.
@@ -2933,12 +2901,11 @@ function roleText(role, color){
   if(role === 'top') return `עליון ב${color.he}`;
   if(role === 'bottom') return `תחתון ב${color.he}`;
   if(role === 'shoes') return `נעליים ב${color.he}`;
-  if(role === 'outerwear') return `ג׳קט / מעיל ב${color.he}`;
   return `אביזר ב${color.he}`;
 }
 
 function pieceLabel(piece){
-  return ({top:'עליון', bottom:'תחתון', outerwear:'ג׳קט / מעיל', shoes:'נעליים', accessory:'אביזר'})[piece] || 'פריט';
+  return ({top:'עליון', bottom:'תחתון', shoes:'נעליים', accessory:'אביזר'})[piece] || 'פריט';
 }
 
 function compatibleRoles(color){
@@ -3448,77 +3415,8 @@ function renderPrintzList(){
   }).join('');
 }
 
-
-function activeRoleIds(){
-  return state.seasonMode === 'winter'
-    ? ['top','bottom','outerwear','shoes','accessory']
-    : ['top','bottom','shoes','accessory'];
-}
-
-function renderSeasonSettings(){
-  document.querySelectorAll('[data-season]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.season === state.seasonMode);
-  });
-}
-
-function setSeasonMode(mode){
-  state.seasonMode = mode === 'winter' ? 'winter' : 'summer';
-  if(state.seasonMode === 'summer'){
-    delete state.lockedRoles?.outerwear;
-    if(state.currentLook?.mapping) delete state.currentLook.mapping.outerwear;
-  }else if(state.currentLook){
-    state.currentLook = applySeasonToLook(state.currentLook);
-  }
-  renderSeasonSettings();
-  saveState();
-  renderToday();
-  el('settingsDialog')?.close();
-  toast(state.seasonMode === 'winter' ? 'מצב חורף ❄︎' : 'מצב קיץ ☀︎');
-}
-
-function outerwearUsageWeight(color){
-  if(!color || isBannedColor(color) || isRedColor(color)) return 0.05;
-  const usage = state.colorUsage?.[color.id] || {count:0,lastSeq:0,roles:{}};
-  const gap = Math.max(0, (state.suggestionSeq || 0) - (usage.lastSeq || 0));
-  let weight = 12 + Math.min(24, gap * 1.8) - Math.min(10, (usage.count || 0) * 0.45);
-  const recent = recentHomeHistory(7);
-  if(recent.some(item => item.outerwear === color.id)) weight -= 30;
-  if(recent.some(item => item.outerwearFamily === color.family)) weight -= 7;
-  if(['soft','purple','green','warm-accent'].includes(color.family)) weight += 5;
-  if(['blue','warm-neutral','dark-neutral'].includes(color.family)) weight -= 1;
-  return Math.max(0.2, weight);
-}
-
-function pickOuterwearColor(look){
-  const existing = new Set(Object.values(look.mapping || {}).map(item => item?.color?.id).filter(Boolean));
-  let pool = Object.values(COLORS).filter(c => c && !isBannedColor(c) && !isRedColor(c) && c.id !== 'transparent');
-  const uniquePool = pool.filter(c => !existing.has(c.id));
-  if(uniquePool.length) pool = uniquePool;
-  return weightedPick(pool.map(color => ({color,weight:outerwearUsageWeight(color)})));
-}
-
-function applySeasonToLook(look){
-  if(!look || !look.mapping) return look;
-  const next = JSON.parse(JSON.stringify(look));
-  if(state.seasonMode !== 'winter'){
-    delete next.mapping.outerwear;
-    next.colors = (next.colors || []).filter(c => c && !isBannedColor(c)).slice(0,4);
-    return next;
-  }
-  const lockedOuterwear = state.lockedRoles?.outerwear && state.currentLook?.mapping?.outerwear?.color;
-  const color = lockedOuterwear && !isRedColor(lockedOuterwear) && !isBannedColor(lockedOuterwear)
-    ? lockedOuterwear
-    : pickOuterwearColor(next);
-  next.mapping.outerwear = {color, text:roleText('outerwear', color)};
-  const roleColors = activeRoleIds().map(role => next.mapping?.[role]?.color).filter(Boolean);
-  next.colors = roleColors.filter((c,idx,arr)=>arr.findIndex(x=>x.id===c.id)===idx).slice(0,5);
-  next.signature = `${next.signature || 'look'}|winter|${color.id}`;
-  return next;
-}
-
 function finalizeDailyLook(look){
   let next = applyLockedRolesToLook(look);
-  next = applySeasonToLook(next);
   return removePrintzFromLook(next);
 }
 
