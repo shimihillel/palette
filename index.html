@@ -450,7 +450,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.5.2-seasons-shoe-balance';
+const APP_VERSION = '1.5.3-startup-memory-fix';
 
 const COLORS = {
   // Whites / creams
@@ -1373,27 +1373,45 @@ function sanitizeStoredLooks(){
 function init(){
   try{
     sanitizeStoredLooks();
-    if(state.currentLook) state.currentLook = applySeasonToLook(state.currentLook);
-    if(!state.currentLook){
+    if(state.currentLook){
+      state.currentLook = applySeasonToLook(state.currentLook);
+    }else{
+      state.currentLook = applySeasonToLook(generateBestLook('super'));
+      remember(state.currentLook, 'today');
+    }
+    // Persist both the visible current look and the hidden diversity history.
+    saveState();
+    bindEvents();
+    renderToday();
+    renderSeasonSettings();
+  }catch(err){
+    console.error(err);
+    // Last-resort recovery: generate and render a look instead of showing an empty shell.
+    try{
       state.currentLook = applySeasonToLook(generateBestLook('super'));
       remember(state.currentLook, 'today');
       saveState();
+      renderToday();
+    }catch(innerErr){
+      console.error(innerErr);
+      const title = el('lookTitle');
+      const vibe = el('lookVibe');
+      if(title) title.textContent = 'אופס, צריך רענון';
+      if(vibe) vibe.textContent = 'היה באג קטן. נסי לרענן.';
     }
-    bindEvents();
-    renderAll();
-    showScreen(state.screen || 'todayScreen');
-  }catch(err){
-    console.error(err);
-    $('lookTitle').textContent = 'אופס, צריך רענון';
-    $('lookVibe').textContent = 'היה באג קטן. נסי ללחוץ הבא בתור או לרענן.';
   }
 }
 
 function bindEvents(){
-  on('settingsBtn','click', () => { renderSeasonSettings(); el('settingsDialog')?.showModal(); });
+  on('settingsBtn','click', () => {
+    renderSeasonSettings();
+    el('settingsDialog')?.showModal();
+  });
   on('closeSettingsBtn','click', () => el('settingsDialog')?.close());
-  document.querySelectorAll('[data-season]').forEach(btn => btn.addEventListener('click', () => setSeasonMode(btn.dataset.season)));
-  $('nextLookBtn').addEventListener('click', () => {
+  document.querySelectorAll('[data-season]').forEach(btn => {
+    btn.addEventListener('click', () => setSeasonMode(btn.dataset.season));
+  });
+  on('nextLookBtn','click', () => {
     state.currentLook = applySeasonToLook(generateBestLook('super'));
     remember(state.currentLook, 'today');
     saveState();
@@ -1402,29 +1420,6 @@ function bindEvents(){
     toast('הבא בתור ✨');
   });
   document.addEventListener('click', handleItemControlClick);
-  on('anchorModeBtn','click', () => showScreen('anchorScreen'));
-  $('buildAroundBtn').addEventListener('click', () => buildAnchorLook());
-  $('anchorNextBtn').addEventListener('click', () => buildAnchorLook());
-  $('anchorSaveBtn').addEventListener('click', () => {
-    if(state.anchorLook) saveLook(state.anchorLook);
-  });
-
-  $('lookbookSearch').addEventListener('input', renderLookbook);
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => showScreen(btn.dataset.screen));
-  });
-
-  $('closeDialogBtn').addEventListener('click', () => $('lookDialog').close());
-  $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
-  on('calendarBtn','click', () => showScreen('lookbookScreen'));
-  $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
-  $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
-  on('changeColorModeBtn','click', () => openColorModeDialog('today'));
-  on('closeColorModeBtn','click', () => el('colorModeDialog')?.close());
-  on('anchorChangeColorModeBtn','click', () => openColorModeDialog('anchor'));
-  on('backupDataBtn','click', backupDataToFile);
-  on('restoreDataBtn','click', () => el('restoreDataInput')?.click());
-  on('restoreDataInput','change', restoreDataFromFile);
 }
 
 function renderAll(){

@@ -39,3 +39,10 @@
 - Restored Summer/Winter settings and winter outerwear.
 - Kept the hidden-history shoe balance fix so red shoes stay occasional.
 - Removed transparent shoes; mint/turquoise remain excluded.
+
+
+## v1.5.3 — Startup + memory fix
+- The current look now appears immediately when the app opens.
+- Hidden diversity history persists across app launches.
+- Removed legacy event binding from hidden retired screens so startup cannot fail on missing controls.
+- Keeps Summer/Winter mode and shoe-red balancing.
