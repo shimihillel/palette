@@ -25,3 +25,11 @@
 - איזון משפחות כדי שכחול/חום לא ישתלטו
 - אדום נשאר רק בנעליים/אביזר
 - מנטה, טורקיז ושקוף נשארים בחוץ
+
+
+## v1.5 Seasons
+- Added a tiny settings button with Summer / Winter mode.
+- Summer keeps 4 roles. Winter adds Jacket / Coat as a fifth role.
+- Jacket / Coat supports Replace and Lock and participates in hidden rotation memory.
+- Red, mint, turquoise and transparent are excluded from outerwear.
+- No history, saved looks, achievements or backup UI were reintroduced.
