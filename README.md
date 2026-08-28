@@ -46,3 +46,16 @@
 - Hidden diversity history persists across app launches.
 - Removed legacy event binding from hidden retired screens so startup cannot fail on missing controls.
 - Keeps Summer/Winter mode and shoe-red balancing.
+
+
+## v1.5.4
+- Faster Next button: smaller candidate pool and immediate press feedback.
+- Keeps 7-look similarity rule while ensuring each new look visibly changes.
+- Core family rotation prevents brown, blue, green, pink, purple, warm accents, or neutrals from disappearing.
+- Brown is no longer penalized; full-spectrum variety remains balanced.
+
+
+## v1.5.5 Summer Only
+- Removed Summer/Winter settings and outerwear mode.
+- App is back to four roles only: top, bottom, shoes, accessory.
+- Smart color engine and 7-suggestion memory remain unchanged.

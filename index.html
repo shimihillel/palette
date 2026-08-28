@@ -351,15 +351,15 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
 @media(max-width:430px){.app-shell{padding-bottom:24px!important}.topbar{margin-bottom:10px}.top-action-row.clean-actions{max-width:none}}
 
 /* v1.5 SEASONS — summer / winter, still single-screen */
-#settingsBtn{display:grid!important}
+
 .topbar{grid-template-columns:44px 1fr 44px!important;align-items:center}
 .brand-block{grid-column:2}
-#settingsBtn{grid-column:3;font-size:22px;color:#4f3427}
-.season-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 8px}
-.season-option{padding:16px 12px;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(79,52,39,.12);color:var(--ink);font-weight:900;font-size:17px}
-.season-option.active{background:linear-gradient(145deg,var(--brown),var(--brown2));color:#fff}
-.settings-note{margin:10px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
-@media(max-width:430px){.topbar{grid-template-columns:40px 1fr 40px!important}.brand-block{grid-column:2}#settingsBtn{grid-column:3}}
+
+
+
+
+
+@media(max-width:430px){.topbar{grid-template-columns:40px 1fr 40px!important}.brand-block{grid-column:2}}
 
 </style>
 </head>
@@ -368,7 +368,7 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
     <header class="topbar">
       <span aria-hidden="true"></span>
       <div class="brand-block"><h1>SHIMI LOOKS</h1></div>
-      <button class="icon-btn" id="settingsBtn" aria-label="הגדרות" type="button">⚙︎</button>
+      <span class="topbar-spacer" aria-hidden="true"></span>
     </header>
     <main>
       <section class="screen active" id="todayScreen">
@@ -440,8 +440,6 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
   <dialog id="lookDialog"><div class="dialog-inner"><button class="dialog-close" id="closeDialogBtn" type="button">×</button><p class="eyebrow soft" id="dialogDate"></p><h3 id="dialogTitle"></h3><p id="dialogVibe" class="dialog-vibe"></p><div class="palette-row large" id="dialogPalette"></div><div class="mapping-list dialog-map" id="dialogMapping"></div><div class="why-card dialog-why"><h3>למה זה עובד?</h3><p id="dialogWhy"></p></div></div></dialog>
   <dialog id="infoDialog"><div class="dialog-inner info-inner"><button class="dialog-close" id="closeInfoBtn" type="button">×</button><p class="eyebrow soft">ABOUT THE ENGINE</p><h3>איך זה עובד?</h3><p>האפליקציה בונה שילובי צבעים מתוך מבני השראה, וריאציות גוונים ומיפוי לבגדים.</p><ul class="info-list"><li>כל לחיצה על <b>הבא בתור</b> מייצרת שילוב חדש.</li><li><b>שומרת ♡</b> מכניס את הלוק לאהבתי.</li><li><b>בחרתי</b> בונה שילוב סביב פריט שכבר בא לך ללבוש.</li></ul><button class="primary-btn full" id="closeInfoCta" type="button">הבנתי</button></div></dialog>
   <dialog id="colorModeDialog"><div class="dialog-inner info-inner"><button class="dialog-close" id="closeColorModeBtn" type="button">×</button><p class="eyebrow soft">COLOR MOOD</p><h3>מדד הצבע היומי</h3><p class="dialog-vibe">בחרי כמה צבע יש לך כוח להיות היום. שינוי מדד מייצר לוק חדש אוטומטית.</p><div class="mode-options" id="colorModeOptions"></div></div></dialog>
-
-  <dialog id="settingsDialog"><div class="dialog-inner info-inner"><button class="dialog-close" id="closeSettingsBtn" type="button">×</button><p class="eyebrow soft">SEASON MODE</p><h3>איך מתלבשים עכשיו?</h3><p class="dialog-vibe">בקיץ ארבעה פריטים. בחורף מתווסף גם ג׳קט / מעיל.</p><div class="season-options"><button class="season-option" data-season="summer" type="button">☀︎ קיץ</button><button class="season-option" data-season="winter" type="button">❄︎ חורף</button></div><p class="settings-note">במעיל אין אדום, מנטה או טורקיז. כל שאר הגוונים יכולים להיכנס לרוטציה.</p></div></dialog>
   <div class="toast" id="toast"></div>
   <script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(reg=>reg.unregister()));} if(window.caches){caches.keys().then(keys=>keys.forEach(key=>caches.delete(key)));}</script>
   <script>function el(id){ return document.getElementById(id); }
@@ -450,7 +448,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.5.3-startup-memory-fix';
+const APP_VERSION = '1.5.5-summer-only';
 
 const COLORS = {
   // Whites / creams
@@ -1171,7 +1169,9 @@ state.openedPearls = [];
 state.screen = 'todayScreen';
 state.colorMode = 'super';
 state.anchorColorMode = 'super';
-state.seasonMode = state.seasonMode === 'winter' ? 'winter' : 'summer';
+state.seasonMode = 'summer';
+if(state.currentLook?.mapping) delete state.currentLook.mapping.outerwear;
+if(state.lockedRoles) delete state.lockedRoles.outerwear;
 state.editingPrintzId = null;
 state.printz = [];
 state.printzDraftImage = null;
@@ -1213,7 +1213,7 @@ function loadState(){
       colorMode: 'super',
       colorUsage: parsed.colorUsage || {},
       suggestionSeq: parsed.suggestionSeq || 0,
-      seasonMode: parsed.seasonMode === 'winter' ? 'winter' : 'summer',
+      seasonMode: 'summer',
       screen: parsed.screen || 'todayScreen',
       installDate: parsed.installDate || new Date().toISOString(),
       wearAnswers: Array.isArray(parsed.wearAnswers) ? parsed.wearAnswers : [],
@@ -1403,21 +1403,29 @@ function init(){
 }
 
 function bindEvents(){
-  on('settingsBtn','click', () => {
-    renderSeasonSettings();
-    el('settingsDialog')?.showModal();
-  });
-  on('closeSettingsBtn','click', () => el('settingsDialog')?.close());
   document.querySelectorAll('[data-season]').forEach(btn => {
     btn.addEventListener('click', () => setSeasonMode(btn.dataset.season));
   });
   on('nextLookBtn','click', () => {
-    state.currentLook = applySeasonToLook(generateBestLook('super'));
-    remember(state.currentLook, 'today');
-    saveState();
-    animateLookChange();
-    renderToday();
-    toast('הבא בתור ✨');
+    const btn = el('nextLookBtn');
+    if(btn?.dataset.busy === '1') return;
+    if(btn){ btn.dataset.busy='1'; btn.textContent='רגע ✦'; }
+    requestAnimationFrame(() => setTimeout(() => {
+      try{
+        const previous = state.currentLook;
+        let next = applySeasonToLook(generateBestLook('super'));
+        if(previous && roleDifferenceCount(previous,next) < 2){
+          next = applySeasonToLook(generateBestLook('super'));
+        }
+        state.currentLook = next;
+        remember(state.currentLook, 'today');
+        saveState();
+        animateLookChange();
+        renderToday();
+      }finally{
+        if(btn){ btn.dataset.busy='0'; btn.textContent='הבא בתור ✦'; }
+      }
+    }, 0));
   });
   document.addEventListener('click', handleItemControlClick);
 }
@@ -1976,7 +1984,6 @@ function renderLookVisual(container, mapping, options={}){
   const rows = [
     {role:'top', label:'עליון'},
     {role:'bottom', label:'תחתון'},
-    ...(state.seasonMode === 'winter' && mapping.outerwear ? [{role:'outerwear', label:'ג׳קט / מעיל'}] : []),
     {role:'shoes', label:'נעליים'},
     {role:'accessory', label:'אביזר'}
   ];
@@ -2464,20 +2471,21 @@ function familyBalanceWeight(color, role=null){
   let bonus = 0;
   // The new full spectrum should actually be used: blue/brown stay important,
   // but pink/purple/green/warm accents need a fair turn.
-  if(f === 'soft') bonus += 8;
-  if(f === 'purple') bonus += 7;
-  if(f === 'green') bonus += 6;
-  if(f === 'warm-accent') bonus += 7;
-  if(f === 'blue') bonus -= 3;
-  if(f === 'warm-neutral' || f === 'dark-neutral') bonus -= 3;
+  if(f === 'soft') bonus += 4;
+  if(f === 'purple') bonus += 4;
+  if(f === 'green') bonus += 4;
+  if(f === 'warm-accent') bonus += 4;
+  if(f === 'blue') bonus += 2;
+  if(f === 'warm-neutral') bonus += 4;
+  if(f === 'dark-neutral') bonus += 2;
 
   const pressure = recentFamilyPressure(f, role, 8);
   bonus -= pressure * 6.5;
 
   // Main garments should not default to blue/brown every time.
   if(role === 'top' || role === 'bottom'){
-    if(['soft','purple','green','warm-accent'].includes(f)) bonus += 9;
-    if(['blue','warm-neutral','dark-neutral'].includes(f)) bonus -= 4;
+    if(['soft','purple','green','warm-accent','warm-neutral','blue'].includes(f)) bonus += 5;
+    if(['dark-neutral'].includes(f)) bonus += 1;
   }
   return bonus;
 }
@@ -2534,13 +2542,47 @@ function pickWeightedRecipe(recipes){
   return recipes[recipes.length - 1];
 }
 
+
+const CORE_ROTATION_FAMILIES = ['warm-neutral','blue','green','soft','purple','warm-accent','neutral'];
+
+function historyFamilies(item){
+  return [item?.topFamily,item?.bottomFamily,item?.shoesFamily,item?.accessoryFamily,item?.outerwearFamily].filter(Boolean);
+}
+
+function requiredRotationFamily(){
+  const history = recentHomeHistory(7);
+  if(history.length < 3) return null;
+  const counts = Object.fromEntries(CORE_ROTATION_FAMILIES.map(f => [f,0]));
+  history.forEach(item => historyFamilies(item).forEach(f => { if(f in counts) counts[f]++; }));
+  // If a core family vanished from the last seven suggestions, bring it back.
+  const missing = CORE_ROTATION_FAMILIES.filter(f => counts[f] === 0);
+  if(missing.length) return missing[0];
+  // Otherwise keep all core families alive without letting one dominate.
+  return CORE_ROTATION_FAMILIES.slice().sort((a,b) => counts[a]-counts[b])[0];
+}
+
+function roleDifferenceCount(a,b){
+  if(!a?.mapping || !b?.mapping) return 99;
+  return activeRoleIds().reduce((n,role) => n + (a.mapping?.[role]?.color?.id !== b.mapping?.[role]?.color?.id ? 1 : 0),0);
+}
+
 function generateBestLook(mode='super'){
-  const candidates = Array.from({length:260}, () => generateLook(mode));
+  const candidates = Array.from({length:96}, () => generateLook(mode));
   candidates.sort((a,b) => scoreLookWithTopVariety(b) - scoreLookWithTopVariety(a));
 
   const strictPool = candidates.filter(look => !violatesThreeClickRule(look, recentHomeHistory(7)));
   const softPool = candidates.filter(look => !softlyRepeatsRecentLook(look, recentHomeHistory(7)));
-  const basePool = strictPool.length ? strictPool : (softPool.length ? softPool : candidates);
+  let basePool = strictPool.length ? strictPool : (softPool.length ? softPool : candidates);
+
+  const current = state.currentLook;
+  const visiblyNew = basePool.filter(look => !current || roleDifferenceCount(current, look) >= 3);
+  if(visiblyNew.length) basePool = visiblyNew;
+
+  const requiredFamily = requiredRotationFamily();
+  if(requiredFamily){
+    const rotated = basePool.filter(look => (look.colors || []).some(c => c?.family === requiredFamily));
+    if(rotated.length) basePool = rotated;
+  }
 
   if(mode === 'super'){
     const bwRatio = blackWhiteRecentRatio();
@@ -2596,8 +2638,10 @@ function scoreLookWithTopVariety(look){
 
   // Full-spectrum balance: reward underused families and stop blue/brown dominance.
   families.forEach(f => {
-    if(['green','purple','warm-accent','soft'].includes(f)) s += 18;
-    if(['blue','warm-neutral','dark-neutral'].includes(f)) s += 5;
+    if(['green','purple','warm-accent','soft'].includes(f)) s += 10;
+    if(f === 'blue') s += 10;
+    if(f === 'warm-neutral') s += 13;
+    if(f === 'dark-neutral') s += 7;
     if(f === 'neutral') s += 8;
     if(f === 'light') s -= 10;
     if(f === 'red') s += 18;
@@ -3438,9 +3482,7 @@ function renderPrintzList(){
 
 
 function activeRoleIds(){
-  return state.seasonMode === 'winter'
-    ? ['top','bottom','outerwear','shoes','accessory']
-    : ['top','bottom','shoes','accessory'];
+  return ['top','bottom','shoes','accessory'];
 }
 
 function renderSeasonSettings(){
