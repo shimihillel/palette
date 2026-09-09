@@ -59,3 +59,10 @@
 - Removed Summer/Winter settings and outerwear mode.
 - App is back to four roles only: top, bottom, shoes, accessory.
 - Smart color engine and 7-suggestion memory remain unchanged.
+
+
+## v1.5.6 — Harmony First
+- Rebuilt the look engine so it starts from strong recipe-based color combinations and only then applies variety rules.
+- Reduced button lag by evaluating fewer candidates more intelligently.
+- Uses hidden recent-history memory to avoid near-duplicates without losing brown/blue anchors.
+- Keeps the final rules: all colors allowed except mint/turquoise; red only in shoes/accessory; summer-only 4-piece layout.

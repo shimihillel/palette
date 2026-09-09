@@ -448,7 +448,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.5.5-summer-only';
+const APP_VERSION = '1.5.6-harmony-first';
 
 const COLORS = {
   // Whites / creams
@@ -2566,132 +2566,155 @@ function roleDifferenceCount(a,b){
   return activeRoleIds().reduce((n,role) => n + (a.mapping?.[role]?.color?.id !== b.mapping?.[role]?.color?.id ? 1 : 0),0);
 }
 
-function generateBestLook(mode='super'){
-  const candidates = Array.from({length:96}, () => generateLook(mode));
-  candidates.sort((a,b) => scoreLookWithTopVariety(b) - scoreLookWithTopVariety(a));
 
-  const strictPool = candidates.filter(look => !violatesThreeClickRule(look, recentHomeHistory(7)));
-  const softPool = candidates.filter(look => !softlyRepeatsRecentLook(look, recentHomeHistory(7)));
-  let basePool = strictPool.length ? strictPool : (softPool.length ? softPool : candidates);
+function invertRecipeMap(map){
+  const out = {};
+  Object.entries(map || {}).forEach(([role, idx]) => { out[idx] = role; });
+  return out;
+}
 
-  const current = state.currentLook;
-  const visiblyNew = basePool.filter(look => !current || roleDifferenceCount(current, look) >= 3);
-  if(visiblyNew.length) basePool = visiblyNew;
+function buildRecipeMapping(colors, recipe){
+  const mapping = {
+    top:{color:colors[recipe.map.top], text:roleText('top', colors[recipe.map.top])},
+    bottom:{color:colors[recipe.map.bottom], text:roleText('bottom', colors[recipe.map.bottom])},
+    shoes:{color:colors[recipe.map.shoes], text:roleText('shoes', colors[recipe.map.shoes])},
+    accessory:{color:colors[recipe.map.accessory], text:roleText('accessory', colors[recipe.map.accessory])}
+  };
+  return fixBlackPresence(
+    fixRedAccentFrequency(
+      fixShoeVariety(
+        fixNoRedTopBottom(mapping, colors),
+        colors
+      ),
+      colors
+    ),
+    colors
+  );
+}
+
+function scoreHarmony(look){
+  const m = look.mapping || {};
+  const top = m.top?.color;
+  const bottom = m.bottom?.color;
+  const shoes = m.shoes?.color;
+  const accessory = m.accessory?.color;
+  if(!top || !bottom || !shoes || !accessory) return -9999;
+
+  const fams = [top.family, bottom.family, shoes.family, accessory.family];
+  const uniqueFamilies = new Set(fams).size;
+  let s = 140;
+
+  if(top.family === 'light') s -= 18;
+  if(bottom.family === 'light') s -= 42;
+  if(top.family === 'red' || bottom.family === 'red') s -= 999;
+  if(bottom.family === 'warm-accent') s -= 12;
+  if(['warm-neutral','blue','neutral','dark-neutral'].includes(bottom.family)) s += 18;
+  if(['soft','green','purple'].includes(bottom.family)) s += 8;
+  if(['blue','green','purple','soft','warm-neutral','neutral','dark-neutral','warm-accent'].includes(top.family)) s += 12;
+
+  const anchorFamilies = ['warm-neutral','blue','neutral','dark-neutral'];
+  const mainAnchorCount = [top.family, bottom.family].filter(f => anchorFamilies.includes(f)).length;
+  if(mainAnchorCount === 0) s -= 26;
+  else s += 12 + (mainAnchorCount === 2 ? 4 : 0);
+
+  if(uniqueFamilies === 4) s += 16;
+  else if(uniqueFamilies === 3) s += 10;
+  else s -= 20;
+
+  const hasMain = fam => top.family === fam || bottom.family === fam;
+  if(hasMain('warm-neutral') && hasMain('blue')) s += 26;
+  if(hasMain('warm-neutral') && hasMain('green')) s += 22;
+  if(hasMain('warm-neutral') && hasMain('purple')) s += 20;
+  if(hasMain('warm-neutral') && hasMain('soft')) s += 18;
+  if(hasMain('blue') && hasMain('soft')) s += 20;
+  if(hasMain('blue') && hasMain('purple')) s += 18;
+  if(hasMain('blue') && hasMain('green')) s += 14;
+  if(hasMain('neutral') && hasMain('blue')) s += 14;
+  if(hasMain('dark-neutral') && (hasMain('soft') || hasMain('green') || hasMain('purple'))) s += 16;
+
+  const loudFamilies = ['warm-accent','purple','soft','green'];
+  const loudMainCount = [top.family, bottom.family].filter(f => loudFamilies.includes(f)).length;
+  if(loudMainCount >= 2 && mainAnchorCount === 0) s -= 20;
+  if(loudMainCount >= 2 && mainAnchorCount >= 1) s += 8;
+
+  if(shoes.family === 'light') s -= 10;
+  if(['warm-neutral','dark-neutral','neutral','blue'].includes(shoes.family)) s += 10;
+  if(['green','purple','soft','warm-accent'].includes(shoes.family)) s += 8;
+  if(shoes.family === 'red') s += 8;
+
+  if(accessory.family === 'red') s += 14;
+  if(['warm-accent','purple','soft','green','blue'].includes(accessory.family)) s += 10;
+  if(accessory.family === top.family && accessory.family === bottom.family) s -= 10;
+
+  if(isRedColor(shoes) && isRedColor(accessory)) s -= 999;
+  if(hasBlackWhiteConflict(look.mapping)) s -= 999;
+  if(look.recipe?.weight) s += look.recipe.weight * 6;
+
+  return s;
+}
+
+function scoreLookCompatibilityFirst(look){
+  let s = scoreHarmony(look);
+  if(s <= -900) return s;
+  s -= dislikedPenalty(look);
+  s -= notTodayPenalty(look);
+  const ids = (look.colors || []).map(c => c.id);
+  const fams = (look.colors || []).map(c => c.family);
+  const history = recentHomeHistory(7);
+
+  history.forEach((item, idx) => {
+    const overlap = ids.filter(id => (item.ids || []).includes(id)).length;
+    s -= overlap * (idx < 3 ? 18 : 11);
+    if(item.familySignature && item.familySignature === lookFamilySignature(look)) s -= 90;
+    if(item.top === look.mapping?.top?.color?.id) s -= 26;
+    if(item.bottom === look.mapping?.bottom?.color?.id) s -= 24;
+    if(item.shoes === look.mapping?.shoes?.color?.id) s -= 14;
+    if(item.accessory === look.mapping?.accessory?.color?.id) s -= 10;
+  });
 
   const requiredFamily = requiredRotationFamily();
-  if(requiredFamily){
-    const rotated = basePool.filter(look => (look.colors || []).some(c => c?.family === requiredFamily));
-    if(rotated.length) basePool = rotated;
-  }
+  if(requiredFamily && fams.includes(requiredFamily)) s += 16;
 
-  if(mode === 'super'){
-    const bwRatio = blackWhiteRecentRatio();
-    const bwSpecial = basePool.find(look => (look.colors || []).some(c => isBlackOrWhiteColor(c)) && !hasBlackWhiteConflict(look.mapping));
-    const redSpecial = basePool.find(look => isRedColor(look.mapping?.shoes?.color) || isRedColor(look.mapping?.accessory?.color));
-    const blackSpecial = basePool.find(look => Object.values(look.mapping || {}).some(item => item?.color?.id === 'black'));
+  ['top','bottom','shoes','accessory'].forEach(role => {
+    const color = look.mapping?.[role]?.color;
+    if(color) s += shadeCoverageWeight(color, role) * 0.45;
+  });
 
-    if(blackSpecial && Math.random() < 0.18) return finalizeDailyLook(blackSpecial);
-    if(bwRatio < 0.30 && bwSpecial && Math.random() < 0.12) return finalizeDailyLook(bwSpecial);
-    if(redSpecial && Math.random() < 0.16) return finalizeDailyLook(redSpecial);
-  }
+  fams.forEach(f => {
+    s -= recentFamilyPressure(f, null, 8) * 2.4;
+  });
 
-  return finalizeDailyLook(basePool[0] || candidates[0]);
+  if(fams.includes('warm-neutral')) s += 9;
+  if(fams.includes('blue')) s += 7;
+  if(fams.includes('green')) s += 6;
+  if(fams.includes('purple')) s += 6;
+  if(fams.includes('soft')) s += 6;
+  if(fams.includes('warm-accent')) s += 6;
+  if(fams.includes('neutral')) s += 4;
+
+  if(violatesThreeClickRule(look, history)) s -= 140;
+  else if(softlyRepeatsRecentLook(look, history)) s -= 60;
+
+  return s + Math.random() * 2;
+}
+
+function generateBestLook(mode='super'){
+  const candidates = Array.from({length:56}, () => generateLook(mode));
+  candidates.sort((a,b) => scoreLookCompatibilityFirst(b) - scoreLookCompatibilityFirst(a));
+
+  const current = state.currentLook;
+  let pool = candidates.filter(look => !violatesThreeClickRule(look, recentHomeHistory(7)));
+  if(!pool.length) pool = candidates.filter(look => !softlyRepeatsRecentLook(look, recentHomeHistory(7)));
+  if(!pool.length) pool = candidates;
+
+  const visiblyNew = pool.filter(look => !current || roleDifferenceCount(current, look) >= 2);
+  if(visiblyNew.length) pool = visiblyNew;
+
+  return finalizeDailyLook(pool[0] || candidates[0]);
 }
 
 function scoreLookWithTopVariety(look){
-  let s = score(look);
-  s -= dislikedPenalty(look);
-  s -= notTodayPenalty(look);
-  s += contextScore(look);
-  const families = look.colors ? look.colors.map(c => c.family) : [];
-  const ids = look.colors ? look.colors.map(c => c.id) : [];
-
-  // Make every next click feel different from recent looks.
-  const last = state.lookbook[0];
-  if(last){
-    const lastIds = last.colors.map(c => c.id);
-    const lastFamilies = last.colors.map(c => c.family);
-    s -= overlapCount(lastIds, ids) * 55;
-    s -= overlapCount(lastFamilies, families) * 18;
-
-    const sameTop = last.mapping?.top?.color?.id === look.mapping?.top?.color?.id;
-    const sameBottom = last.mapping?.bottom?.color?.id === look.mapping?.bottom?.color?.id;
-    if(sameTop) s -= 70;
-    if(sameBottom) s -= 60;
-  }
-
-  const recent = state.lookbook.slice(0,6);
-  const recentIds = recent.flatMap(look => look.colors.map(c => c.id));
-  const recentFamilies = recent.flatMap(look => look.colors.map(c => c.family));
-  s -= overlapCount(recentIds, ids) * 16;
-  s -= overlapCount(recentFamilies, families) * 5;
-
-  const recentHome = recentHomeHistory(7);
-  recentHome.forEach(item => {
-    const overlap = ids.filter(id => item.ids.includes(id)).length;
-    s -= overlap * 18;
-    if(item.top === look.mapping?.top?.color?.id) s -= 60;
-    if(item.bottom === look.mapping?.bottom?.color?.id) s -= 50;
-    if(item.topFamily === look.mapping?.top?.color?.family) s -= 14;
-    if(item.bottomFamily === look.mapping?.bottom?.color?.family) s -= 10;
-  });
-
-  // Full-spectrum balance: reward underused families and stop blue/brown dominance.
-  families.forEach(f => {
-    if(['green','purple','warm-accent','soft'].includes(f)) s += 10;
-    if(f === 'blue') s += 10;
-    if(f === 'warm-neutral') s += 13;
-    if(f === 'dark-neutral') s += 7;
-    if(f === 'neutral') s += 8;
-    if(f === 'light') s -= 10;
-    if(f === 'red') s += 18;
-    s -= recentFamilyPressure(f, null, 8) * 4.5;
-  });
-
-  if(ids.includes('black')) s += 8;
-  if(ids.includes('white') || ids.includes('opticwhite')) s += 8;
-  if(ids.some(id => RED_COLOR_IDS.includes(id))) s += 22;
-  if(ids.includes('charcoal')) s += 6;
-
-  // Keep black/white special: around 30% overall, and never as top+bottom opposite combo.
-  if(hasBlackWhiteConflict(look.mapping)) s -= 999;
-  if(blackWhiteRecentRatio() >= 0.30 && ids.some(id => BLACK_WHITE_IDS.includes(id))) s -= 120;
-  if(blackWhiteCount(look) > 1) s -= 35;
-
-  // Avoid all-neutral boredom.
-  if(families.filter(f => f === 'neutral').length >= 3) s -= 18;
-  if(families.filter(f => f === 'light').length > 1) s -= 70;
-  if(families.filter(f => f === 'soft').length > 2) s -= 14;
-
-  if(look.mapping?.shoes?.color){
-    const shoe = look.mapping.shoes.color;
-    if(isTurquoiseLike(shoe)) s -= 999;
-    if(isRedColor(shoe)) s += recentRedShoesCount(6) ? -90 : 70;
-    const recentShoes = recentShoeColors(5);
-    if(recentShoes.includes(shoe.id)) s -= 95;
-    if(['olive','bordeaux','black','graphite','stone','plum','lilac','rose','dustyrose','mustard','orange','emerald','forest','cobalt','navy','camel','cognac'].includes(shoe.id)) s += 12;
-    s += familyBalanceWeight(shoe, 'shoes');
-  }
-
-  if(look.mapping && look.mapping.bottom && isRedColor(look.mapping.bottom.color)) s -= 999;
-  if(look.mapping && look.mapping.top && look.mapping.top.color){
-    const top = look.mapping.top.color;
-    if(isRedColor(top)) s -= 999;
-    if(top.family === 'light') s -= 62;
-    if(top.family === 'soft') s += 14;
-    if(['green','purple','warm-accent','soft'].includes(top.family)) s += 24;
-    if(['blue','warm-neutral','neutral','dark-neutral'].includes(top.family)) s += 9;
-    s += familyBalanceWeight(top, 'top');
-    if(top.id === 'black') s += 38;
-  }
-  if(look.mapping?.accessory?.color){
-    const acc = look.mapping.accessory.color;
-    if(isTurquoiseLike(acc)) s -= 999;
-    if(isRedColor(acc)) s += recentRedAccessoryCount(10) ? -120 : 38;
-  }
-  if(isRedColor(look.mapping?.shoes?.color) && isRedColor(look.mapping?.accessory?.color)) s -= 999;
-
-  return s;
+  return scoreLookCompatibilityFirst(look);
 }
 
 function generateLook(mode='super'){
@@ -2699,45 +2722,14 @@ function generateLook(mode='super'){
   if(mode === 'tiny') return generateTinyLook();
 
   const recipe = pickWeightedRecipe(RECIPES);
-  let colors = [];
-  recipe.roles.forEach(role => colors.push(pickColor(role, colors)));
+  const inverseMap = invertRecipeMap(recipe.map);
+  const colors = [];
+  recipe.roles.forEach((groupName, index) => {
+    const role = inverseMap[index] || null;
+    colors[index] = pickColor(groupName, colors.filter(Boolean), role);
+  });
 
-  // If a super-color look came out too safe, sometimes insert red, and only rarely black/white.
-  const bwRatio = blackWhiteRecentRatio();
-  if(mode === 'super' && !colors.some(c => isBlackWhiteColor(c) || isRedColor(c))){
-    if(bwRatio < 0.30 && Math.random() < 0.22){
-      const forced = pick([COLORS.black, COLORS.white, COLORS.opticwhite]);
-      colors[Math.floor(Math.random() * colors.length)] = forced;
-    }else if(Math.random() < 0.10){
-      const forced = pick([COLORS.tomato, COLORS.cherry, COLORS.lipstick]);
-      colors[Math.floor(Math.random() * colors.length)] = forced;
-    }
-  }
-
-  // סופר צבע נשאר כמו שהאפליקציה עבדה עד עכשיו.
-  const lightCount = colors.filter(c => c.family === 'light').length;
-  const softCount = colors.filter(c => c.family === 'soft').length;
-  const blackishCount = colors.filter(c => c.id === 'black' || c.id === 'charcoal').length;
-
-  if(lightCount > 1 || softCount > 1 || blackishCount > 1){
-    const shimiGroups = ['green','purple','soft','warmAccent','neutral','blue','warmNeutral','darkNeutral','red'];
-    colors = [];
-    while(colors.length < 4){
-      const c = pickColor(pick(shimiGroups), colors);
-      if(!colors.some(existing => existing.id === c.id)){
-        colors.push(c);
-      }
-    }
-  }
-
-  if(colors.filter(c => c.family === 'light').length > 1){
-    const firstLight = colors.find(c => c.family === 'light');
-    colors = colors.filter(c => c.family !== 'light');
-    colors.push(firstLight);
-  }
-
-  colors = colors.slice(0,4);
-  return buildLookFromColors(colors, 'super');
+  return buildLookFromColors(colors.slice(0,4), 'super', recipe);
 }
 
 function generateHalfClutchLook(){
@@ -2786,16 +2778,17 @@ function pickRelaxedSet(count){
   return colors.slice(0,count);
 }
 
-function buildLookFromColors(colors, mode){
-  const mapping = fixBlackPresence(fixRedAccentPresence(fixRedAccentFrequency(fixShoeVariety(buildVariedMapping(colors), colors), colors), colors), colors);
-  const modeLine = buildContextVibe(mode);
-  const signature = `meter-v43|${mode}|${state.mood || 'easy'}|${state.purpose || 'day'}|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
+function buildLookFromColors(colors, mode, recipe=null){
+  const mapping = recipe ? buildRecipeMapping(colors, recipe) : fixBlackPresence(fixRedAccentPresence(fixRedAccentFrequency(fixShoeVariety(buildVariedMapping(colors), colors), colors), colors), colors);
+  const vibe = recipe ? buildVibe(recipe) : buildContextVibe(mode);
+  const signature = `meter-v44|${mode}|${recipe?.title || 'free'}|${colors.map(c => c.id).join('|')}|${mapping.top.color.id}|${mapping.bottom.color.id}|${mapping.shoes.color.id}|${mapping.accessory.color.id}`;
   return {
     title: buildTitle(colors),
-    vibe: modeLine,
-    why: buildWhyByMode(colors, mode),
+    vibe,
+    why: buildWhy(colors),
     colors,
     mapping,
+    recipe,
     colorMode:mode,
     signature,
     createdAt:new Date().toISOString()
@@ -2901,29 +2894,27 @@ function pickColor(groupName, previous, role=null){
   let options = ids.map(id => COLORS[id]).filter(c => c && !isBannedColor(c));
   if(role) options = safeColorsForRole(options, role);
   const previousFamilies = previous.map(c => c.family);
-  const recentLooks = state.lookbook.slice(0,14);
-  const recentIds = recentLooks.flatMap(look => look.colors.map(c => c.id));
-  const veryRecentIds = state.lookbook.slice(0,4).flatMap(look => look.colors.map(c => c.id));
+  const recent = recentHomeHistory(10);
+  const recentIds = recent.flatMap(item => item.ids || []);
+  const recentRoleIds = role ? recent.map(item => item[role]).filter(Boolean) : [];
   const weighted = options.map(color => {
     let weight = 12;
-    if(previousFamilies.includes(color.family)) weight -= 4;
+    if(previousFamilies.includes(color.family)) weight -= 5;
     if(recentIds.includes(color.id)) weight -= 8;
-    if(veryRecentIds.includes(color.id)) weight -= 14;
+    if(recentRoleIds.includes(color.id)) weight -= 12;
     if(previous.some(c => c.id === color.id)) weight = 0.1;
 
-    // Red is allowed only as shoes/accessory, never top/bottom.
-    if(isRedColor(color) && (role === 'top' || role === 'bottom')) weight = 0.1;
-    if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(6) ? -35 : 36;
-    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(10) ? -42 : 26;
+    if(isRedColor(color) && (role === 'top' || role === 'bottom')) weight = 0.05;
+    if(isRedColor(color) && role === 'shoes') weight += recentRedShoesCount(5) ? -40 : 8;
+    if(isRedColor(color) && role === 'accessory') weight += recentRedAccessoryCount(9) ? -42 : 5;
     if(isTurquoiseLike(color)) weight = 0.05;
 
-    // Push black/white to actually appear, not just sit politely in the palette.
-    if(color.id === 'black') weight += 34;
-    if(color.id === 'white' || color.id === 'opticwhite') weight += 2;
+    if(color.id === 'black') weight += 10;
+    if(color.id === 'white' || color.id === 'opticwhite') weight += 3;
 
-    if(color.family === 'neutral') weight += 2;
-    weight += familyBalanceWeight(color, role);
-    return {color, weight:Math.max(0.4, weight)};
+    weight += familyBalanceWeight(color, role) * 0.7;
+    weight += shadeCoverageWeight(color, role) * 0.55;
+    return {color, weight:Math.max(0.25, weight)};
   });
   return weightedPick(weighted);
 }
