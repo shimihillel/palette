@@ -9,8 +9,8 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks 1.7 — Color & Fit</title>
-  <link rel="manifest" href="manifest.webmanifest?v=170" />
+  <title>Shimi Looks 1.8 — Wada Inspiration</title>
+  <link rel="manifest" href="manifest.webmanifest?v=180" />
   <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v2-32.png?v=130" />
   <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v2-180.png?v=130" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -595,7 +595,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.7-color-fit';
+const APP_VERSION = '1.8-wada-vol1';
 
 const COLORS = {
   // Whites / creams
@@ -1370,6 +1370,7 @@ function loadState(){
       purpose: parsed.purpose || 'day',
       colorMode: 'super',
       colorUsage: parsed.colorUsage || {},
+      wadaUsage: parsed.wadaUsage && typeof parsed.wadaUsage==='object' ? parsed.wadaUsage : {},
       suggestionSeq: parsed.suggestionSeq || 0,
       seasonMode: 'summer',
       screen: parsed.screen || 'todayScreen',
@@ -1576,6 +1577,7 @@ function bindEvents(){
         if(previous && roleDifferenceCount(previous,next) < 2){
           next = applySeasonToLook(generateBestLook('super'));
         }
+        if(next===previous || next.signature===previous?.signature)return;
         state.currentLook = next;
         remember(state.currentLook, 'today');
         saveState();
@@ -2322,36 +2324,12 @@ function toggleLockedRole(role){
 }
 
 function replaceOneRole(role){
-  if(!state.currentLook || !state.currentLook.mapping?.[role]) return;
-  if(state.lockedRoles?.[role]){
-    toast('הפריט נעול. שחררי ואז נחליף');
-    return;
-  }
-  const current = state.currentLook.mapping[role].color;
-  const existingIds = Object.values(state.currentLook.mapping).map(item => item.color.id);
-  let pool = Object.values(COLORS).filter(c => c && !isBannedColor(c) && c.id !== current.id && canUseColorForRole(c, role));
-  if(role === 'shoes') pool = pool.filter(c => SHOE_SAFE_IDS.includes(c.id) && !isTurquoiseLike(c));
-  if(role === 'accessory' && isRedColor(current)) pool = pool.filter(c => !isRedColor(c));
-  pool = pool.filter(c => !existingIds.includes(c.id) || Math.random() < 0.22);
-  if(!pool.length) pool = Object.values(COLORS).filter(c => c && !isBannedColor(c) && canUseColorForRole(c, role));
-  const ranked=pool.map(color=>{
-    const look={...state.currentLook,mapping:{...state.currentLook.mapping,[role]:{color,text:roleText(role,color)}}};
-    return {color,quality:paletteCompatibility(look),diversity:diversityScore(look)};
-  }).filter(c=>Number.isFinite(c.quality));
-  if(!ranked.length){toast('אין כרגע החלפה מתאימה לשילוב הזה');return;}
-  const best=Math.max(...ranked.map(c=>c.quality));
-  const compatible=ranked.filter(c=>c.quality>=Math.max(72,best-10));
-  const choices=compatible.length?compatible:ranked.filter(c=>c.quality===best);
-  choices.sort((a,b)=>b.diversity-a.diversity);
-  const replacement=choices[Math.floor(Math.random()*Math.min(4,choices.length))].color;
-  state.currentLook.mapping[role].color = replacement;
-  state.currentLook.mapping[role].text = roleText(role, replacement);
-  refreshLookAfterManualEdit();
-  normalizeLook(state.currentLook);
-  remember(state.currentLook, 'today');
-  saveState();
-  renderToday();
-  animateRole(role);
+  if(!WADA_ROLES.includes(role)||!state.currentLook)return;
+  if(state.lockedRoles?.[role]){toast('הפריט נעול. שחררי ואז נחליף');return;}
+  const fixed=Object.fromEntries(WADA_ROLES.filter(r=>r!==role).map(r=>[r,true]));
+  const next=wadaSelect({fixed,replaceRole:role});
+  if(!next){toast('אין עוד גוון קרוב לפלטה הזו. הבא בתור יפתח פלטה חדשה');return;}
+  state.currentLook=next;remember(next,'today');saveState();renderToday();animateRole(role);
   toast(`החלפתי ${pieceLabel(role)}`);
 }
 
@@ -2645,6 +2623,8 @@ function compactLookForHistory(look){
     shoesFamily:look.mapping?.shoes?.color?.family || '',
     accessoryFamily:look.mapping?.accessory?.color?.family || '',
     outerwearFamily:look.mapping?.outerwear?.color?.family || '',
+    wadaPlate:look.wada?.plate || null,
+    wadaSize:look.wada?.size || null,
     familySignature:lookFamilySignature(look)
   };
 }
@@ -2701,9 +2681,14 @@ function remember(look, source='today'){
   if(source === 'today'){
     state.recentHome = state.recentHome || [];
     state.recentHome.unshift(compactLookForHistory(look));
-    state.recentHome = state.recentHome.slice(0, 14);
+    state.recentHome = state.recentHome.slice(0, 36);
     state.colorUsage = state.colorUsage || {};
     state.suggestionSeq = (state.suggestionSeq || 0) + 1;
+    if(look.wada?.plate){
+      state.wadaUsage=state.wadaUsage||{};
+      const previous=state.wadaUsage[look.wada.plate]||{count:0,lastSeq:0};
+      state.wadaUsage[look.wada.plate]={count:previous.count+1,lastSeq:state.suggestionSeq};
+    }
     activeRoleIds().forEach(role => {
       const color = look.mapping?.[role]?.color;
       if(!color) return;
@@ -3045,27 +3030,12 @@ function diversityScore(look){
   return score;
 }
 function generateBestLook(mode='super'){
-  const unlocked=['top','bottom','shoes','accessory'].filter(r=>!state.lockedRoles?.[r]);
-  if(!unlocked.length && state.currentLook){toast('כל הפריטים נעולים — שחררי פריט כדי לקבל לוק חדש');return state.currentLook;}
-  const candidates=[];
-  for(let i=0;i<120;i++){
-    const look=normalizeLook(finalizeDailyLook(generateLook(mode)));
-    const quality=paletteCompatibility(look);
-    if(Number.isFinite(quality)) candidates.push({look,quality,diversity:diversityScore(look)});
-  }
-  // Locks are applied BEFORE evaluating harmony, so they cannot invalidate a winner.
-  if(!candidates.length) return state.currentLook || normalizeLook(finalizeDailyLook(generateLook(mode)));
-  const bestQuality=Math.max(...candidates.map(c=>c.quality));
-  let pool=candidates.filter(c=>c.quality>=Math.max(72,bestQuality-14));
-  if(!pool.length) pool=candidates.filter(c=>c.quality===bestQuality);
-  const fresh=pool.filter(c=>unlocked.every(role=>!recentHomeHistory(7).some(h=>h[role]===c.look.mapping[role].color.id)));
-  if(fresh.length) pool=fresh;
-  const changed=pool.filter(c=>!state.currentLook || roleDifferenceCount(state.currentLook,c.look)>=Math.min(2,unlocked.length));
-  if(changed.length) pool=changed;
-  pool.sort((a,b)=>b.diversity-a.diversity);
-  // Sample near-equal good candidates; never put randomness in a sort comparator.
-  const finalists=pool.filter(c=>c.diversity>=pool[0].diversity-14).slice(0,6);
-  return finalists[Math.floor(Math.random()*finalists.length)].look;
+  const fixed=Object.fromEntries(WADA_ROLES.filter(r=>state.lockedRoles?.[r]).map(r=>[r,true]));
+  if(Object.keys(fixed).length===4 && state.currentLook)return state.currentLook;
+  const look=wadaSelect({fixed});
+  if(look)return look;
+  if(state.currentLook){toast('כדי לפתוח עוד שילובים מהספר, נסי לשחרר פריט נעול');return state.currentLook;}
+  throw new Error('No eligible Wada palette in the installed color library');
 }
 
 function scoreLookWithTopVariety(look){
@@ -4059,6 +4029,187 @@ function toast(message){
   t.classList.add('show');
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+
+const WADA_DATA={"colors":["#f9c1ce","#f8b6ba","#e0b3b6","#d1b0a7","#b59392","#f58e84","#f6917e","#f48067","#f37f94","#f27291","#d46d7a","#e2625e","#da525d","#bb7125","#c56127","#eb5324","#e31f26","#dd4027","#c55347","#ae5224","#ab544d","#cb2f43","#cc1236","#c53c69","#b73f74","#b71f57","#a94151","#a84222","#a62c37","#ab2439","#a72144","#7c4226","#793327","#82241f","#7d133a","#802626","#642d5e","#6d4145","#f5ecc2","#ffefae","#fbe6a0","#ebd3a2","#fdd4bd","#fcc79b","#eeb480","#fdc57e","#fdbf68","#f3a257","#eea78c","#d8a37b","#c5a56e","#c59f6b","#c1c494","#c2ae93","#fff200","#f8ed43","#ffdd00","#cab356","#d6b43e","#e2b540","#fcb315","#f99d1b","#f68c50","#f37420","#f15a30","#d96629","#c27544","#c16b27","#c19f2c","#bc892b","#b2b73e","#b09f36","#96874d","#8b835b","#848061","#84875e","#837e31","#986f2d","#a36752","#6b7140","#806e4b","#635a3a","#71502f","#644b1e","#762c19","#653514","#4b3317","#b5decc","#b4cdc2","#b7c2a9","#afd472","#c7d14f","#87c540","#a6a159","#709390","#6d7e77","#8fa071","#719470","#648f7b","#00b49b","#00978d","#00908a","#489b6e","#009465","#819238","#1a7444","#437742","#555832","#42533e","#253122","#bce4e5","#a7d4e4","#a5c8d1","#97acc8","#96d1aa","#78cdd0","#62c6bf","#0093a5","#00939b","#099197","#5a82b3","#006eb8","#007190","#005b8d","#547076","#004f46","#1c4286","#40456a","#064f6e","#12354e","#1e0e3f","#051230","#112f2c","#b5b1d8","#c0a9b3","#ca92a8","#b984af","#bf5892","#9a72aa","#a36aa5","#80719e","#66629c","#6450a1","#84565b","#70727c","#8c4c62","#704357","#7a4456","#713b4c","#4f4086","#59256a","#501345","#4e1d4c","#ffffff","#b6bfc1","#a2b0ad","#a1a39a","#34454c","#111314"],"palettes":[[1,[65,117]],[2,[61,129]],[3,[13,39]],[4,[50,150]],[5,[106,128]],[6,[7,131]],[7,[63,88]],[8,[66,133]],[9,[36,140]],[10,[66,73]],[11,[41,155]],[12,[50,119]],[13,[13,145]],[14,[9,40]],[15,[100,133]],[16,[33,111]],[17,[12,99]],[18,[3,152]],[19,[85,92]],[20,[115,135]],[21,[7,99]],[22,[54,126]],[23,[45,138]],[24,[83,145]],[25,[18,110]],[26,[47,82]],[27,[1,157]],[28,[84,131]],[29,[75,113]],[30,[29,155]],[31,[17,39]],[32,[49,92]],[33,[13,157]],[34,[8,154]],[35,[4,28]],[36,[68,87]],[37,[27,150]],[38,[105,126]],[39,[22,123]],[40,[14,70]],[41,[73,115]],[42,[59,149]],[43,[1,139]],[44,[101,120]],[45,[42,55]],[46,[63,158]],[47,[18,134]],[48,[24,123]],[49,[111,121]],[50,[41,152]],[51,[28,121]],[52,[38,158]],[53,[61,152]],[54,[100,112]],[55,[10,153]],[56,[134,149]],[57,[147,157]],[58,[32,99]],[59,[8,71]],[60,[39,129]],[61,[91,151]],[62,[54,158]],[63,[37,117]],[64,[139,141]],[65,[68,115]],[66,[58,79]],[67,[120,129]],[68,[4,54]],[69,[156,158]],[70,[13,107]],[71,[29,49]],[72,[38,111]],[73,[82,96]],[74,[87,119]],[75,[111,127]],[76,[39,156]],[77,[12,128]],[78,[44,116]],[79,[84,119]],[80,[38,138]],[81,[47,156]],[82,[32,152]],[83,[52,127]],[84,[42,132]],[85,[14,122]],[86,[13,99]],[87,[1,70]],[88,[42,121]],[89,[61,127]],[90,[8,139]],[91,[37,67]],[92,[5,100]],[93,[71,112]],[94,[41,125]],[95,[32,130]],[96,[59,76]],[97,[1,18]],[98,[84,127]],[99,[39,117]],[100,[72,140]],[101,[2,126]],[102,[41,67]],[103,[66,152]],[104,[28,38]],[105,[2,97]],[106,[122,130]],[107,[56,74]],[108,[8,27]],[109,[39,108]],[110,[31,86]],[111,[39,90]],[112,[7,158]],[113,[42,86]],[114,[60,122]],[115,[40,64]],[116,[2,142]],[117,[22,158]],[118,[59,86]],[119,[112,129]],[120,[2,29]],[121,[31,49,107]],[122,[22,46,100]],[123,[5,55,147]],[124,[35,59,93]],[125,[3,117,127]],[126,[41,59,126]],[127,[45,98,141]],[128,[1,116,138]],[129,[56,69,113]],[130,[13,28,149]],[131,[13,65,118]],[132,[38,47,71]],[133,[33,71,99]],[134,[8,138,150]],[135,[38,106,113]],[136,[21,103,150]],[137,[18,45,98]],[138,[47,55,116]],[139,[113,131,154]],[140,[47,122,157]],[141,[63,90,129]],[142,[26,68,113]],[143,[121,136,156]],[144,[24,63,158]],[145,[31,70,130]],[146,[69,81,105]],[147,[9,33,87]],[148,[58,60,117]],[149,[58,63,132]],[150,[42,70,88]],[151,[38,61,128]],[152,[18,32,112]],[153,[8,60,70]],[154,[22,54,121]],[155,[15,100,131]],[156,[58,114,149]],[157,[34,58,120]],[158,[55,66,92]],[159,[69,115,133]],[160,[68,82,124]],[161,[31,44,123]],[162,[10,96,136]],[163,[56,87,122]],[164,[17,60,149]],[165,[2,9,37]],[166,[7,40,132]],[167,[53,111,128]],[168,[55,128,145]],[169,[1,39,156]],[170,[24,60,150]],[171,[35,61,88]],[172,[66,122,150]],[173,[55,84,87]],[174,[1,134,147]],[175,[44,52,142]],[176,[0,42,115]],[177,[35,72,133]],[178,[41,112,119]],[179,[17,47,126]],[180,[45,138,154]],[181,[28,149,151]],[182,[13,86,131]],[183,[144,145,150]],[184,[9,41,74]],[185,[4,18,39]],[186,[32,49,121]],[187,[123,134,139]],[188,[96,113,114]],[189,[55,109,116]],[190,[41,65,158]],[191,[4,59,121]],[192,[46,86,144]],[193,[7,40,101]],[194,[15,42,120]],[195,[9,39,154]],[196,[70,111,142]],[197,[8,141,154]],[198,[19,56,102]],[199,[20,80,126]],[200,[28,52,97]],[201,[7,76,114]],[202,[87,114,157]],[203,[39,48,107]],[204,[24,66,112]],[205,[35,48,149]],[206,[1,47,66]],[207,[78,88,158]],[208,[38,119,122]],[209,[41,61,113]],[210,[45,55,107]],[211,[62,93,131]],[212,[29,77,113]],[213,[48,56,111]],[214,[41,78,149]],[215,[46,121,137]],[216,[15,102,158]],[217,[35,49,105]],[218,[123,133,144]],[219,[15,97,125]],[220,[25,49,139]],[221,[28,154,158]],[222,[59,61,67]],[223,[4,49,87]],[224,[9,124,147]],[225,[22,125,146]],[226,[37,46,149]],[227,[0,112,117]],[228,[28,39,154]],[229,[47,109,154]],[230,[7,87,114]],[231,[2,32,120]],[232,[22,44,131]],[233,[28,72,127]],[234,[45,82,111]],[235,[41,61,134]],[236,[69,126,143]],[237,[28,84,113]],[238,[49,151,156]],[239,[4,57,88]],[240,[6,54,117]],[241,[17,39,50,124]],[242,[8,19,105,158]],[243,[13,41,79,157]],[244,[4,14,95,122]],[245,[28,104,129,157]],[246,[1,27,38,45]],[247,[13,56,100,126]],[248,[8,69,133,146]],[249,[32,53,58,124]],[250,[57,64,99,110]],[251,[30,54,105,157]],[252,[12,13,68,119]],[253,[55,62,151,157]],[254,[1,38,76,135]],[255,[13,57,115,158]],[256,[48,63,103,158]],[257,[16,60,121,139]],[258,[35,44,76,122]],[259,[55,119,123,156]],[260,[10,48,88,99]],[261,[30,39,115,156]],[262,[12,41,71,106]],[263,[19,44,87,157]],[264,[1,17,89,117]],[265,[10,56,93,130]],[266,[16,41,96,100]],[267,[46,61,100,121]],[268,[4,13,109,110]],[269,[13,35,139,158]],[270,[12,38,79,106]],[271,[25,114,119,132]],[272,[39,63,87,113]],[273,[0,34,78,154]],[274,[64,73,120,138]],[275,[18,53,84,147]],[276,[8,42,90,158]],[277,[9,24,76,130]],[278,[46,58,106,125]],[279,[13,48,53,129]],[280,[12,107,135,147]],[281,[39,100,114,122]],[282,[12,51,114,136]],[283,[20,35,97,116]],[284,[11,56,99,125]],[285,[4,19,64,87]],[286,[19,60,118,127]],[287,[8,57,111,115]],[288,[61,83,147,158]],[289,[55,91,127,130]],[290,[37,39,107,114]],[291,[91,99,114,115]],[292,[39,44,50,53]],[293,[13,87,94,102]],[294,[38,46,106,113]],[295,[46,54,121,130]],[296,[38,49,82,157]],[297,[19,61,79,127]],[298,[13,55,64,158]],[299,[23,48,104,122]],[300,[7,46,87,115]],[301,[16,41,96,139]],[302,[46,53,110,122]],[303,[40,64,109,154]],[304,[32,46,73,100]],[305,[44,56,70,87]],[306,[55,100,103,110]],[307,[22,133,139,151]],[308,[3,21,65,114]],[309,[47,62,127,128]],[310,[38,44,76,109]],[311,[29,46,89,91]],[312,[19,61,94,123]],[313,[22,54,105,158]],[314,[8,32,126,152]],[315,[7,38,47,137]],[316,[33,103,149,150]],[317,[43,53,55,87]],[318,[80,108,125,132]],[319,[13,56,61,106]],[320,[5,38,104,112]],[321,[4,38,109,113]],[322,[16,27,137,142]],[323,[45,70,84,158]],[324,[29,120,139,154]],[325,[12,40,59,132]],[326,[38,64,90,92]],[327,[8,13,53,134]],[328,[27,62,86,101]],[329,[46,134,151,157]],[330,[52,110,113,119]],[331,[23,130,138,149]],[332,[5,21,109,125]],[333,[19,55,114,121]],[334,[42,76,90,122]],[335,[33,61,149,157]],[336,[8,32,39,108]],[337,[37,135,148,158]],[338,[28,60,125,134]],[339,[49,65,112,127]],[340,[64,99,154,158]],[341,[7,106,109,112]],[342,[1,46,77,109]],[343,[19,41,81,128]],[344,[45,126,139,158]],[345,[32,110,116,142]],[346,[24,87,91,95]],[347,[93,99,123,136]],[348,[52,106,109,151]]]};
+// Book references are digital approximations, not new entries in COLORS.
+// Dataset: Matt DesLauriers / Dain M. Blodorn Kim, MIT (see THIRD_PARTY_NOTICES.md).
+const WADA_ROLES=['top','bottom','shoes','accessory'];
+const WADA_LIMITS=Object.freeze({maxDistance:.115,meanDistance:.072,relationshipError:.075});
+const wadaLabCache=new Map();
+let wadaCatalogCache=null;
+function wadaLab(hex){
+  if(wadaLabCache.has(hex))return wadaLabCache.get(hex);
+  const [r,g,b]=parseCharacterHex(hex).map(v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4)});
+  // Björn Ottosson's published linear-sRGB -> Oklab transform.
+  const l=Math.cbrt(.4122214708*r+.5363325363*g+.0514459929*b);
+  const m=Math.cbrt(.2119034982*r+.6806995451*g+.1073969566*b);
+  const s=Math.cbrt(.0883024619*r+.2817188376*g+.6299787005*b);
+  const out=[.2104542553*l+.793617785*m-.0040720468*s,1.9779984951*l-2.428592205*m+.4505937099*s,.0259040371*l+.7827717662*m-.808675766*s];
+  wadaLabCache.set(hex,out);return out;
+}
+function wadaDistance(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);}
+function wadaChroma(lab){return Math.hypot(lab[1],lab[2]);}
+function wadaAssignments(size){
+  const out=[];
+  for(let a=0;a<size;a++)for(let b=0;b<size;b++)for(let c=0;c<size;c++)for(let d=0;d<size;d++){
+    const v=[a,b,c,d];if(new Set(v).size===size)out.push(v);
+  }
+  return out;
+}
+function wadaCatalog(){
+  if(wadaCatalogCache)return wadaCatalogCache;
+  const colors=Object.values(COLORS).filter(c=>!isBannedColor(c));
+  const sources=WADA_DATA.colors.map(hex=>{
+    const lab=wadaLab(hex),chroma=wadaChroma(lab);
+    const ranked=colors.map(color=>({color,lab:wadaLab(color.hex),distance:wadaDistance(lab,wadaLab(color.hex))}))
+      .filter(x=>{
+        if(x.distance>WADA_LIMITS.maxDistance)return false;
+        // Retain the hue character of chromatic reference swatches.
+        const c=wadaChroma(x.lab);
+        if(chroma>.065 && c>.04){const cosine=(lab[1]*x.lab[1]+lab[2]*x.lab[2])/(chroma*c);if(cosine<.78)return false;}
+        return true;
+      }).sort((a,b)=>a.distance-b.distance);
+    const options=Object.fromEntries(WADA_ROLES.map(role=>{
+      const safe=ranked.filter(x=>canUseColorForRole(x.color,role));
+      return [role,safe.filter(x=>x.distance<=Math.min(WADA_LIMITS.maxDistance,(safe[0]?.distance||0)+.043)).slice(0,9)];
+    }));
+    return {lab,options};
+  });
+  const patterns={2:wadaAssignments(2),3:wadaAssignments(3),4:wadaAssignments(4)};
+  const plates=WADA_DATA.palettes.map(([id,indices])=>({id,indices,size:indices.length,patterns:patterns[indices.length]}));
+  wadaCatalogCache={sources,plates};return wadaCatalogCache;
+}
+function wadaHardValid(colors){
+  if(colors.length!==4 || colors.some((c,i)=>!c || !canUseColorForRole(c,WADA_ROLES[i]) || !COLORS[c.id] || COLORS[c.id].hex!==c.hex))return false;
+  if(new Set(colors.map(c=>c.id)).size!==4)return false;
+  if(colors.filter(isRedColor).length>1)return false;
+  return !hasBlackWhiteConflict({top:{color:colors[0]},bottom:{color:colors[1]}});
+}
+function wadaFit(colors,refs){
+  const source=wadaCatalog().sources, labs=colors.map(c=>wadaLab(c.hex));
+  const distances=labs.map((lab,i)=>wadaDistance(lab,source[refs[i]].lab));
+  const mean=distances.reduce((a,b)=>a+b)/4,max=Math.max(...distances);
+  if(max>WADA_LIMITS.maxDistance || mean>WADA_LIMITS.meanDistance)return null;
+  let relationship=0,pairs=0;
+  for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+    const original=wadaDistance(source[refs[i]].lab,source[refs[j]].lab);
+    const actual=wadaDistance(labs[i],labs[j]);
+    // Two shades of one source remain tonal; separate source colors stay distinct.
+    if(refs[i]!==refs[j] && original>.12 && actual<.055)return null;
+    relationship+=Math.abs(actual-original);pairs++;
+  }
+  relationship/=pairs;
+  if(relationship>WADA_LIMITS.relationshipError)return null;
+  // Do not discard Wada's unusual harmonies just because they are not analogous.
+  const largeChroma=wadaChroma(labs[0])*.3+wadaChroma(labs[1])*.5;
+  return {mean,max,relationship,quality:100-mean*170-relationship*80-largeChroma*10};
+}
+function wadaHistoryScore(colors,plate,fixed,usage){
+  let score=0;
+  const history=recentHomeHistory(24),seq=state.suggestionSeq||0;
+  const use=(state.wadaUsage||{})[plate.id];
+  // Plate-level memory is separate from individual shade memory.
+  score+=use?Math.min(38,(seq-use.lastSeq)*.7)-Math.min(35,use.count*4):42;
+  const sizeHits=recentHomeHistory(10).filter(h=>h.wadaSize===plate.size).length;
+  score-=sizeHits*4;
+  for(let i=0;i<4;i++){
+    const role=WADA_ROLES[i],color=colors[i];if(fixed[role])continue;
+    score+=usage[color.id]*.22;
+    history.slice(0,7).forEach((old,k)=>{
+      if(old[role]===color.id)score-=k<3?35:17;
+      if(old[role+'Family']===color.family)score-=(7-k)*1.1;
+    });
+    if(state.currentLook){
+      const distance=wadaDistance(wadaLab(color.hex),wadaLab(state.currentLook.mapping[role].color.hex));
+      if(distance<.06)score-=18;
+    }
+  }
+  const red=colors.some(isRedColor);
+  if(red)score-=recentRedAccentCount(8)*22;
+  return score;
+}
+function wadaReference(look){
+  if(!look?.wada || !Number.isInteger(look.wada.plate))return null;
+  return wadaCatalog().plates.find(p=>p.id===look.wada.plate)||null;
+}
+function wadaMakeLook(candidate){
+  const {colors,plate,refs,fit}=candidate;
+  const mapping=Object.fromEntries(WADA_ROLES.map((role,i)=>[role,{color:colors[i],text:roleText(role,colors[i])}]));
+  const tonal=plate.size<4;
+  const top=colors[0].he,bottom=colors[1].he;
+  return {mapping,colors,title:buildTitle(colors),colorMode:'super',
+    signature:'wada-v180|'+colors.map(c=>c.id).join('|'),createdAt:new Date().toISOString(),
+    vibe:'צבעים עם אופי, בהשראת Sanzo Wada.',
+    why:`בהשראת שילוב ${plate.id} בספר הראשון. ${tonal?'גוונים קרובים חוזרים בין הפריטים ושומרים על קשר בפלטה.':`${top} ו${bottom} מובילים; הנעליים והתיק משלימים את הפלטה.`}`,
+    wada:{plate:plate.id,size:plate.size,refs:[...refs],meanDistance:fit.mean,maxDistance:fit.max,relationshipError:fit.relationship}
+  };
+}
+function wadaSelect({fixed={},replaceRole=null}={}){
+  const {plates,sources}=wadaCatalog();
+  const current=state.currentLook;
+  const usage=Object.fromEntries(Object.values(COLORS).map(c=>[c.id,shadeCoverageWeight(c)]));
+  const fixedColors=WADA_ROLES.map(r=>fixed[r]&&current?.mapping[r]?.color);
+  const ranked=plates.map(plate=>{
+    // Cheap prefilter for constrained looks; full role-to-swatch assignment follows.
+    if(fixedColors.some(c=>c&&!plate.indices.some(i=>wadaDistance(wadaLab(c.hex),sources[i].lab)<=WADA_LIMITS.maxDistance)))return null;
+    const use=(state.wadaUsage||{})[plate.id];
+    const recent=recentHomeHistory(24).some(h=>h.wadaPlate===plate.id);
+    const score=(use?Math.min(35,((state.suggestionSeq||0)-use.lastSeq)*.5)-use.count*3:45)
+      -(recent?100:0)-recentHomeHistory(10).filter(h=>h.wadaSize===plate.size).length*5+Math.random()*24;
+    return {plate,score};
+  }).filter(Boolean).sort((a,b)=>b.score-a.score);
+  // Always include the current reference when most garments are fixed.
+  if(Object.keys(fixed).length>=2 && wadaReference(current)){
+    const index=ranked.findIndex(x=>x.plate.id===current.wada.plate);
+    if(index>=0)ranked.unshift(...ranked.splice(index,1));
+  }
+  const candidates=[],seen=new Set();
+  // Bounded work per click, with a broader second pass only if constraints need it.
+  for(let p=0;p<ranked.length;p++){
+    if(p>=42&&candidates.length>=45)break;
+    const plate=ranked[p].plate;
+    for(const pattern of shuffleArray(plate.patterns)){
+      const refs=pattern.map(index=>plate.indices[index]);
+      if(fixedColors.some((c,i)=>c&&wadaDistance(wadaLab(c.hex),sources[refs[i]].lab)>WADA_LIMITS.maxDistance))continue;
+      const colors=[...fixedColors];let valid=true;
+      for(const i of shuffleArray([0,1,2,3])){
+        if(colors[i])continue;
+        const options=sources[refs[i]].options[WADA_ROLES[i]].filter(o=>!colors.some(c=>c?.id===o.color.id)
+          && (!isRedColor(o.color)||!colors.some(c=>c&&isRedColor(c)))
+          && (replaceRole!==WADA_ROLES[i] || o.color.id!==current.mapping[replaceRole].color.id));
+        if(!options.length){valid=false;break;}
+        const weighted=options.map(o=>({color:o.color,weight:Math.exp(-o.distance/0.035)*Math.max(1,12+usage[o.color.id]*.6)}));
+        colors[i]=weightedPick(weighted);
+      }
+      if(!valid||!wadaHardValid(colors))continue;
+      const key=colors.map(c=>c.id).join('|');if(seen.has(key))continue;
+      const fit=wadaFit(colors,refs);if(!fit)continue;
+      const unlocked=WADA_ROLES.filter(r=>!fixed[r]);
+      if(current){
+        const changes=unlocked.filter(r=>colors[WADA_ROLES.indexOf(r)].id!==current.mapping[r].color.id).length;
+        if(changes<Math.min(2,unlocked.length))continue;
+      }
+      seen.add(key);
+      candidates.push({colors,plate,refs,fit,key,score:fit.quality*.8+wadaHistoryScore(colors,plate,fixed,usage)});
+    }
+  }
+  if(!candidates.length)return null;
+  let pool=candidates;
+  // Exclude recently used entire color sets, even when roles are permuted.
+  const freshSets=pool.filter(c=>!recentHomeHistory(24).some(h=>h.ids?.length===4&&c.colors.every(color=>h.ids.includes(color.id))));
+  if(freshSets.length)pool=freshSets;
+  if(!replaceRole){
+    const freshPlates=pool.filter(c=>!recentHomeHistory(24).some(h=>h.wadaPlate===c.plate.id));
+    if(freshPlates.length)pool=freshPlates;
+  }
+  // Avoid one successful palette flooding the shortlist with near-identical candidates.
+  const bestPerPlate=new Map();
+  for(const c of pool){if(!bestPerPlate.has(c.plate.id)||c.score>bestPerPlate.get(c.plate.id).score)bestPerPlate.set(c.plate.id,c);}
+  pool=[...bestPerPlate.values()].sort((a,b)=>b.score-a.score);
+  const finalists=pool.filter(c=>c.score>=pool[0].score-8).slice(0,6);
+  return wadaMakeLook(finalists[Math.floor(Math.random()*finalists.length)]);
 }
 
 document.addEventListener('DOMContentLoaded', init);
