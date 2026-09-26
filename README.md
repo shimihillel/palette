@@ -65,3 +65,12 @@
 - Keeps the 1.5.6 Harmony First engine unchanged.
 - Replaces the app/PWA icon with the new four-quadrant fashion icon.
 - Uses new cache-busting icon filenames for iOS/PWA installs.
+
+
+## v1.6.0 Character Beta
+- Keeps the Harmony First algorithm unchanged.
+- Adds a fixed character visual: same face, pose, shirt, relaxed pants, ballet flats and bag.
+- Only the four selected colors change.
+- Uses precision clothing masks to avoid color bleed.
+- Removes the unwanted yellows: banana, lemon, primrose, daffodil, marigold and sunflower.
+- Keeps butter, straw, mustard, ochre, gold-family shades and creams.

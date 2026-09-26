@@ -361,6 +361,116 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
 
 @media(max-width:430px){.topbar{grid-template-columns:40px 1fr 40px!important}.brand-block{grid-column:2}}
 
+
+/* v1.6 CHARACTER BETA — visual layer only, Harmony First engine untouched */
+.today-title-block{margin-bottom:14px}
+.clean-look-card{margin-bottom:14px}
+.character-frame{
+  position:relative;
+  width:100%;
+  border-radius:28px;
+  overflow:hidden;
+  border:1px solid rgba(79,52,39,.08);
+  background:
+    radial-gradient(circle at 50% 23%,rgba(255,255,255,.95),rgba(255,250,244,.48) 44%,transparent 68%),
+    linear-gradient(180deg,#fbf5ed 0%,#f2e8dc 100%);
+  box-shadow:0 18px 42px rgba(60,38,26,.07);
+}
+.character-art{
+  position:relative;
+  width:min(100%,390px);
+  margin:0 auto;
+  aspect-ratio:941/1672;
+  isolation:isolate;
+}
+.character-base,.character-tint{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+.character-base{
+  z-index:1;
+  object-fit:contain;
+  display:block;
+}
+.character-tint{
+  z-index:2;
+  pointer-events:none;
+  background:var(--tint);
+  mix-blend-mode:color;
+  -webkit-mask-image:var(--mask);
+  -webkit-mask-repeat:no-repeat;
+  -webkit-mask-position:center;
+  -webkit-mask-size:100% 100%;
+  mask-image:var(--mask);
+  mask-repeat:no-repeat;
+  mask-position:center;
+  mask-size:100% 100%;
+  mask-mode:luminance;
+}
+.character-tint.top{
+  --mask:url("https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:55eb79f8-e1bc-4847-b79c-f8ba0bb32195");
+}
+.character-tint.bottom{
+  --mask:url("https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:d6b7e387-f2ca-4635-9f43-fb1535d812d9");
+}
+.character-tint.shoes{
+  --mask:url("https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:a07010ae-4e41-44b2-bd36-8fa91410611e");
+}
+.character-tint.accessory{
+  --mask:url("https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:a3ffe0d7-bd03-458f-bcd7-5e44fbe00602");
+}
+.character-role-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:12px;
+}
+.character-role{
+  min-width:0;
+  background:rgba(255,255,255,.70);
+  border:1px solid rgba(79,52,39,.10);
+  border-radius:18px;
+  padding:10px 5px 9px;
+  text-align:center;
+}
+.character-role.locked{box-shadow:inset 0 0 0 1px rgba(79,52,39,.28)}
+.character-role-dot{
+  width:34px;height:34px;border-radius:50%;
+  margin:0 auto 7px;
+  border:1px solid rgba(0,0,0,.10);
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.55);
+}
+.character-role-label{display:block;font-size:11px;font-weight:900;color:#5b4337;line-height:1.1}
+.character-role-name{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+  line-height:1.15;
+  color:#8a766b;
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+.character-role-controls{display:flex;gap:4px;justify-content:center;margin-top:8px}
+.character-role-controls .mini-item-btn{
+  padding:5px 7px!important;
+  min-height:28px!important;
+  font-size:10px!important;
+  border-radius:999px!important;
+}
+.top-action-row.clean-actions{max-width:none!important;margin:14px 0 16px!important}
+.primary-btn#nextLookBtn{padding:18px 14px!important;font-size:19px!important}
+.clean-why-card{margin-top:0}
+@media(max-width:390px){
+  .character-role-grid{gap:6px}
+  .character-role{padding:9px 3px 8px;border-radius:16px}
+  .character-role-dot{width:30px;height:30px}
+  .character-role-label{font-size:10px}
+  .character-role-name{font-size:10px}
+  .character-role-controls .mini-item-btn{padding:4px 5px!important;font-size:9px!important}
+}
+
 </style>
 </head>
 <body>
@@ -376,8 +486,8 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
           <button class="mode-pill" id="changeColorModeBtn" type="button"><span>✦</span><strong id="colorModeTitle">סופר צבע</strong></button>
           <p id="colorModeDesc" hidden>4 צבעים, בלי להתנצל</p>
           <div class="today-title-block"><p class="today-eyebrow">SHIMI PICKS ✦</p><h2 id="lookTitle">—</h2><p id="lookVibe" class="today-subtitle">צבעוני, מעניין, ואף פעם לא אותו דבר</p></div>
-          <div class="top-action-row clean-actions"><button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button></div>
           <section class="look-visual-card clean-look-card" id="lookVisual"></section>
+          <div class="top-action-row clean-actions"><button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button></div>
           <section class="why-card clean-why-card"><div class="why-sparkle">✧</div><div><h3>למה זה עובד?</h3><p id="whyWorks"></p></div></section>
         </section>
       </section>
@@ -448,7 +558,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.5.7-new-icon';
+const APP_VERSION = '1.6.0-character-beta';
 
 const COLORS = {
   // Whites / creams
@@ -884,10 +994,11 @@ const FULL_COLOR_EXPANSION = {
 };
 
 Object.assign(COLORS, EXTRA_COLORS, FULL_COLOR_EXPANSION);
-const SHOE_SAFE_IDS = Object.keys(COLORS).filter(id => !['mint','teal','turquoise'].includes(id));
+const BANNED_COLOR_IDS = ['mint','teal','turquoise','banana','lemon','primrose','daffodil','marigold','sunflower'];
+const SHOE_SAFE_IDS = Object.keys(COLORS).filter(id => !BANNED_COLOR_IDS.includes(id));
 const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־6 לוקים
 function isBannedColor(color){
-  return !!color && ['mint','teal','turquoise'].includes(color.id);
+  return !!color && BANNED_COLOR_IDS.includes(color.id);
 }
 function isTurquoiseLike(color){
   return isBannedColor(color);
@@ -1985,29 +2096,33 @@ function renderLookVisual(container, mapping, options={}){
     {role:'top', label:'עליון'},
     {role:'bottom', label:'תחתון'},
     {role:'shoes', label:'נעליים'},
-    {role:'accessory', label:'אביזר'}
+    {role:'accessory', label:'תיק'}
   ];
   const showControls = options.controls !== false && container.id === 'lookVisual';
+  const colorHex = role => mapping?.[role]?.color?.hex || '#ddd';
+  const colorName = role => mapping?.[role]?.color?.he || '';
   container.innerHTML = `
-    <div class="look-card-title">פירוט הלוק</div>
-    <div class="editorial-look-list">
+    <div class="character-frame">
+      <div class="character-art" aria-label="המחשת הלוק על דמות קבועה">
+        <img class="character-base" src="assets/shimi-character-base.png" alt="דמות Shimi Looks"/>
+        <div class="character-tint top" style="--tint:${colorHex('top')}"></div>
+        <div class="character-tint bottom" style="--tint:${colorHex('bottom')}"></div>
+        <div class="character-tint shoes" style="--tint:${colorHex('shoes')}"></div>
+        <div class="character-tint accessory" style="--tint:${colorHex('accessory')}"></div>
+      </div>
+    </div>
+    <div class="character-role-grid">
       ${rows.map(({role,label}) => {
-        const item = mapping[role];
         const isLocked = !!state.lockedRoles?.[role] || options.lockedRole === role;
-        const locked = options.lockedRole === role ? ' · הפריט שלך' : '';
-        const controls = showControls ? `<div class="item-control-row">
+        const controls = showControls ? `<div class="character-role-controls">
           <button class="mini-item-btn" data-replace-role="${role}" type="button">החלף</button>
           <button class="mini-item-btn lock ${isLocked ? 'active' : ''}" data-lock-role="${role}" type="button">${isLocked ? 'שחרר' : 'נעל'}</button>
         </div>` : '';
-        const swatchStyle = item.printz ? `background-image:url('${item.printz.image}')` : `background:${item.color.hex}`;
-        const colorText = item.printz ? escapeHtml(item.printz.name || item.printz.type || 'פרינט') : item.color.he;
-        return `<article class="editorial-look-row ${isLocked ? 'locked' : ''}" data-role-row="${role}">
-          <div class="editorial-look-copy">
-            <span class="editorial-role">${label}${locked}</span>
-            <strong>${colorText}</strong>
-            ${controls}
-          </div>
-          <div class="editorial-swatch" style="${swatchStyle}" aria-label="${colorText}"></div>
+        return `<article class="character-role ${isLocked ? 'locked' : ''}" data-role-row="${role}">
+          <div class="character-role-dot" style="background:${colorHex(role)}"></div>
+          <span class="character-role-label">${label}</span>
+          <span class="character-role-name">${colorName(role)}</span>
+          ${controls}
         </article>`;
       }).join('')}
     </div>
