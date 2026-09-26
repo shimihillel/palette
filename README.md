@@ -74,3 +74,10 @@
 - Uses precision clothing masks to avoid color bleed.
 - Removes the unwanted yellows: banana, lemon, primrose, daffodil, marigold and sunflower.
 - Keeps butter, straw, mustard, ochre, gold-family shades and creams.
+
+## v1.6.1 — Character Canvas Fix
+- Fixed the character so the clothing itself recolors with the current look, using local precision masks and canvas rendering.
+- Removed dependency on remote CSS masks that did not work reliably on iPhone.
+- Moved “הבא בתור” above the character and made it sticky so it is reachable without scrolling to the bottom.
+- Harmony First remains unchanged.
+- Yellow cleanup remains in force.

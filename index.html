@@ -471,6 +471,19 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
   .character-role-controls .mini-item-btn{padding:4px 5px!important;font-size:9px!important}
 }
 
+
+/* v1.6.1 — local canvas recolor: exact masks, no Safari remote-mask dependency */
+.quick-next-row{margin:0 0 14px!important;max-width:none!important;position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:18;padding:0 2px}
+.quick-next-row #nextLookBtn{box-shadow:0 12px 28px rgba(64,38,27,.18)!important}
+.character-art{display:flex;align-items:center;justify-content:center}
+.character-canvas{display:block;width:100%;height:auto;max-width:100%;position:relative;z-index:1}
+.character-base,.character-tint{display:none!important}
+@media(max-width:430px){
+  .quick-next-row{margin-bottom:10px!important}
+  .quick-next-row #nextLookBtn{padding:15px 12px!important;font-size:18px!important}
+  .character-frame{border-radius:24px}
+}
+
 </style>
 </head>
 <body>
@@ -486,8 +499,8 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
           <button class="mode-pill" id="changeColorModeBtn" type="button"><span>✦</span><strong id="colorModeTitle">סופר צבע</strong></button>
           <p id="colorModeDesc" hidden>4 צבעים, בלי להתנצל</p>
           <div class="today-title-block"><p class="today-eyebrow">SHIMI PICKS ✦</p><h2 id="lookTitle">—</h2><p id="lookVibe" class="today-subtitle">צבעוני, מעניין, ואף פעם לא אותו דבר</p></div>
+          <div class="top-action-row clean-actions quick-next-row"><button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button></div>
           <section class="look-visual-card clean-look-card" id="lookVisual"></section>
-          <div class="top-action-row clean-actions"><button class="primary-btn" id="nextLookBtn" type="button">הבא בתור ✦</button></div>
           <section class="why-card clean-why-card"><div class="why-sparkle">✧</div><div><h3>למה זה עובד?</h3><p id="whyWorks"></p></div></section>
         </section>
       </section>
@@ -558,7 +571,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.6.0-character-beta';
+const APP_VERSION = '1.6.1-character-canvas-fix';
 
 const COLORS = {
   // Whites / creams
@@ -2090,6 +2103,131 @@ function bindLookbookActionButtons(){
 
 
 
+
+const CHARACTER_FILES = {
+  base:'assets/shimi-character-base.png',
+  top:'assets/character-mask-top.png',
+  bottom:'assets/character-mask-bottom.png',
+  shoes:'assets/character-mask-shoes.png',
+  accessory:'assets/character-mask-accessory.png'
+};
+let characterAssetPromise = null;
+let characterPaintSeq = 0;
+
+function loadCharacterImage(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject(new Error(`לא הצלחתי לטעון ${src}`));
+    img.src=src;
+  });
+}
+
+function loadCharacterAssets(){
+  if(characterAssetPromise) return characterAssetPromise;
+  characterAssetPromise=(async()=>{
+    const [base,top,bottom,shoes,accessory]=await Promise.all([
+      loadCharacterImage(CHARACTER_FILES.base),
+      loadCharacterImage(CHARACTER_FILES.top),
+      loadCharacterImage(CHARACTER_FILES.bottom),
+      loadCharacterImage(CHARACTER_FILES.shoes),
+      loadCharacterImage(CHARACTER_FILES.accessory)
+    ]);
+    const w=base.naturalWidth, h=base.naturalHeight;
+    const work=document.createElement('canvas'); work.width=w; work.height=h;
+    const ctx=work.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(base,0,0,w,h);
+    const basePixels=ctx.getImageData(0,0,w,h);
+    const masks={};
+    const means={};
+    for(const [role,img] of Object.entries({top,bottom,shoes,accessory})){
+      ctx.clearRect(0,0,w,h);
+      ctx.drawImage(img,0,0,w,h);
+      const data=ctx.getImageData(0,0,w,h).data;
+      const alpha=new Uint8ClampedArray(w*h);
+      let lumSum=0, weightSum=0;
+      for(let px=0,i=0;i<data.length;i+=4,px++){
+        const m=Math.round((data[i]+data[i+1]+data[i+2])/3);
+        alpha[px]=m;
+        if(m>20){
+          const bi=px*4;
+          const lum=.2126*basePixels.data[bi]+.7152*basePixels.data[bi+1]+.0722*basePixels.data[bi+2];
+          const weight=m/255;
+          lumSum+=lum*weight;
+          weightSum+=weight;
+        }
+      }
+      masks[role]=alpha;
+      means[role]=weightSum ? lumSum/weightSum : 128;
+    }
+    return {base,w,h,basePixels,masks,means};
+  })();
+  return characterAssetPromise;
+}
+
+function parseCharacterHex(value){
+  const m=String(value||'').match(/^#([0-9a-f]{6})$/i);
+  if(!m) return [128,128,128];
+  const n=parseInt(m[1],16);
+  return [(n>>16)&255,(n>>8)&255,n&255];
+}
+
+function recolorCharacterPixel(target, lum, mean){
+  const [r,g,b]=target;
+  if(lum<=mean){
+    const q=mean>0 ? lum/mean : 1;
+    const shade=.48+.52*q;
+    return [r*shade,g*shade,b*shade];
+  }
+  const q=(lum-mean)/Math.max(1,255-mean);
+  const lift=Math.min(.72,Math.max(0,q)*.72);
+  return [r+(255-r)*lift,g+(255-g)*lift,b+(255-b)*lift];
+}
+
+async function paintCharacter(canvas,mapping){
+  if(!canvas || !mapping) return;
+  const paintId=++characterPaintSeq;
+  try{
+    const assets=await loadCharacterAssets();
+    if(paintId!==characterPaintSeq || !canvas.isConnected) return;
+    const {w,h,basePixels,masks,means}=assets;
+    canvas.width=w; canvas.height=h;
+    const out=new ImageData(new Uint8ClampedArray(basePixels.data),w,h);
+    const colors={
+      top:parseCharacterHex(mapping.top?.color?.hex),
+      bottom:parseCharacterHex(mapping.bottom?.color?.hex),
+      shoes:parseCharacterHex(mapping.shoes?.color?.hex),
+      accessory:parseCharacterHex(mapping.accessory?.color?.hex)
+    };
+    const roles=['top','bottom','shoes','accessory'];
+    for(let px=0;px<w*h;px++){
+      let role=null, strength=0;
+      for(const r of roles){
+        const m=masks[r][px];
+        if(m>strength){strength=m; role=r;}
+      }
+      if(!role || strength<18) continue;
+      const i=px*4;
+      const lum=.2126*basePixels.data[i]+.7152*basePixels.data[i+1]+.0722*basePixels.data[i+2];
+      const recolored=recolorCharacterPixel(colors[role],lum,means[role]);
+      const a=Math.min(1,strength/220);
+      out.data[i]=Math.round(basePixels.data[i]*(1-a)+recolored[0]*a);
+      out.data[i+1]=Math.round(basePixels.data[i+1]*(1-a)+recolored[1]*a);
+      out.data[i+2]=Math.round(basePixels.data[i+2]*(1-a)+recolored[2]*a);
+    }
+    if(paintId!==characterPaintSeq || !canvas.isConnected) return;
+    canvas.getContext('2d').putImageData(out,0,0);
+  }catch(err){
+    console.error('character paint failed',err);
+    const ctx=canvas.getContext('2d');
+    const fallback=await loadCharacterImage(CHARACTER_FILES.base).catch(()=>null);
+    if(fallback && canvas.isConnected){
+      canvas.width=fallback.naturalWidth; canvas.height=fallback.naturalHeight;
+      ctx.drawImage(fallback,0,0);
+    }
+  }
+}
+
 function renderLookVisual(container, mapping, options={}){
   if(!container || !mapping) return;
   const rows = [
@@ -2104,11 +2242,7 @@ function renderLookVisual(container, mapping, options={}){
   container.innerHTML = `
     <div class="character-frame">
       <div class="character-art" aria-label="המחשת הלוק על דמות קבועה">
-        <img class="character-base" src="assets/shimi-character-base.png" alt="דמות Shimi Looks"/>
-        <div class="character-tint top" style="--tint:${colorHex('top')}"></div>
-        <div class="character-tint bottom" style="--tint:${colorHex('bottom')}"></div>
-        <div class="character-tint shoes" style="--tint:${colorHex('shoes')}"></div>
-        <div class="character-tint accessory" style="--tint:${colorHex('accessory')}"></div>
+        <canvas class="character-canvas" data-character-canvas aria-label="דמות Shimi Looks בצבעי הלוק"></canvas>
       </div>
     </div>
     <div class="character-role-grid">
@@ -2127,6 +2261,8 @@ function renderLookVisual(container, mapping, options={}){
       }).join('')}
     </div>
   `;
+  const canvas=container.querySelector('[data-character-canvas]');
+  if(canvas) paintCharacter(canvas,mapping);
 }
 
 function handleItemControlClick(event){
