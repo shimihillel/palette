@@ -9,8 +9,8 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks 1.2 — Editorial Boutique</title>
-  <link rel="manifest" href="manifest.webmanifest?v=130" />
+  <title>Shimi Looks 1.7 — Color & Fit</title>
+  <link rel="manifest" href="manifest.webmanifest?v=170" />
   <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v2-32.png?v=130" />
   <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v2-180.png?v=130" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -181,7 +181,7 @@ html,body{max-width:100%;overflow-x:hidden}
 .save-sparkles,.mini-confetti{contain:layout paint;will-change:transform,opacity}
 
 
-/* Shimi Looks 1.2 — Editorial Boutique */
+/* Shimi Looks 1.7 — Color & Fit */
 :root{
   --bg:#f6efe6;
   --paper:#fffdf9;
@@ -409,18 +409,6 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
   mask-size:100% 100%;
   mask-mode:luminance;
 }
-.character-tint.top{
-  --mask:url("https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:55eb79f8-e1bc-4847-b79c-f8ba0bb32195");
-}
-.character-tint.bottom{
-  --mask:url("https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:d6b7e387-f2ca-4635-9f43-fb1535d812d9");
-}
-.character-tint.shoes{
-  --mask:url("https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:a07010ae-4e41-44b2-bd36-8fa91410611e");
-}
-.character-tint.accessory{
-  --mask:url("https://photoshop-api.adobe.io/v2/short-url/urn:aaid:ps:US:a3ffe0d7-bd03-458f-bcd7-5e44fbe00602");
-}
 .character-role-grid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -484,6 +472,42 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
   .character-frame{border-radius:24px}
 }
 
+
+/* 1.7: one viewport, portrait and palette side by side. */
+.app-shell{height:100svh;min-height:0;max-width:760px;padding: max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom))!important;display:flex;flex-direction:column;gap:8px}
+@supports(height:100dvh){.app-shell{height:100dvh}}
+.topbar{flex:none;margin:0;grid-template-columns:1fr!important}.brand-block{grid-column:1}.topbar h1{font-size:23px;letter-spacing:4px}.topbar>span{display:none}
+.app-shell>main,#todayScreen{flex:1;min-height:0;display:flex;flex-direction:column}
+.today-layout{flex:1;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:8px}
+.today-title-block{margin:0!important}.today-eyebrow{display:none}.today-title-block h2{font-size:23px;line-height:1.1;margin:0 0 3px}.today-subtitle{font-size:12px;line-height:1.2}
+.top-action-row.clean-actions.quick-next-row{position:static;margin:0!important;padding:0;justify-self:center;width:148px;max-width:148px!important}
+.primary-btn#nextLookBtn{min-height:42px;padding:8px 16px!important;font-size:16px!important;box-shadow:none!important;border-radius:14px}
+#lookVisual{min-height:0;margin:0;display:grid;grid-template-columns:minmax(0,1fr) 112px;gap:8px;direction:ltr;align-items:stretch}
+.character-frame{min-height:0;height:100%;border-radius:20px;box-shadow:none;background:#f3eadf}
+.character-art{height:100%;width:100%;max-width:none;aspect-ratio:auto}
+.character-canvas{height:100%;width:100%;object-fit:contain}
+.character-role-grid{direction:rtl;min-height:0;margin:0;display:grid;grid-template-columns:1fr;grid-template-rows:repeat(4,minmax(0,1fr));gap:6px}
+.character-role{padding:5px 4px;border-radius:14px;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.character-role-dot{width:27px;height:27px;flex:none;margin:0 0 3px;box-shadow:none}
+.character-role-label{font-size:12px;line-height:1.1}.character-role-name{font-size:12px;line-height:1.1;margin-top:3px;color:#67564b}
+.character-role-controls{gap:3px;margin-top:5px;width:100%}.character-role-controls .mini-item-btn{flex:1;min-width:0;min-height:32px!important;padding:3px!important;font-size:12px!important;border-radius:9px!important}
+.clean-why-card{padding:8px 10px;margin:0;grid-template-columns:1fr;border-radius:12px;gap:0}.why-sparkle{display:none}.clean-why-card h3{font-size:13px;margin:0 0 2px}.clean-why-card p{font-size:12px;line-height:1.25;margin:0}
+button:focus-visible{outline:2px solid #6a4533;outline-offset:3px}
+@media(max-height:700px){.today-subtitle{display:none}.today-title-block h2{font-size:19px}.topbar h1{font-size:20px}.app-shell{gap:5px}.today-layout{gap:5px}.character-role-dot{width:21px;height:21px}.clean-why-card{padding:5px 8px}.clean-why-card p{font-size:11px}}
+@media(max-height:550px){.today-title-block,.clean-why-card{display:none}.today-layout{grid-template-rows:auto minmax(0,1fr)}.character-role-controls .mini-item-btn{min-height:26px!important}.character-role-dot{width:17px;height:17px}.character-role-controls{margin-top:2px}}
+@media(max-width:350px){#lookVisual{grid-template-columns:minmax(0,1fr) 104px;gap:5px}.character-role-name{font-size:11px}}
+/* Allow increased text sizes to remain accessible on exceptionally short screens. */
+@media(max-height:390px){.app-shell{height:auto;min-height:100svh}#lookVisual{min-height:320px}}
+
+
+@media(max-height:700px){
+ .character-role{display:grid;grid-template-columns:23px minmax(0,1fr);grid-template-rows:auto auto 30px;gap:2px;padding:4px;align-content:center}
+ .character-role-dot{grid-column:1;grid-row:1/3;margin:0;align-self:center}
+ .character-role-label{grid-column:2;grid-row:1;font-size:11px}
+ .character-role-name{grid-column:2;grid-row:2;font-size:11px;margin:0}
+ .character-role-controls{grid-column:1/-1;grid-row:3;margin:0;align-self:stretch}
+ .character-role-controls .mini-item-btn{min-height:30px!important}
+}
 </style>
 </head>
 <body>
@@ -564,14 +588,14 @@ dialog{border-radius:24px;background:#fffaf4;box-shadow:0 30px 90px rgba(64,39,2
   <dialog id="infoDialog"><div class="dialog-inner info-inner"><button class="dialog-close" id="closeInfoBtn" type="button">×</button><p class="eyebrow soft">ABOUT THE ENGINE</p><h3>איך זה עובד?</h3><p>האפליקציה בונה שילובי צבעים מתוך מבני השראה, וריאציות גוונים ומיפוי לבגדים.</p><ul class="info-list"><li>כל לחיצה על <b>הבא בתור</b> מייצרת שילוב חדש.</li><li><b>שומרת ♡</b> מכניס את הלוק לאהבתי.</li><li><b>בחרתי</b> בונה שילוב סביב פריט שכבר בא לך ללבוש.</li></ul><button class="primary-btn full" id="closeInfoCta" type="button">הבנתי</button></div></dialog>
   <dialog id="colorModeDialog"><div class="dialog-inner info-inner"><button class="dialog-close" id="closeColorModeBtn" type="button">×</button><p class="eyebrow soft">COLOR MOOD</p><h3>מדד הצבע היומי</h3><p class="dialog-vibe">בחרי כמה צבע יש לך כוח להיות היום. שינוי מדד מייצר לוק חדש אוטומטית.</p><div class="mode-options" id="colorModeOptions"></div></div></dialog>
   <div class="toast" id="toast"></div>
-  <script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(reg=>reg.unregister()));} if(window.caches){caches.keys().then(keys=>keys.forEach(key=>caches.delete(key)));}</script>
+
   <script>function el(id){ return document.getElementById(id); }
 function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(event, fn); }
 
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.6.1-character-canvas-fix';
+const APP_VERSION = '1.7-color-fit';
 
 const COLORS = {
   // Whites / creams
@@ -752,9 +776,9 @@ function fixBlackWhiteMainConflict(mapping, colors){
 
     if(swapRole){
       const bottomColor = mapping.bottom.color;
+      const replacement = mapping[swapRole].color;
       mapping[swapRole].color = bottomColor;
       mapping[swapRole].text = roleText(swapRole, bottomColor);
-      const replacement = mapping[swapRole].color;
       mapping.bottom.color = replacement;
       mapping.bottom.text = roleText('bottom', replacement);
     }else{
@@ -773,7 +797,7 @@ function fixBlackWhiteMainConflict(mapping, colors){
     mapping.bottom.text = roleText('bottom', safe);
   }
 
-  return fixBlackWhiteMainConflict(mapping, colors);
+  return mapping;
 }
 function hasBlackWhiteRed(look){
   const ids = (look.colors || []).map(c => c.id);
@@ -1186,6 +1210,16 @@ const RECIPES = [
 
 ];
 
+RECIPES.push(
+ {title:'ורוד מעושן וצפחה',roles:['soft','neutral','warmNeutral','purple'],map:{top:0,bottom:1,shoes:2,accessory:3},weight:1},
+ {title:'לבנדר ואדמה',roles:['purple','warmNeutral','neutral','green'],map:{top:0,bottom:1,shoes:2,accessory:3},weight:1},
+ {title:'מרווה וורוד עתיק',roles:['green','soft','warmNeutral','neutral'],map:{top:0,bottom:1,shoes:2,accessory:3},weight:.9},
+ {title:'כחול עם ורוד רך',roles:['soft','blue','neutral','warmNeutral'],map:{top:0,bottom:1,shoes:2,accessory:3},weight:1},
+ {title:'חמאה וצפחה',roles:['warmAccent','neutral','warmNeutral','blue'],map:{top:0,bottom:1,shoes:2,accessory:3},weight:1},
+ {title:'אפור וסגול',roles:['neutral','purple','warmNeutral','soft'],map:{top:0,bottom:1,shoes:2,accessory:3},weight:1},
+ {title:'אדמה וכחול רך',roles:['warmNeutral','blue','neutral','green'],map:{top:0,bottom:1,shoes:2,accessory:3},weight:1}
+);
+
 const PIECES = [
   {id:'top',label:'עליון',icon:'👚'},
   {id:'bottom',label:'תחתון',icon:'👖'},
@@ -1532,6 +1566,7 @@ function bindEvents(){
   });
   on('nextLookBtn','click', () => {
     const btn = el('nextLookBtn');
+    if(activeRoleIds().every(role=>state.lockedRoles?.[role])){toast('כל הפריטים נעולים — שחררי פריט כדי לקבל לוק חדש');return;}
     if(btn?.dataset.busy === '1') return;
     if(btn){ btn.dataset.busy='1'; btn.textContent='רגע ✦'; }
     requestAnimationFrame(() => setTimeout(() => {
@@ -2106,10 +2141,10 @@ function bindLookbookActionButtons(){
 
 const CHARACTER_FILES = {
   base:'assets/shimi-character-base.png',
-  top:'assets/character-mask-top.png',
-  bottom:'assets/character-mask-bottom.png',
-  shoes:'assets/character-mask-shoes.png',
-  accessory:'assets/character-mask-accessory.png'
+  top:'assets/character-mask-top.png?v=170',
+  bottom:'assets/character-mask-bottom.png?v=170',
+  shoes:'assets/character-mask-shoes.png?v=170',
+  accessory:'assets/character-mask-accessory.png?v=170'
 };
 let characterAssetPromise = null;
 let characterPaintSeq = 0;
@@ -2147,7 +2182,7 @@ function loadCharacterAssets(){
       const alpha=new Uint8ClampedArray(w*h);
       let lumSum=0, weightSum=0;
       for(let px=0,i=0;i<data.length;i+=4,px++){
-        const m=Math.round((data[i]+data[i+1]+data[i+2])/3);
+        const m=Math.round(((data[i]+data[i+1]+data[i+2])/3)*(data[i+3]/255));
         alpha[px]=m;
         if(m>20){
           const bi=px*4;
@@ -2173,15 +2208,11 @@ function parseCharacterHex(value){
 }
 
 function recolorCharacterPixel(target, lum, mean){
-  const [r,g,b]=target;
-  if(lum<=mean){
-    const q=mean>0 ? lum/mean : 1;
-    const shade=.48+.52*q;
-    return [r*shade,g*shade,b*shade];
-  }
-  const q=(lum-mean)/Math.max(1,255-mean);
-  const lift=Math.min(.72,Math.max(0,q)*.72);
-  return [r+(255-r)*lift,g+(255-g)*lift,b+(255-b)*lift];
+  // Preserve folds and texture while replacing the original pigment completely.
+  const shade=Math.pow(Math.max(.08,lum/Math.max(1,mean)),1.65);
+  if(shade<=1) return target.map(channel=>channel*shade);
+  const lift=Math.min(.62,(shade-1)*.55);
+  return target.map(channel=>channel+(255-channel)*lift);
 }
 
 async function paintCharacter(canvas,mapping){
@@ -2206,11 +2237,11 @@ async function paintCharacter(canvas,mapping){
         const m=masks[r][px];
         if(m>strength){strength=m; role=r;}
       }
-      if(!role || strength<18) continue;
+      if(!role || strength===0) continue;
       const i=px*4;
       const lum=.2126*basePixels.data[i]+.7152*basePixels.data[i+1]+.0722*basePixels.data[i+2];
       const recolored=recolorCharacterPixel(colors[role],lum,means[role]);
-      const a=Math.min(1,strength/220);
+      const a=strength/255;
       out.data[i]=Math.round(basePixels.data[i]*(1-a)+recolored[0]*a);
       out.data[i+1]=Math.round(basePixels.data[i+1]*(1-a)+recolored[1]*a);
       out.data[i+2]=Math.round(basePixels.data[i+2]*(1-a)+recolored[2]*a);
@@ -2249,8 +2280,8 @@ function renderLookVisual(container, mapping, options={}){
       ${rows.map(({role,label}) => {
         const isLocked = !!state.lockedRoles?.[role] || options.lockedRole === role;
         const controls = showControls ? `<div class="character-role-controls">
-          <button class="mini-item-btn" data-replace-role="${role}" type="button">החלף</button>
-          <button class="mini-item-btn lock ${isLocked ? 'active' : ''}" data-lock-role="${role}" type="button">${isLocked ? 'שחרר' : 'נעל'}</button>
+          <button class="mini-item-btn" data-replace-role="${role}" aria-label="החליפי צבע ${label}" type="button">החלף</button>
+          <button class="mini-item-btn lock ${isLocked ? 'active' : ''}" data-lock-role="${role}" aria-label="${isLocked ? 'שחררי' : 'נעלי'} ${label}" aria-pressed="${isLocked}" type="button">${isLocked ? 'שחרר' : 'נעל'}</button>
         </div>` : '';
         return `<article class="character-role ${isLocked ? 'locked' : ''}" data-role-row="${role}">
           <div class="character-role-dot" style="background:${colorHex(role)}"></div>
@@ -2303,10 +2334,21 @@ function replaceOneRole(role){
   if(role === 'accessory' && isRedColor(current)) pool = pool.filter(c => !isRedColor(c));
   pool = pool.filter(c => !existingIds.includes(c.id) || Math.random() < 0.22);
   if(!pool.length) pool = Object.values(COLORS).filter(c => c && !isBannedColor(c) && canUseColorForRole(c, role));
-  const replacement = role === 'shoes' ? pickShoeColorAvoidingRecent(pool) : weightedPick(pool.map(c => ({color:c, weight: roleReplacementWeight(role, c)})));
+  const ranked=pool.map(color=>{
+    const look={...state.currentLook,mapping:{...state.currentLook.mapping,[role]:{color,text:roleText(role,color)}}};
+    return {color,quality:paletteCompatibility(look),diversity:diversityScore(look)};
+  }).filter(c=>Number.isFinite(c.quality));
+  if(!ranked.length){toast('אין כרגע החלפה מתאימה לשילוב הזה');return;}
+  const best=Math.max(...ranked.map(c=>c.quality));
+  const compatible=ranked.filter(c=>c.quality>=Math.max(72,best-10));
+  const choices=compatible.length?compatible:ranked.filter(c=>c.quality===best);
+  choices.sort((a,b)=>b.diversity-a.diversity);
+  const replacement=choices[Math.floor(Math.random()*Math.min(4,choices.length))].color;
   state.currentLook.mapping[role].color = replacement;
   state.currentLook.mapping[role].text = roleText(role, replacement);
   refreshLookAfterManualEdit();
+  normalizeLook(state.currentLook);
+  remember(state.currentLook, 'today');
   saveState();
   renderToday();
   animateRole(role);
@@ -2949,19 +2991,81 @@ function scoreLookCompatibilityFirst(look){
   return s + Math.random() * 2;
 }
 
+// Cache only immutable color measurements; history remains live.
+const toneCache = new Map();
+function colorTone(color){
+  if(toneCache.has(color.id)) return toneCache.get(color.id);
+  const [r,g,b]=parseCharacterHex(color.hex).map(v=>v/255);
+  const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+  let h=0;
+  if(d) h=60*(max===r ? ((g-b)/d+6)%6 : max===g ? (b-r)/d+2 : (r-g)/d+4);
+  const l=(max+min)/2, sat=d ? d/(1-Math.abs(2*l-1)) : 0;
+  const tone={h,l,s:sat};toneCache.set(color.id,tone);return tone;
+}
+function paletteCompatibility(look){
+  const roles=['top','bottom','shoes','accessory'];
+  const colors=roles.map(role=>look.mapping[role].color);
+  if(colors.some((c,i)=>!canUseColorForRole(c,roles[i]) || isBannedColor(c))) return -Infinity;
+  if(hasBlackWhiteConflict(look.mapping) || colors.filter(isRedColor).length>1) return -Infinity;
+  const tones=colors.map(colorTone);
+  const neutral=c=>['neutral','light','warm-neutral','dark-neutral'].includes(c.family);
+  let quality=100;
+  // Loud, unrelated hues compete; quiet shades can bridge different families.
+  for(let i=0;i<4;i++) for(let j=i+1;j<4;j++){
+    if(neutral(colors[i]) || neutral(colors[j])) continue;
+    const a=tones[i],b=tones[j];let angle=Math.abs(a.h-b.h);angle=Math.min(angle,360-angle);
+    const analogous=angle<=55, complementary=angle>=150;
+    const intensity=Math.min(a.s,b.s)*Math.min(1,Math.min(a.l,b.l)*2);
+    if(!analogous && !complementary) quality-=intensity*(i===0&&j===1 ? 30 : 15);
+    if(analogous || complementary) quality+=3;
+  }
+  const bold=tones.filter((t,i)=>!neutral(colors[i])&&t.s>.58&&t.l>.3&&t.l<.72).length;
+  if(bold>2) quality-=(bold-2)*18;
+  if(Math.abs(tones[0].l-tones[1].l)<.10 && colors[0].family!==colors[1].family) quality-=7;
+  return quality;
+}
+function normalizeLook(look){
+  look.colors=['top','bottom','shoes','accessory'].map(role=>look.mapping[role].color);
+  look.signature='v170|'+look.colors.map(c=>c.id).join('|');
+  look.title=buildTitle(look.colors);look.why=buildWhy(look.colors);return look;
+}
+function diversityScore(look){
+  const roles=['top','bottom','shoes','accessory'].filter(r=>!state.lockedRoles?.[r]);
+  let score=0;
+  for(const role of roles){
+    const c=look.mapping[role].color;
+    score+=shadeCoverageWeight(c,role)*.8+familyBalanceWeight(c,role);
+    recentHomeHistory(7).forEach((old,i)=>{
+      if(old[role]===c.id) score-=i<3?85:40;
+      if(old[role+'Family']===c.family) score-=(7-i)*2;
+      if((old.ids||[]).includes(c.id)) score-=10;
+    });
+  }
+  if(recentHomeHistory(14).some(h=>h.signature===look.signature)) score-=1000;
+  return score;
+}
 function generateBestLook(mode='super'){
-  const candidates = Array.from({length:56}, () => generateLook(mode));
-  candidates.sort((a,b) => scoreLookCompatibilityFirst(b) - scoreLookCompatibilityFirst(a));
-
-  const current = state.currentLook;
-  let pool = candidates.filter(look => !violatesThreeClickRule(look, recentHomeHistory(7)));
-  if(!pool.length) pool = candidates.filter(look => !softlyRepeatsRecentLook(look, recentHomeHistory(7)));
-  if(!pool.length) pool = candidates;
-
-  const visiblyNew = pool.filter(look => !current || roleDifferenceCount(current, look) >= 2);
-  if(visiblyNew.length) pool = visiblyNew;
-
-  return finalizeDailyLook(pool[0] || candidates[0]);
+  const unlocked=['top','bottom','shoes','accessory'].filter(r=>!state.lockedRoles?.[r]);
+  if(!unlocked.length && state.currentLook){toast('כל הפריטים נעולים — שחררי פריט כדי לקבל לוק חדש');return state.currentLook;}
+  const candidates=[];
+  for(let i=0;i<120;i++){
+    const look=normalizeLook(finalizeDailyLook(generateLook(mode)));
+    const quality=paletteCompatibility(look);
+    if(Number.isFinite(quality)) candidates.push({look,quality,diversity:diversityScore(look)});
+  }
+  // Locks are applied BEFORE evaluating harmony, so they cannot invalidate a winner.
+  if(!candidates.length) return state.currentLook || normalizeLook(finalizeDailyLook(generateLook(mode)));
+  const bestQuality=Math.max(...candidates.map(c=>c.quality));
+  let pool=candidates.filter(c=>c.quality>=Math.max(72,bestQuality-14));
+  if(!pool.length) pool=candidates.filter(c=>c.quality===bestQuality);
+  const fresh=pool.filter(c=>unlocked.every(role=>!recentHomeHistory(7).some(h=>h[role]===c.look.mapping[role].color.id)));
+  if(fresh.length) pool=fresh;
+  const changed=pool.filter(c=>!state.currentLook || roleDifferenceCount(state.currentLook,c.look)>=Math.min(2,unlocked.length));
+  if(changed.length) pool=changed;
+  pool.sort((a,b)=>b.diversity-a.diversity);
+  // Sample near-equal good candidates; never put randomness in a sort comparator.
+  const finalists=pool.filter(c=>c.diversity>=pool[0].diversity-14).slice(0,6);
+  return finalists[Math.floor(Math.random()*finalists.length)].look;
 }
 
 function scoreLookWithTopVariety(look){

@@ -1,83 +1,39 @@
-# Shimi Looks 1.4 — Smart Clean
+# Shimi Looks 1.7 — Color & Fit
 
-גרסה נקייה עם מסך לוקים אחד בלבד.
+אפליקציה סטטית להעלאה ל־GitHub Pages. אין צורך בהתקנה, בבנייה, במפתח API או בחיבור לשירות צביעה.
 
-## מה נשאר
-- הצעת לוק יומית/מיידית
-- הבא בתור
-- החלף לכל פריט
-- נעל/שחרר לכל פריט
-- ספריית 275 הגוונים וחוקי הצבע הקיימים
+## העלאה
 
-## מה ירד מהממשק
-- שומרת / לוקים שמורים
-- הסטייל שלי
-- פנינים / הישגים
-- גיבוי ושחזור
-- בחרתי
-- מדד הצבע
+1. חלצי את קובץ ה־ZIP.
+2. העלי את `index.html`, את `manifest.webmanifest`, את תיקיית `assets` ואת `.nojekyll` לתיקייה שממנה האתר מתפרסם במאגר שלך, במקום הקבצים הקיימים. אין להעלות את ה־ZIP עצמו בתור האתר.
+3. שמרי את השינוי במאגר והמתיני לסיום פריסת GitHub Pages.
+4. פתחי את כתובת האתר עם `?v=170` בסופה ורענני. אם האפליקציה פתוחה ממסך הבית, סגרי אותה ופתחי מחדש.
 
-## מנוע הגיוון
-- זיכרון פנימי בלבד של ההצעות האחרונות
-- חסימת לוקים דומים בטווח של 7 הצעות ככל האפשר
-- חסימת חזרה על אותו גוון באותו תפקיד בטווח הזה
-- עדיפות חזקה לגוונים שלא הופיעו עדיין או לא הופיעו זמן רב
-- איזון משפחות כדי שכחול/חום לא ישתלטו
-- אדום נשאר רק בנעליים/אביזר
-- מנטה, טורקיז ושקוף נשארים בחוץ
+אפשר לשמור את קובץ הגרסה הקודמת כגיבוי לפני ההחלפה.
 
+## מה השתנה
 
-## v1.5 Seasons
-- Added a tiny settings button with Summer / Winter mode.
-- Summer keeps 4 roles. Winter adds Jacket / Coat as a fifth role.
-- Jacket / Coat supports Replace and Lock and participates in hidden rotation memory.
-- Red, mint, turquoise and transparent are excluded from outerwear.
-- No history, saved looks, achievements or backup UI were reintroduced.
+- תמונת הדמות המקורית נשמרה ללא שינוי. הצביעה פועלת בקוד, על מסכות מקומיות בלבד.
+- מסכות חדשות לחולצה, למכנסיים, לנעליים ולתיק. המסכות כוללות את שולי הבגדים ורצועת התיק, עם הפרדה בין התיק לחולצה ושימור אבזמי הזהב.
+- הפלטה מוצגת בטור לצד הדמות; כפתור ״הבא בתור״ קומפקטי. הגובה מגיב לגובה חלון התצוגה, כולל אזורים בטוחים בטלפון. במסכים קצרים במיוחד או בטקסט מוגדל תיתכן גלילה כדי לשמור על נגישות הכפתורים.
+- מנוע הבחירה מסנן קודם התאמת צבעים לפי גוון, רוויה ובהירות. הגיוון וזיכרון השימוש פועלים בתוך קבוצת השילובים המתאימים.
+- נוספו מבני שילובים חדשים מתוך קבוצות הצבע הקיימות בלבד. לא נוספו גוונים למאגר.
+- פריטים נעולים נלקחים בחשבון לפני דירוג השילוב; גם החלפה של פריט בודד עוברת בדיקת התאמה.
+- כל הפריטים נעולים? הכפתור מסביר שצריך לשחרר פריט, בלי לייצר חזרות מיותרות בהיסטוריה.
+- תוקן באג ישן בפונקציית מניעת שילוב שחור/לבן בבגדים הראשיים.
 
+## החוקים שנשמרו
 
-## v1.5.2
-- Restored Summer/Winter settings and winter outerwear.
-- Kept the hidden-history shoe balance fix so red shoes stay occasional.
-- Removed transparent shoes; mint/turquoise remain excluded.
+ארבעה פריטים בלבד: עליון, תחתון, נעליים ותיק. אדום מותר רק בנעליים או בתיק, ולא בשניהם יחד. מנטה, טורקיז ושקוף נשארים מוחרגים. נשמרה הסרת גוני הצהוב הלא רצויים מהגרסה הקודמת. שחור ולבן לא משולבים זה מול זה בעליון ובתחתון. זיכרון הגיוון נשמר מקומית; הימנעות מחזרות בשבע ההצעות האחרונות היא בעדיפות, בכפוף להתאמה ולנעילות.
 
+## בדיקות
 
-## v1.5.3 — Startup + memory fix
-- The current look now appears immediately when the app opens.
-- Hidden diversity history persists across app launches.
-- Removed legacy event binding from hidden retired screens so startup cannot fail on missing controls.
-- Keeps Summer/Winter mode and shoe-red balancing.
+- בבדיקת 220 הצעות: 220 שילובים שונים, 255 גוונים קיימים, ללא הפרות של מגבלות הצבע שנבדקו.
+- נבדקו נעילות של פריט אחד עד ארבעה, 40 החלפות פריט ושמירת מצב.
+- נבדקו אתחול, יצירת ארבעת זוגות כפתורי ההחלפה/נעילה, ולחיצות הבא/נעילה בסביבת DOM מדומה.
+- מנגנון ה־Canvas עצמו הופעל על שלוש פלטות לבדיקה, כולל צבעים כהים ובהירים. לא השתנו פיקסלים מחוץ למסכות, ואזור הראש והפנים נותר זהה למקור.
+- קובץ הדמות המקורי נבדק מול ה־ZIP המקורי ונשאר זהה.
 
+בדיקות אלו אינן תחליף לבדיקת Safari באייפון אמיתי. פתיחת התצוגה המקומית בדפדפן נחסמה במדיניות סביבת העבודה; לכן פריסת המסך לא נבדקה בדפדפן בפועל. אחרי ההעלאה מומלץ לבדוק שהדמות, ארבעת הצבעים וכל הכפתורים מופיעים יחד בגודל הטקסט הרגיל, ולהפעיל הבא, נעילה והחלפה.
 
-## v1.5.4
-- Faster Next button: smaller candidate pool and immediate press feedback.
-- Keeps 7-look similarity rule while ensuring each new look visibly changes.
-- Core family rotation prevents brown, blue, green, pink, purple, warm accents, or neutrals from disappearing.
-- Brown is no longer penalized; full-spectrum variety remains balanced.
-
-
-## v1.5.5 Summer Only
-- Removed Summer/Winter settings and outerwear mode.
-- App is back to four roles only: top, bottom, shoes, accessory.
-- Smart color engine and 7-suggestion memory remain unchanged.
-
-
-## v1.5.7 — New Icon
-- Keeps the 1.5.6 Harmony First engine unchanged.
-- Replaces the app/PWA icon with the new four-quadrant fashion icon.
-- Uses new cache-busting icon filenames for iOS/PWA installs.
-
-
-## v1.6.0 Character Beta
-- Keeps the Harmony First algorithm unchanged.
-- Adds a fixed character visual: same face, pose, shirt, relaxed pants, ballet flats and bag.
-- Only the four selected colors change.
-- Uses precision clothing masks to avoid color bleed.
-- Removes the unwanted yellows: banana, lemon, primrose, daffodil, marigold and sunflower.
-- Keeps butter, straw, mustard, ochre, gold-family shades and creams.
-
-## v1.6.1 — Character Canvas Fix
-- Fixed the character so the clothing itself recolors with the current look, using local precision masks and canvas rendering.
-- Removed dependency on remote CSS masks that did not work reliably on iPhone.
-- Moved “הבא בתור” above the character and made it sticky so it is reachable without scrolling to the bottom.
-- Harmony First remains unchanged.
-- Yellow cleanup remains in force.
+התאמת צבעים היא הערכה המבוססת על כללים, ולא הבטחה אסתטית לכל טעם. קפלים וצללים מכוונים ליצור גוונים בהירים וכהים של הצבע הנבחר.
