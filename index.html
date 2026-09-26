@@ -9,8 +9,8 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
-  <title>Shimi Looks 1.8 — Wada Inspiration</title>
-  <link rel="manifest" href="manifest.webmanifest?v=180" />
+  <title>Shimi Looks 1.8.1 — Wada Inspiration</title>
+  <link rel="manifest" href="manifest.webmanifest?v=181" />
   <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v2-32.png?v=130" />
   <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v2-180.png?v=130" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -595,7 +595,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '1.8-wada-vol1';
+const APP_VERSION = '1.8.1-soft-trousers';
 
 const COLORS = {
   // Whites / creams
@@ -2217,6 +2217,19 @@ function recolorCharacterPixel(target, lum, mean){
   return target.map(channel=>channel+(255-channel)*lift);
 }
 
+function recolorTrouserPixel(target, lum, mean){
+  // The original trousers are brown. Their deep pigment contrast should not
+  // become charcoal creases on cream fabric or silver shine on dark fabric.
+  const lightness=(.2126*target[0]+.7152*target[1]+.0722*target[2])/255;
+  const fold=Math.tanh(Math.log(Math.max(.08,lum/Math.max(1,mean)))*1.2);
+  if(fold<0){
+    const shadowDepth=.60-.28*lightness;
+    return target.map(channel=>channel*(1+fold*shadowDepth));
+  }
+  const highlightLift=(.14+.30*lightness)*fold;
+  return target.map(channel=>channel+(255-channel)*highlightLift);
+}
+
 async function paintCharacter(canvas,mapping){
   if(!canvas || !mapping) return;
   const paintId=++characterPaintSeq;
@@ -2242,7 +2255,9 @@ async function paintCharacter(canvas,mapping){
       if(!role || strength===0) continue;
       const i=px*4;
       const lum=.2126*basePixels.data[i]+.7152*basePixels.data[i+1]+.0722*basePixels.data[i+2];
-      const recolored=recolorCharacterPixel(colors[role],lum,means[role]);
+      const recolored=role==='bottom'
+        ? recolorTrouserPixel(colors[role],lum,means[role])
+        : recolorCharacterPixel(colors[role],lum,means[role]);
       const a=strength/255;
       out.data[i]=Math.round(basePixels.data[i]*(1-a)+recolored[0]*a);
       out.data[i+1]=Math.round(basePixels.data[i+1]*(1-a)+recolored[1]*a);
