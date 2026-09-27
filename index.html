@@ -10,13 +10,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
   <title>Shimi Looks — Art Studio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=200" />
-  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=200" />
-  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=200" />
+  <link rel="manifest" href="manifest.webmanifest?v=210" />
+  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=210" />
+  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=210" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=200" />
+  <link rel="stylesheet" href="style.css?v=210" />
 </head>
 <body>
   <div class="app-shell">
@@ -30,7 +30,7 @@
           <div class="today-title-block"><div><h2 id="lookTitle" aria-live="polite" aria-atomic="true">הלוק שלך בדרך</h2><p id="lookVibe" class="today-subtitle"></p></div><span class="source-tag" id="sourceTag"></span></div>
           <section class="look-visual-card" id="lookVisual" aria-label="הדמות וצבעי הבגדים"></section>
           <div class="studio-actions"><button class="primary-btn" id="nextLookBtn" type="button">הלוק הבא</button><button class="previous-btn" id="previousLookBtn" type="button" disabled aria-label="חזרה ללוק הקודם"><span data-icon="previous"></span><span>חזרה</span></button></div>
-          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. נעלי פריט כדי לשמור על הצבע שלו בלוק הבא.</small><small>הורדת לוקים שאהבת עוזרת לדייק את ההצעות. ההעדפות נשמרות בדפדפן הזה.</small><button id="resetStyleLearningBtn" class="learning-reset" type="button" hidden>איפוס ההעדפות מההורדות</button></div></details>
+          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. נעלי פריט כדי לשמור על הצבע שלו בלוק הבא.</small><small>הורדת לוקים שאהבת עוזרת לדייק את ההצעות. ההעדפות נשמרות בדפדפן הזה.</small><small id="shadeCoverageStatus"></small><button id="resetStyleLearningBtn" class="learning-reset" type="button" hidden>איפוס ההעדפות מההורדות</button></div></details>
         </section>
       </section>
       <section class="screen" id="anchorScreen">
@@ -875,6 +875,7 @@ function loadState(){
       purpose: parsed.purpose || 'day',
       colorMode: 'super',
       colorUsage: parsed.colorUsage || {},
+      shadeCoverage: parsed.shadeCoverage || null,
       downloadPreferences: Array.isArray(parsed.downloadPreferences) ? parsed.downloadPreferences.slice(0,40) : [],
       wadaUsage: parsed.wadaUsage && typeof parsed.wadaUsage==='object' ? parsed.wadaUsage : {},
       suggestionSeq: parsed.suggestionSeq || 0,
@@ -1226,6 +1227,7 @@ function renderToday(){
   renderLookVisual($('lookVisual'), look.mapping);
   renderSaveButtonState();
   updateStudioActions();
+  updateShadeCoverageControl();
 }
 
 function renderAnchor(){
@@ -1680,7 +1682,7 @@ function replaceOneRole(role){
   if(state.lockedRoles?.[role]){toast('הפריט נעול. שחררי ואז נחליף');return;}
   const fixed=Object.fromEntries(WADA_ROLES.filter(r=>r!==role).map(r=>[r,true]));
   const next=wadaSelect({fixed,replaceRole:role});
-  if(!next){toast('אין עוד גוון קרוב לפלטה הזו. הבא בתור יפתח פלטה חדשה');return;}
+  if(!next){toast(wadaLockedStyleMessage(fixed)||'אין כרגע גוון אחר ששומר על השילוב המגוון. הלוק הבא יפתח אפשרויות נוספות.');return;}
   rememberStudioPreview();state.currentLook=next;remember(next,'today');saveState();renderToday();animateRole(role);
   toast(`החלפתי ${pieceLabel(role)}`);
 }
@@ -2051,6 +2053,7 @@ function remember(look, source='today'){
       prev.roles[role] = (prev.roles[role] || 0) + 1;
       state.colorUsage[color.id] = prev;
     });
+    rememberShadeCoverage(look);
   }
 }
 
@@ -2386,7 +2389,7 @@ function generateBestLook(mode='super'){
   if(Object.keys(fixed).length===4 && state.currentLook)return state.currentLook;
   const look=wadaSelect({fixed});
   if(look)return look;
-  if(state.currentLook){toast('כדי לפתוח עוד שילובים מהספר, נסי לשחרר פריט נעול');return state.currentLook;}
+  if(state.currentLook){toast(wadaLockedStyleMessage(fixed)||'לא נמצא שילוב מגוון נוסף שמתאים לנעילות. נסי לשחרר פריט נעול.');return state.currentLook;}
   throw new Error('No eligible Wada palette in the installed color library');
 }
 
@@ -3425,9 +3428,12 @@ function wadaCatalog(){
       }).sort((a,b)=>a.distance-b.distance);
     const options=Object.fromEntries(WADA_ROLES.map(role=>{
       const safe=ranked.filter(x=>canUseColorForRole(x.color,role));
-      return [role,safe.filter(x=>x.distance<=Math.min(WADA_LIMITS.maxDistance,(safe[0]?.distance||0)+.043)).slice(0,9)];
+      // Keep every eligible shade. The former nearest-nine shortcut made
+      // several real app colors unreachable; wadaFit still validates the set.
+      return [role,safe];
     }));
-    return {lab,options};
+    const optionIds=Object.fromEntries(WADA_ROLES.map(role=>[role,new Set(options[role].map(o=>o.color.id))]));
+    return {lab,options,optionIds};
   });
   const patterns={2:wadaAssignments(2),3:wadaAssignments(3),4:wadaAssignments(4)};
   const plates=WADA_DATA.palettes.map(([id,indices])=>({id,indices,size:indices.length,patterns:patterns[indices.length]}));
@@ -3489,19 +3495,20 @@ function wadaReference(look){
 function wadaMakeLook(candidate){
   const {colors,plate,refs,fit}=candidate;
   const mapping=Object.fromEntries(WADA_ROLES.map((role,i)=>[role,{color:colors[i],text:roleText(role,colors[i])}]));
-  const tonal=plate.size<4;
   const top=colors[0].he,bottom=colors[1].he;
   return {mapping,colors,title:buildTitle(colors),colorMode:'super',
     signature:'wada-v180|'+colors.map(c=>c.id).join('|'),createdAt:new Date().toISOString(),
     vibe:'צבעים עם אופי, בהשראת Sanzo Wada.',
-    why:`בהשראת שילוב ${plate.id} בספר הראשון. ${tonal?'גוונים קרובים חוזרים בין הפריטים ושומרים על קשר בפלטה.':`${top} ו${bottom} מובילים; הנעליים והתיק משלימים את הפלטה.`}`,
+    why:`${top} ו${bottom} יוצרים ניגוד בין החולצה למכנסיים, והנעליים ב${colors[2].he} מוסיפות צבע שונה מהחולצה. בהשראת שילוב ${plate.id} בספר הראשון של Sanzo Wada.`,
     wada:{plate:plate.id,size:plate.size,refs:[...refs],meanDistance:fit.mean,maxDistance:fit.max,relationshipError:fit.relationship}
   };
 }
 function wadaSelect({fixed={},replaceRole=null}={}){
   const {plates,sources}=wadaCatalog();
   const current=state.currentLook;
+  if(wadaLockedStyleMessage(fixed))return null;
   const variety=wadaVarietyContext(fixed,replaceRole);
+  const coverageTargets=wadaCoverageTargets(fixed,replaceRole);
   const usage=Object.fromEntries(Object.values(COLORS).map(c=>[c.id,shadeCoverageWeight(c)]));
   const fixedColors=WADA_ROLES.map(r=>fixed[r]&&current?.mapping[r]?.color);
   const ranked=plates.map(plate=>{
@@ -3509,8 +3516,10 @@ function wadaSelect({fixed={},replaceRole=null}={}){
     if(fixedColors.some(c=>c&&!plate.indices.some(i=>wadaDistance(wadaLab(c.hex),sources[i].lab)<=WADA_LIMITS.maxDistance)))return null;
     const use=(state.wadaUsage||{})[plate.id];
     const recent=recentHomeHistory(24).some(h=>h.wadaPlate===plate.id);
+    const targetIndex=coverageTargets.findIndex(c=>plate.indices.some(i=>WADA_ROLES.some(r=>!fixed[r]&&sources[i].optionIds[r].has(c.id))));
+    const coverageBonus=targetIndex<0?0:90-targetIndex*6;
     const score=(use?Math.min(35,((state.suggestionSeq||0)-use.lastSeq)*.5)-use.count*3:45)
-      -(recent?100:0)-recentHomeHistory(10).filter(h=>h.wadaSize===plate.size).length*5+Math.random()*24;
+      -(recent?100:0)-recentHomeHistory(10).filter(h=>h.wadaSize===plate.size).length*5+Math.random()*24+coverageBonus;
     return {plate,score};
   }).filter(Boolean).sort((a,b)=>b.score-a.score);
   // Always include the current reference when most garments are fixed.
@@ -3527,16 +3536,21 @@ function wadaSelect({fixed={},replaceRole=null}={}){
       const refs=pattern.map(index=>plate.indices[index]);
       if(fixedColors.some((c,i)=>c&&wadaDistance(wadaLab(c.hex),sources[refs[i]].lab)>WADA_LIMITS.maxDistance))continue;
       const colors=[...fixedColors];let valid=true;
+      const focus=wadaCoverageFocus(refs,colors,coverageTargets,sources);
+      if(focus)colors[focus.index]=focus.color;
       for(const i of shuffleArray([0,1,2,3])){
         if(colors[i])continue;
         const options=sources[refs[i]].options[WADA_ROLES[i]].filter(o=>!colors.some(c=>c?.id===o.color.id)
           && (!isRedColor(o.color)||!colors.some(c=>c&&isRedColor(c)))
+          && wadaCanPlaceColor(colors,i,o.color)
           && (replaceRole!==WADA_ROLES[i] || o.color.id!==current.mapping[replaceRole].color.id));
         if(!options.length){valid=false;break;}
         const weighted=options.map(o=>({color:o.color,weight:Math.exp(-o.distance/0.035)*Math.max(1,12+usage[o.color.id]*.6)}));
         colors[i]=weightedPick(weighted);
       }
       if(!valid||!wadaHardValid(colors))continue;
+      const composition=wadaComposition(colors);
+      if(!composition.valid)continue;
       const key=colors.map(c=>c.id).join('|');if(seen.has(key))continue;
       const fit=wadaFit(colors,refs);if(!fit)continue;
       const unlocked=WADA_ROLES.filter(r=>!fixed[r]);
@@ -3546,11 +3560,11 @@ function wadaSelect({fixed={},replaceRole=null}={}){
       }
       seen.add(key);
       const visual=wadaVisualMetrics(colors,variety);
-      candidates.push({colors,plate,refs,fit,key,visual,score:fit.quality*.8+wadaHistoryScore(colors,plate,fixed,usage)+wadaVisualScore(visual,variety)+wadaPreferenceScore(colors,variety)});
+      candidates.push({colors,plate,refs,fit,key,visual,composition,score:fit.quality*.8+wadaHistoryScore(colors,plate,fixed,usage)+wadaVisualScore(visual,variety)+wadaPreferenceScore(colors,variety)+composition.score});
     }
   }
   if(!candidates.length)return null;
-  let pool=prioritizeVisibleChanges(candidates,variety);
+  let pool=prioritizeShadeCoverage(prioritizeColorComposition(prioritizeVisibleChanges(candidates,variety),variety),coverageTargets);
   // Exclude recently used entire color sets, even when roles are permuted.
   const freshSets=pool.filter(c=>!recentHomeHistory(24).some(h=>h.ids?.length===4&&c.colors.every(color=>h.ids.includes(color.id))));
   if(freshSets.length)pool=freshSets;
@@ -3569,7 +3583,7 @@ function wadaSelect({fixed={},replaceRole=null}={}){
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><span>כל הלוק, גם בתמונה לשמירה.</span><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
-<script src="studio.js?v=200"></script>
-<script src="suggestions.js?v=200"></script>
+<script src="studio.js?v=210"></script>
+<script src="suggestions.js?v=210"></script>
 </body>
 </html>
