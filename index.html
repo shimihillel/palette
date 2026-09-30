@@ -10,13 +10,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
   <title>Shimi Looks — Art Studio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=210" />
-  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=210" />
-  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=210" />
+  <link rel="manifest" href="manifest.webmanifest?v=220" />
+  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=220" />
+  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=220" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=210" />
+  <link rel="stylesheet" href="style.css?v=220" />
 </head>
 <body>
   <div class="app-shell">
@@ -30,7 +30,7 @@
           <div class="today-title-block"><div><h2 id="lookTitle" aria-live="polite" aria-atomic="true">הלוק שלך בדרך</h2><p id="lookVibe" class="today-subtitle"></p></div><span class="source-tag" id="sourceTag"></span></div>
           <section class="look-visual-card" id="lookVisual" aria-label="הדמות וצבעי הבגדים"></section>
           <div class="studio-actions"><button class="primary-btn" id="nextLookBtn" type="button">הלוק הבא</button><button class="previous-btn" id="previousLookBtn" type="button" disabled aria-label="חזרה ללוק הקודם"><span data-icon="previous"></span><span>חזרה</span></button></div>
-          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. נעלי פריט כדי לשמור על הצבע שלו בלוק הבא.</small><small>הורדת לוקים שאהבת עוזרת לדייק את ההצעות. ההעדפות נשמרות בדפדפן הזה.</small><small id="shadeCoverageStatus"></small><button id="resetStyleLearningBtn" class="learning-reset" type="button" hidden>איפוס ההעדפות מההורדות</button></div></details>
+          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. נעלי פריט כדי לשמור על הצבע שלו בלוק הבא.</small><small id="shadeCoverageStatus"></small></div></details>
         </section>
       </section>
       <section class="screen" id="anchorScreen">
@@ -876,7 +876,6 @@ function loadState(){
       colorMode: 'super',
       colorUsage: parsed.colorUsage || {},
       shadeCoverage: parsed.shadeCoverage || null,
-      downloadPreferences: Array.isArray(parsed.downloadPreferences) ? parsed.downloadPreferences.slice(0,40) : [],
       wadaUsage: parsed.wadaUsage && typeof parsed.wadaUsage==='object' ? parsed.wadaUsage : {},
       suggestionSeq: parsed.suggestionSeq || 0,
       seasonMode: 'summer',
@@ -929,6 +928,8 @@ function buildPersistableState(){
   delete persist.printzColorSearch;
   delete persist.printzColorFamily;
   delete persist.editingPrintzId;
+  // Retire inferred preferences from older versions, including restored state.
+  delete persist.downloadPreferences;
   return persist;
 }
 
@@ -3560,7 +3561,7 @@ function wadaSelect({fixed={},replaceRole=null}={}){
       }
       seen.add(key);
       const visual=wadaVisualMetrics(colors,variety);
-      candidates.push({colors,plate,refs,fit,key,visual,composition,score:fit.quality*.8+wadaHistoryScore(colors,plate,fixed,usage)+wadaVisualScore(visual,variety)+wadaPreferenceScore(colors,variety)+composition.score});
+      candidates.push({colors,plate,refs,fit,key,visual,composition,score:fit.quality*.8+wadaHistoryScore(colors,plate,fixed,usage)+wadaVisualScore(visual,variety)+composition.score});
     }
   }
   if(!candidates.length)return null;
@@ -3583,7 +3584,7 @@ function wadaSelect({fixed={},replaceRole=null}={}){
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><span>כל הלוק, גם בתמונה לשמירה.</span><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
-<script src="studio.js?v=210"></script>
-<script src="suggestions.js?v=210"></script>
+<script src="studio.js?v=220"></script>
+<script src="suggestions.js?v=220"></script>
 </body>
 </html>

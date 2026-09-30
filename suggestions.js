@@ -6,9 +6,7 @@ const LOOK_VARIETY = Object.freeze({
   mainChange: .14,
   constrainedChange: .10,
   recentDistance: .12,
-  historySize: 8,
-  preferenceLimit: 40,
-  preferenceBonus: 6
+  historySize: 8
 });
 
 // Composition is separate from change between consecutive looks. Light/dark
@@ -161,42 +159,6 @@ function updateShadeCoverageControl(){
   label.textContent=`סבב צבעים ${cycle.round+1}: ${cycle.seen.length} מתוך ${total} גוונים הוצגו. גוונים שטרם הופיעו מקבלים קדימות; נעילות עשויות לצמצם את האפשרויות.`;
 }
 
-function downloadedLookPreferences(){
-  const input=Array.isArray(state.downloadPreferences)?state.downloadPreferences:[];
-  const seen=new Set(),result=[];
-  for(const entry of input){
-    if(!Array.isArray(entry)||entry.length!==4||entry.some(id=>typeof id!=='string')||!wadaHardValid(entry.map(id=>COLORS[id])))continue;
-    const key=entry.join('|');if(seen.has(key))continue;
-    seen.add(key);result.push(entry.slice());
-    if(result.length===LOOK_VARIETY.preferenceLimit)break;
-  }
-  return result;
-}
-
-function rememberDownloadedLook(look){
-  const colors=WADA_ROLES.map(role=>look?.mapping?.[role]?.color);
-  if(!wadaHardValid(colors))return false;
-  const ids=colors.map(c=>c.id),preferences=downloadedLookPreferences();
-  // Re-downloading one outfit is one preference, including after a reload.
-  if(preferences.some(old=>old.every((id,i)=>id===ids[i])))return false;
-  state.downloadPreferences=[ids,...preferences].slice(0,LOOK_VARIETY.preferenceLimit);
-  saveState();
-  updateDownloadPreferenceControl();
-  return true;
-}
-
-function updateDownloadPreferenceControl(){
-  const button=el('resetStyleLearningBtn');
-  if(button)button.hidden=downloadedLookPreferences().length===0;
-}
-
-function resetDownloadPreferences(){
-  state.downloadPreferences=[];
-  const persisted=saveState();
-  updateDownloadPreferenceControl();
-  toast(persisted?'ההעדפות מההורדות אופסו':'ההעדפות אופסו לביקור הזה; הדפדפן לא מאפשר לשמור את האיפוס');
-}
-
 function wadaVarietyContext(fixed,replaceRole){
   // For a single-item replacement, the other three garments really are fixed.
   // For Next, only explicitly unlocked main garments drive visual novelty.
@@ -216,26 +178,7 @@ function wadaVarietyContext(fixed,replaceRole){
       if(history.length===LOOK_VARIETY.historySize)break;
     }
   }
-  const preferences=downloadedLookPreferences();
-  // Every third generation explores without a learned preference bonus.
-  const learn=preferences.length>0&&(state.suggestionSeq||0)%3!==0;
-  const affinity=new Map();
-  if(learn){
-    const downloaded=preferences.map(ids=>ids.map(id=>wadaLab(COLORS[id].hex)));
-    for(const color of Object.values(COLORS)){
-      const lab=wadaLab(color.hex),values=[];
-      for(let role=0;role<4;role++){
-        let total=0,weight=0;
-        downloaded.forEach((look,index)=>{
-          const w=Math.pow(.94,index),d=wadaDistance(lab,look[role]);
-          total+=Math.exp(-Math.pow(d/.13,2))*w;weight+=w;
-        });
-        values.push(total/weight);
-      }
-      affinity.set(color.id,values);
-    }
-  }
-  return {fixed,replaceRole,indices,currentLabs,history,learn,affinity};
+  return {fixed,replaceRole,indices,currentLabs,history};
 }
 
 function wadaVisualMetrics(colors,context){
@@ -254,18 +197,12 @@ function wadaVisualScore(metrics,context){
   return change-repeat;
 }
 
-function wadaPreferenceScore(colors,context){
-  if(!context.learn)return 0;
-  const weights=[.42,.48,.05,.05];
-  return LOOK_VARIETY.preferenceBonus*colors.reduce((sum,c,i)=>sum+(context.affinity.get(c.id)?.[i]||0)*weights[i],0);
-}
-
 function prioritizeVisibleChanges(candidates,context){
   if(!context.currentLabs.length||!context.indices.length)return candidates;
   const mainReplacement=context.replaceRole&&['top','bottom'].includes(context.replaceRole);
   const desired=context.replaceRole?(mainReplacement ? .085 : .065):LOOK_VARIETY.mainChange;
-  // This gate comes before preference bonuses and palette recency. A favorite
-  // hue or a new palette number cannot masquerade as changed main garments.
+  // This gate comes before palette recency. A new palette number cannot
+  // masquerade as changed main garments.
   const clear=candidates.filter(c=>c.visual.minimum>=desired);
   let pool=clear;
   if(!pool.length){

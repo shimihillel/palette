@@ -139,8 +139,6 @@ function bindStudio(){
     const snapshot=studioUndo.pop();if(!snapshot)return;
     state.currentLook=snapshot.look;state.lockedRoles=snapshot.locks;saveState();renderToday();animateLookChange();toast('חזרת ללוק הקודם');
   });
-  updateDownloadPreferenceControl();
-  on('resetStyleLearningBtn','click',resetDownloadPreferences);
   on('downloadLookBtn','click',downloadStudioLook);
   on('detailDownloadBtn','click',downloadStudioLook);
   on('closeDetailBtn','click',()=>$('artDialog').close());
@@ -192,8 +190,7 @@ async function downloadStudioLook(){
     }
     const blob=await new Promise(resolve=>out.toBlob(resolve,'image/png'));if(!blob)throw Error('export');
     const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`Shimi-Looks-${look.wada?.plate||'look'}.png`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
-    const learned=rememberDownloadedLook(look);
-    toast(learned?'תמונת הלוק מוכנה. אקח את הבחירה בחשבון':'תמונת הלוק מוכנה להורדה');
+    toast('תמונת הלוק מוכנה להורדה');
   }catch(err){toast('לא הצלחתי להכין תמונה. נסי שוב.');}
   finally{studioExporting=false;$('downloadLookBtn').disabled=false;$('detailDownloadBtn').disabled=false;}
 }

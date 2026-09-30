@@ -17,5 +17,3 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);border
 
 @media(max-width:600px){.character-role-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
 @media(max-height:740px){.character-role{padding:4px 0}}
-
-.learning-reset{display:block;margin:12px 0 0;padding:6px 0;border:0;border-bottom:1px solid currentColor;background:transparent;font-size:13px;color:var(--muted)}
