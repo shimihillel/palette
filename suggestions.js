@@ -123,9 +123,9 @@ function wadaCoverageFocus(refs,colors,targets,sources){
       &&wadaCanPlaceColor(colors,i,color)
       &&(!state.currentLook||i>1||wadaDistance(wadaLab(color.hex),wadaLab(state.currentLook.mapping[WADA_ROLES[i]].color.hex))>=LOOK_VARIETY.mainChange));
     if(roles.length){
-      // A shade seen only on bags should also have a chance on the clothes.
+      // Every role gets the same priority, including shoes and bags.
       const use=state.colorUsage?.[color.id]?.roles||{};
-      roles.sort((a,b)=>(use[WADA_ROLES[a]]||0)+(a>1?.35:0)-(use[WADA_ROLES[b]]||0)-(b>1?.35:0));
+      roles.sort((a,b)=>(use[WADA_ROLES[a]]||0)-(use[WADA_ROLES[b]]||0));
       return {index:roles[0],color};
     }
   }
@@ -135,7 +135,11 @@ function wadaCoverageFocus(refs,colors,targets,sources){
 function prioritizeShadeCoverage(candidates,targets){
   for(const target of targets){
     const containing=candidates.filter(c=>c.colors.some(color=>color.id===target.id));
-    if(containing.length)return containing;
+    if(containing.length){
+      const roles=state.colorUsage?.[target.id]?.roles||{};
+      const leastUsed=Math.min(...containing.map(c=>roles[WADA_ROLES[c.colors.findIndex(color=>color.id===target.id)]]||0));
+      return containing.filter(c=>(roles[WADA_ROLES[c.colors.findIndex(color=>color.id===target.id)]]||0)===leastUsed);
+    }
   }
   return candidates;
 }

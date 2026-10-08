@@ -10,13 +10,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
   <title>Shimi Looks — Art Studio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=220" />
-  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=220" />
-  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=220" />
+  <link rel="manifest" href="manifest.webmanifest?v=230" />
+  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=230" />
+  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=230" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=220" />
+  <link rel="stylesheet" href="style.css?v=230" />
 </head>
 <body>
   <div class="app-shell">
@@ -3546,7 +3546,9 @@ function wadaSelect({fixed={},replaceRole=null}={}){
           && wadaCanPlaceColor(colors,i,o.color)
           && (replaceRole!==WADA_ROLES[i] || o.color.id!==current.mapping[replaceRole].color.id));
         if(!options.length){valid=false;break;}
-        const weighted=options.map(o=>({color:o.color,weight:Math.exp(-o.distance/0.035)*Math.max(1,12+usage[o.color.id]*.6)}));
+        // Eligible shades share one base weight; usage balances each role.
+        // Reference distance remains a hard harmony check, not a color bias.
+        const weighted=options.map(o=>({color:o.color,weight:Math.max(1,12+shadeCoverageWeight(o.color,WADA_ROLES[i])*.6)}));
         colors[i]=weightedPick(weighted);
       }
       if(!valid||!wadaHardValid(colors))continue;
@@ -3561,7 +3563,7 @@ function wadaSelect({fixed={},replaceRole=null}={}){
       }
       seen.add(key);
       const visual=wadaVisualMetrics(colors,variety);
-      candidates.push({colors,plate,refs,fit,key,visual,composition,score:fit.quality*.8+wadaHistoryScore(colors,plate,fixed,usage)+wadaVisualScore(visual,variety)+composition.score});
+      candidates.push({colors,plate,refs,fit,key,visual,composition,score:wadaHistoryScore(colors,plate,fixed,usage)+wadaVisualScore(visual,variety)+composition.score});
     }
   }
   if(!candidates.length)return null;
@@ -3584,7 +3586,7 @@ function wadaSelect({fixed={},replaceRole=null}={}){
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><span>כל הלוק, גם בתמונה לשמירה.</span><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
-<script src="studio.js?v=220"></script>
-<script src="suggestions.js?v=220"></script>
+<script src="studio.js?v=230"></script>
+<script src="suggestions.js?v=230"></script>
 </body>
 </html>
