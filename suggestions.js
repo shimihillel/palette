@@ -115,6 +115,81 @@ function wadaCoverageTargets(fixed,replaceRole){
   return (pending.length?pending:ranked).slice(0,12).map(x=>x.color);
 }
 
+// Balance recognizable colors in every role, independently of how many
+// named shades each color has. Black is one group, just like blue or green.
+const wadaColorGroupById=new Map(Object.entries(COLOR_FAMILIES)
+  .flatMap(([group,ids])=>ids.map(id=>[id,group])));
+wadaColorGroupById.set('black','black');
+for(const color of Object.values(COLORS)){
+  if(wadaColorGroupById.has(color.id)||isBannedColor(color))continue;
+  const group={neutral:'אפור / שחור',light:'לבן / שמנת','dark-neutral':'בז׳ / חום',
+    'warm-neutral':'בז׳ / חום',blue:'כחול / תכלת',green:'ירוק',soft:'ורוד',
+    purple:'סגול','warm-accent':'צהוב / כתום',red:'אדום מוגבל'}[color.family];
+  wadaColorGroupById.set(color.id,group||color.family);
+}
+const WADA_COLOR_GROUPS=Object.freeze(Object.fromEntries(
+  [...new Set(wadaColorGroupById.values())].map(group=>[group,Object.values(COLORS)
+    .filter(c=>!isBannedColor(c)&&wadaColorGroupById.get(c.id)===group).map(c=>c.id)])));
+
+function wadaGroupTargets(fixed,replaceRole){
+  // Let the last few rare shades finish the existing coverage cycle. Otherwise
+  // a color group could repeatedly occupy their only compatible slot.
+  if(!replaceRole){
+    const covered=new Set(wadaCoverageCycle().seen);
+    const pending=Object.values(COLORS).filter(c=>!isBannedColor(c)&&!covered.has(c.id));
+    if(pending.length>0&&pending.length<=4)return [];
+  }
+  const history=recentHomeHistory(36),targets=[];
+  for(const role of WADA_ROLES){
+    if(fixed[role]||(replaceRole&&replaceRole!==role))continue;
+    const eligible=Object.entries(WADA_COLOR_GROUPS).map(([group,ids])=>
+      [group,ids.filter(id=>canUseColorForRole(COLORS[id],role))]).filter(([,ids])=>ids.length);
+    for(const [group,ids] of eligible){
+      const last=history.findIndex(look=>wadaColorGroupById.get(look[role])===group);
+      const count=history.filter(look=>wadaColorGroupById.get(look[role])===group).length;
+      targets.push({role,index:WADA_ROLES.indexOf(role),group,ids:new Set(ids),
+        count,pressure:count*eligible.length,age:last<0?history.length+1:last});
+    }
+  }
+  // A blue seen in five different shades still counts as five blue items.
+  // Every group gets the same count/age rule, with random ties.
+  // Roles with fewer allowed groups (no red clothes) have a different fair
+  // share. Normalize counts so those roles are not starved by accessories.
+  return shuffleArray(targets).sort((a,b)=>a.pressure-b.pressure||b.age-a.age);
+}
+
+function wadaGroupFocus(refs,colors,targets,sources,replaceRole){
+  for(const target of targets){
+    const i=target.index;
+    if(colors[i])continue;
+    const options=sources[refs[i]].options[target.role].filter(o=>target.ids.has(o.color.id)
+      &&!colors.some(c=>c?.id===o.color.id)
+      &&(!isRedColor(o.color)||!colors.some(c=>c&&isRedColor(c)))
+      &&wadaCanPlaceColor(colors,i,o.color)
+      &&(replaceRole||i>1||!state.currentLook
+        ||wadaDistance(wadaLab(o.color.hex),wadaLab(state.currentLook.mapping[target.role].color.hex))>=LOOK_VARIETY.mainChange)
+      &&(replaceRole!==target.role||o.color.id!==state.currentLook?.mapping[target.role].color.id));
+    if(options.length)return {index:i,color:weightedPick(options.map(o=>({color:o.color,
+      weight:Math.max(1,12+shadeCoverageWeight(o.color,target.role)*.6)})))};
+  }
+  return null;
+}
+
+function prioritizeColorGroups(candidates,targets){
+  for(const target of targets){
+    const matching=candidates.filter(c=>target.ids.has(c.colors[target.index].id));
+    if(matching.length){
+      // Balance the other free garments too; targeting one rare group must not
+      // leave the remaining three slots dominated by the largest shade banks.
+      const pressure=c=>targets.reduce((sum,t)=>sum+(t.ids.has(c.colors[t.index].id)?t.pressure:0),0);
+      const ranked=matching.map(candidate=>({candidate,pressure:pressure(candidate)}));
+      const best=Math.min(...ranked.map(c=>c.pressure));
+      return ranked.filter(c=>c.pressure<=best+9).map(c=>c.candidate);
+    }
+  }
+  return candidates;
+}
+
 function wadaCoverageFocus(refs,colors,targets,sources){
   for(const color of targets){
     if(colors.some(c=>c?.id===color.id)||(isRedColor(color)&&colors.some(c=>c&&isRedColor(c))))continue;
