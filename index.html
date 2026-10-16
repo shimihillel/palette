@@ -10,13 +10,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
   <title>Shimi Looks — Art Studio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=312" />
-  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=312" />
-  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=312" />
+  <link rel="manifest" href="manifest.webmanifest?v=313" />
+  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=313" />
+  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=313" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=312" />
+  <link rel="stylesheet" href="style.css?v=313" />
 </head>
 <body>
   <div class="app-shell">
@@ -38,7 +38,7 @@
             <div id="feedbackReasons" class="feedback-reasons" role="group" aria-label="סיבה לדירוג, לבחירה בלבד" hidden><span>מה פחות עבד? לא חובה</span><div><button type="button" data-feedback-reason="light" aria-pressed="false">בהיר מדי</button><button type="button" data-feedback-reason="bright" aria-pressed="false">זרחני מדי</button><button type="button" data-feedback-reason="boring" aria-pressed="false">משעמם</button><button type="button" data-feedback-reason="clash" aria-pressed="false">הצבעים לא עובדים יחד</button></div></div>
           </section>
           <div class="studio-actions"><button class="primary-btn" id="nextLookBtn" type="button">הלוק הבא</button><button class="previous-btn" id="previousLookBtn" type="button" disabled aria-label="חזרה ללוק הקודם"><span data-icon="previous"></span><span>חזרה</span></button></div>
-          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.1.2 · הטעם שלך</small></div></details>
+          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.1.3 · הטעם שלך</small></div></details>
         </section>
       </section>
       <section class="screen" id="anchorScreen">
@@ -108,7 +108,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '3.1.2-wine-bordeaux-allowed';
+const APP_VERSION = '3.1.3-warm-exceptions-allowed';
 
 const COLORS = {
   // Whites / creams
@@ -552,9 +552,9 @@ const FULL_COLOR_EXPANSION = {
 Object.assign(COLORS, EXTRA_COLORS, FULL_COLOR_EXPANSION);
 // Explicit exclusions always take precedence over examples and learned ratings.
 const TURQUOISE_COLOR_IDS = ['teal','turquoise','mint'];
-// Mustard is explicitly allowed in every role, despite the general yellow ban.
+// Mustard, ochre, straw and honey are explicitly allowed in every role.
 const YELLOW_COLOR_IDS = ['banana','lemon','primrose','daffodil','marigold','sunflower',
-  'butter','buttermilk','vanilla','straw','ochre','gold','amber','saffron','honey'];
+  'butter','buttermilk','vanilla','gold','amber','saffron'];
 const BANNED_COLOR_IDS = [...TURQUOISE_COLOR_IDS, ...YELLOW_COLOR_IDS];
 const SHOE_SAFE_IDS = Object.keys(COLORS).filter(id => !BANNED_COLOR_IDS.includes(id));
 const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־6 לוקים
@@ -3629,8 +3629,8 @@ function wadaSelect({fixed={},replaceRole=null}={}){
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><span>כל הלוק, גם בתמונה לשמירה.</span><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
-<script src="studio.js?v=312"></script>
-<script src="preferences.js?v=312"></script>
-<script src="suggestions.js?v=312"></script>
+<script src="studio.js?v=313"></script>
+<script src="preferences.js?v=313"></script>
+<script src="suggestions.js?v=313"></script>
 </body>
 </html>
