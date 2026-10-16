@@ -131,7 +131,6 @@ function personalFeatures(colors){
 function personalColorWeight(color,role){
   if(!canUseColorForRole(color,role))return 0;
   const lab=wadaLab(color.hex),chroma=wadaChroma(lab);
-  if(role==='top'&&personalWhite(color))return 0;
   if(role==='bottom'&&personalWhite(color))return .07;
   if(role==='shoes'||role==='accessory')return lab[0]>.82&&chroma>.15?.6:1;
   // Favor depth without banning a lime trouser or a soft blue shirt.

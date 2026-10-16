@@ -10,13 +10,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
   <title>Shimi Looks — Art Studio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=313" />
-  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=313" />
-  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=313" />
+  <link rel="manifest" href="manifest.webmanifest?v=320" />
+  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=320" />
+  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=320" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=313" />
+  <link rel="stylesheet" href="style.css?v=320" />
 </head>
 <body>
   <div class="app-shell">
@@ -38,7 +38,7 @@
             <div id="feedbackReasons" class="feedback-reasons" role="group" aria-label="סיבה לדירוג, לבחירה בלבד" hidden><span>מה פחות עבד? לא חובה</span><div><button type="button" data-feedback-reason="light" aria-pressed="false">בהיר מדי</button><button type="button" data-feedback-reason="bright" aria-pressed="false">זרחני מדי</button><button type="button" data-feedback-reason="boring" aria-pressed="false">משעמם</button><button type="button" data-feedback-reason="clash" aria-pressed="false">הצבעים לא עובדים יחד</button></div></div>
           </section>
           <div class="studio-actions"><button class="primary-btn" id="nextLookBtn" type="button">הלוק הבא</button><button class="previous-btn" id="previousLookBtn" type="button" disabled aria-label="חזרה ללוק הקודם"><span data-icon="previous"></span><span>חזרה</span></button></div>
-          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.1.3 · הטעם שלך</small></div></details>
+          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.2.0 · הגוונים שלך</small></div></details>
         </section>
       </section>
       <section class="screen" id="anchorScreen">
@@ -108,7 +108,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '3.1.3-warm-exceptions-allowed';
+const APP_VERSION = '3.2.0-selected-palette';
 
 const COLORS = {
   // Whites / creams
@@ -550,16 +550,18 @@ const FULL_COLOR_EXPANSION = {
 };
 
 Object.assign(COLORS, EXTRA_COLORS, FULL_COLOR_EXPANSION);
-// Explicit exclusions always take precedence over examples and learned ratings.
-const TURQUOISE_COLOR_IDS = ['teal','turquoise','mint'];
-// Mustard, ochre, straw and honey are explicitly allowed in every role.
-const YELLOW_COLOR_IDS = ['banana','lemon','primrose','daffodil','marigold','sunflower',
-  'butter','buttermilk','vanilla','gold','amber','saffron'];
-const BANNED_COLOR_IDS = [...TURQUOISE_COLOR_IDS, ...YELLOW_COLOR_IDS];
+// Approved shade selection (2026-10-16) replaces all earlier color bans.
+// Retain the complete color dictionary only to preserve existing rating records.
+const SELECTED_COLOR_IDS = new Set(["terracotta","rust","copper","pumpkin","terracotta2","paprika","butterscotch","paprika2","ginger","cider","clayorange","ballet","blush","rose","rosepink","dustypink","dustyrose","pinksand","salmon","nudepink","nudeblush","peony","flamingo","watermelon","rosebud","cerisepink","raspberrypink","mauvepink","mauve","antiquepink","barbie","rosewood","fuchsia","magenta","tomato","cherry","lipstick","scarlet","wine","ruby","vermilion","currant","pomegranate","merlot","oxblood","sangria","cranberry","brick","garnet","garnet2","poppy","raspberryred","bordeaux","lavgray","heather","lilac","wisteria","orchid","amethyst","violet","violet2","iris","pansy","plum","royalplum","mulberry","boysenberry","aubergine","eggplant","fig","mauvedust","thistle","blackcurrant","plumdeep","straw","mustard","ochre","amber","saffron","honey","pistachio","pear","pearleaf","apple","meadow","clover","kelly","shamrock","fernlight","fern","leaf","sage","eucalyptus","matcha","avocado","artichoke","cactus","laurel","olivebright","olive","oliveleaf","army","moss","ivy","loden","jungle","hunter","forest","bottle","pine","spruce","crocodile","emerald","parsley","basil","powderblue","sky","cloudblue","cornflower","capri","cerulean","cerulean2","azure","frenchblue","denimlight","denim","denimmid","harbor","steelblue","cadet","slateblue","royal","royalblue","cobalt","cobalt2","ultramarine","ultramarine2","lapis","sapphire","sapphire2","indigo","indigo2","marine","atlantic","ink","midnight","nightblue","stormblue","prussian","mazarine","navy","denimdark","beige","khaki","camel","tan","caramel","cognac","tobacco","chestnut","cocoa","chocolate","espresso","bark","biscuit","almond","latte","toffee","mocha","hazelnut","walnut","umber","dune","flax","sesame","fawn","truffle","coffee","sepia","clay","driftwood","sable","espresso2","fog","silver","dove","stone","pewter","graphite","charcoal","black","ash","smoke","cement","pebble","putty","mushroom","slate","pepper","raven","licorice","taupe","greige","opticwhite","white","milk","snow","porcelain","shell","lace","frost","moon","pearl","ivory","cream","champagne","linen","oat","sand","alabaster","bone","ecru","parchment","gesso"]);
+const BANNED_COLOR_IDS = Object.keys(COLORS).filter(id => !SELECTED_COLOR_IDS.has(id));
+const BLOCKED_ROLE_COLOR_IDS = Object.freeze({
+  top: new Set(["tomato","cherry","lipstick","cranberry","poppy","opticwhite","white","milk","snow","porcelain","shell","lace","frost","moon","pearl","cream","linen","alabaster","bone","parchment","gesso","scarlet","ruby"]),
+  bottom: new Set(["tomato","cherry","lipstick","cranberry","poppy","scarlet","ruby"])
+});
 const SHOE_SAFE_IDS = Object.keys(COLORS).filter(id => !BANNED_COLOR_IDS.includes(id));
 const SHOE_RED_MAX_RECENT = 1; // נעליים אדומות: בערך פעם ב־6 לוקים
 function isBannedColor(color){
-  return !!color && BANNED_COLOR_IDS.includes(color.id);
+  return !!color && !SELECTED_COLOR_IDS.has(color.id);
 }
 function isTurquoiseLike(color){
   return isBannedColor(color);
@@ -668,9 +670,8 @@ function fixBlackPresence(mapping, colors){
 }
 function canUseColorForRole(color, role){
   if(!color || isBannedColor(color)) return false;
-  if((role === 'top' || role === 'outerwear') && personalWhite(color)) return false;
-  if((role === 'top' || role === 'bottom' || role === 'outerwear') && isRedColor(color)) return false;
-  return true;
+  const garmentRole = role === 'outerwear' ? 'top' : role;
+  return !BLOCKED_ROLE_COLOR_IDS[garmentRole]?.has(color.id);
 }
 function safeColorsForRole(colors, role){
   const safe = (colors || []).filter(c => canUseColorForRole(c, role));
@@ -680,8 +681,9 @@ function fixNoRedTopBottom(mapping, colors){
   if(!mapping || !colors) return mapping;
   ['top','bottom'].forEach(role => {
     const current = mapping[role]?.color;
-    if(!isRedColor(current)) return;
-    const swapRole = ['shoes','accessory'].find(r => mapping[r] && !isRedColor(mapping[r].color));
+    if(canUseColorForRole(current,role)) return;
+    const swapRole = ['shoes','accessory'].find(r => mapping[r]
+      && canUseColorForRole(mapping[r].color,role) && canUseColorForRole(current,r));
     if(swapRole){
       const tmp = mapping[swapRole].color;
       mapping[swapRole].color = current;
@@ -764,7 +766,7 @@ const COLOR_FAMILIES = {
   'אדום מוגבל':['tomato','cherry','lipstick','scarlet','wine','ruby','vermilion','currant','pomegranate','merlot','oxblood','sangria','cranberry','brick','garnet','garnet2','poppy','raspberryred']
 };
 
-const SPECTRUM_COUNT = Object.keys(COLORS).length;
+const SPECTRUM_COUNT = SELECTED_COLOR_IDS.size;
 
 Object.assign(GROUPS, {
   light:[...COLOR_FAMILIES['לבן / שמנת']],
@@ -1047,11 +1049,12 @@ function lookHasBannedColor(look){
     look.mapping?.accessory?.color,
     look.mapping?.outerwear?.color
   ].filter(Boolean);
-  if(colors.some(isBannedColor)) return true;
+  if(colors.some(isBannedColor) || (look.ids || []).some(id => !SELECTED_COLOR_IDS.has(id))) return true;
   const roles = ['top','bottom','shoes','accessory','outerwear'];
   return roles.some((role,index) => {
     const mapped = look.mapping?.[role]?.color;
     const ordered = look.colors?.[index];
+    if(look[role] && !canUseColorForRole(COLORS[look[role]],role)) return true;
     return [mapped,ordered].filter(Boolean).some(color => !canUseColorForRole(color,role));
   });
 }
@@ -1305,7 +1308,8 @@ function renderFamilyChoices(){
 }
 
 function renderColorChoices(){
-  const ids = COLOR_FAMILIES[state.anchorFamily] || COLOR_FAMILIES['בז׳ / חום'];
+  const ids = (COLOR_FAMILIES[state.anchorFamily] || COLOR_FAMILIES['בז׳ / חום'])
+    .filter(id => canUseColorForRole(COLORS[id], state.anchorPiece));
   $('colorChoices').innerHTML = ids.map(id => {
     const c = COLORS[id];
     return `<button class="color-btn clean-color-btn ${state.anchorColorId === id ? 'selected' : ''}" data-color="${id}" type="button">
@@ -3214,7 +3218,7 @@ function setSeasonMode(mode){
 }
 
 function outerwearUsageWeight(color){
-  if(!color || isBannedColor(color) || isRedColor(color)) return 0.05;
+  if(!canUseColorForRole(color,'outerwear')) return 0;
   const usage = state.colorUsage?.[color.id] || {count:0,lastSeq:0,roles:{}};
   const gap = Math.max(0, (state.suggestionSeq || 0) - (usage.lastSeq || 0));
   let weight = 12 + Math.min(24, gap * 1.8) - Math.min(10, (usage.count || 0) * 0.45);
@@ -3228,7 +3232,7 @@ function outerwearUsageWeight(color){
 
 function pickOuterwearColor(look){
   const existing = new Set(Object.values(look.mapping || {}).map(item => item?.color?.id).filter(Boolean));
-  let pool = Object.values(COLORS).filter(c => c && !isBannedColor(c) && !isRedColor(c) && c.id !== 'transparent');
+  let pool = Object.values(COLORS).filter(c => canUseColorForRole(c,'outerwear'));
   const uniquePool = pool.filter(c => !existing.has(c.id));
   if(uniquePool.length) pool = uniquePool;
   return weightedPick(pool.map(color => ({color,weight:outerwearUsageWeight(color)})));
@@ -3243,7 +3247,7 @@ function applySeasonToLook(look){
     return next;
   }
   const lockedOuterwear = state.lockedRoles?.outerwear && state.currentLook?.mapping?.outerwear?.color;
-  const color = lockedOuterwear && !isRedColor(lockedOuterwear) && !isBannedColor(lockedOuterwear)
+  const color = canUseColorForRole(lockedOuterwear,'outerwear')
     ? lockedOuterwear
     : pickOuterwearColor(next);
   next.mapping.outerwear = {color, text:roleText('outerwear', color)};
@@ -3629,8 +3633,8 @@ function wadaSelect({fixed={},replaceRole=null}={}){
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><span>כל הלוק, גם בתמונה לשמירה.</span><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
-<script src="studio.js?v=313"></script>
-<script src="preferences.js?v=313"></script>
-<script src="suggestions.js?v=313"></script>
+<script src="studio.js?v=320"></script>
+<script src="preferences.js?v=320"></script>
+<script src="suggestions.js?v=320"></script>
 </body>
 </html>
