@@ -6,11 +6,11 @@
 const PERSONAL_STYLE = Object.freeze({
   maxRatings: 600,
   pairs: [
-    ['wine','olive'], ['chocolate','lime'], ['teal','denimlight'],
+    ['chocolate','lime'],
     ['lilac','denim'], ['magenta','slate'], ['chocolate','denim'],
-    ['navy','mustard'], ['sage','camel'], ['black','army'],
-    ['cornflower','indigo'], ['mustard','slate'], ['powderblue','rust'],
-    ['espresso','sage'], ['cognac','black'], ['wine','camel'],
+    ['sage','camel'], ['black','army'],
+    ['cornflower','indigo'], ['powderblue','rust'],
+    ['espresso','sage'], ['cognac','black'],
     ['denim','caramel'], ['fuchsia','olive']
   ]
 });
@@ -129,6 +129,7 @@ function personalFeatures(colors){
 }
 
 function personalColorWeight(color,role){
+  if(!canUseColorForRole(color,role))return 0;
   const lab=wadaLab(color.hex),chroma=wadaChroma(lab);
   if(role==='top'&&personalWhite(color))return 0;
   if(role==='bottom'&&personalWhite(color))return .07;
@@ -151,7 +152,8 @@ function personalPriorScore(colors){
   // Unusual color relationships earn credit independently of brightness.
   score+=f.twist*9;
   if(!personalPairCache)personalPairCache=PERSONAL_STYLE.pairs
-    .filter(ids=>ids.every(id=>COLORS[id])).map(ids=>ids.map(id=>wadaLab(COLORS[id].hex)));
+    .filter(ids=>ids.every((id,i)=>canUseColorForRole(COLORS[id],WADA_ROLES[i])))
+    .map(ids=>ids.map(id=>wadaLab(COLORS[id].hex)));
   const pairMatch=Math.max(0,...personalPairCache.map(pair=>
     Math.exp(-(wadaDistance(f.labs[0],pair[0])**2+wadaDistance(f.labs[1],pair[1])**2)/(.14**2*2))));
   score+=pairMatch*20;
@@ -162,7 +164,9 @@ function personalRatingModel(){
   const ratings=state.styleFeedback?.ratings||[];
   if(personalRatingCache!==ratings){
     personalRatingCache=ratings;
-    personalModelCache=ratings.map(row=>({...row,labs:row.ids.map(id=>wadaLab(COLORS[id].hex))}));
+    // Keep older votes in storage, but excluded outfits cannot train suggestions.
+    personalModelCache=ratings.filter(row=>row.ids.every((id,i)=>canUseColorForRole(COLORS[id],WADA_ROLES[i])))
+      .map(row=>({...row,labs:row.ids.map(id=>wadaLab(COLORS[id].hex))}));
   }
   return personalModelCache;
 }
