@@ -106,17 +106,14 @@ async function paintCharacter(canvas,mapping){
 
 function renderLookVisual(container,mapping,options={}){
   if(!container||!mapping)return;
-  const showControls=options.controls!==false&&container.id==='lookVisual';
   if(!container.querySelector('[data-character-canvas]')){
-    container.innerHTML=`<div class="character-frame" aria-busy="true"><div class="character-art"><canvas class="character-canvas" data-character-canvas role="img"></canvas><button class="art-inspect" type="button" data-inspect-art aria-label="הגדלת איור הלוק"><span>${studioIcon('zoom')}</span></button><span class="stage-caption" lang="en">The art of getting dressed.</span><div class="art-status" role="status">מכינה את האיור שלך…</div></div></div><div class="character-role-grid" aria-label="צבעי הלוק">${STUDIO_ROLES.map(role=>`<article class="character-role" data-role-row="${role}"><button class="role-inspect" data-inspect-role="${role}" type="button"><span class="character-role-dot"></span><span><span class="character-role-label">${STUDIO_LABELS[role]}</span><span class="character-role-name"></span><span class="role-lock-note">נעול בלוק הבא</span></span></button>${showControls?`<div class="character-role-controls"><button class="mini-item-btn" data-replace-role="${role}" type="button">${studioIcon('replace')}<span>החלפה</span></button><button class="mini-item-btn lock" data-lock-role="${role}" type="button"></button></div>`:''}</article>`).join('')}</div>`;
+    container.innerHTML=`<div class="character-frame" aria-busy="true"><div class="character-art"><canvas class="character-canvas" data-character-canvas role="img"></canvas><button class="art-inspect" type="button" data-inspect-art aria-label="הגדלת איור הלוק"><span>${studioIcon('zoom')}</span></button><span class="stage-caption" lang="en">The art of getting dressed.</span><div class="art-status" role="status">מכינה את האיור שלך…</div></div></div><div class="character-role-grid" aria-label="צבעי הלוק">${STUDIO_ROLES.map(role=>`<article class="character-role" data-role-row="${role}"><button class="role-inspect" data-inspect-role="${role}" type="button"><span class="character-role-dot"></span><span><span class="character-role-label">${STUDIO_LABELS[role]}</span><span class="character-role-name"></span></span></button></article>`).join('')}</div>`;
   }
   for(const role of STUDIO_ROLES){
-    const row=container.querySelector(`[data-role-row="${role}"]`),color=mapping[role].color,locked=!!state.lockedRoles[role]||options.lockedRole===role;
-    row.classList.toggle('locked',locked);row.querySelector('.character-role-dot').style.background=color.hex;row.querySelector('.character-role-name').textContent=color.he;
+    const row=container.querySelector(`[data-role-row="${role}"]`),color=mapping[role].color;
+    row.querySelector('.character-role-dot').style.background=color.hex;
+    row.querySelector('.character-role-name').textContent=color.he;
     row.querySelector('.role-inspect').setAttribute('aria-label',`הגדלת ${STUDIO_LABELS[role]} בגוון ${color.he}`);
-    const lock=row.querySelector('[data-lock-role]'),replace=row.querySelector('[data-replace-role]');
-    if(lock){lock.classList.toggle('active',locked);lock.setAttribute('aria-pressed',String(locked));lock.setAttribute('aria-label',`${locked?'שחרור':'נעילת'} ${STUDIO_LABELS[role]}`);lock.innerHTML=studioIcon(locked?'lock':'unlock');}
-    if(replace){replace.disabled=locked;replace.setAttribute('aria-label',`החלפת צבע ${STUDIO_LABELS[role]}`);}
   }
   const canvas=container.querySelector('[data-character-canvas]'),signature=STUDIO_ROLES.map(r=>mapping[r].color.id).join('|');
   if(canvas.dataset.signature!==signature)paintCharacter(canvas,mapping);
@@ -128,16 +125,18 @@ function rememberStudioPreview(){
   if(studioUndo.length>12)studioUndo.shift();
 }
 function updateStudioActions(){
-  const next=$('nextLookBtn'),previous=$('previousLookBtn'),n=STUDIO_ROLES.filter(r=>state.lockedRoles[r]).length;
-  if(next){next.disabled=n===4||next.dataset.busy==='1';next.setAttribute('aria-busy',String(next.dataset.busy==='1'));next.innerHTML=next.dataset.busy==='1'?'בוחרת שילוב…':`<span>${n===4?'כל הפריטים נעולים':'הלוק הבא'}</span>${n&&n<4?`<span class="lock-summary">${n} ${n===1?'פריט נעול':'פריטים נעולים'}</span>`:''}${studioIcon('next')}`;}
-  if(previous)previous.disabled=!studioUndo.length||next?.dataset.busy==='1';
+  const next=$('nextLookBtn'),previous=$('previousLookBtn'),busy=next?.dataset.busy==='1';
+  if(next){next.disabled=busy;next.setAttribute('aria-busy',String(busy));next.innerHTML=busy?'בוחרת שילוב…':`<span>הלוק הבא</span>${studioIcon('next')}`;}
+  if(previous)previous.disabled=!studioUndo.length||busy;
   if($('sourceTag'))$('sourceTag').textContent=state.currentLook?.wada?`Wada · ${String(state.currentLook.wada.plate).padStart(3,'0')}`:'';
+  renderStyleFeedback();
 }
+
 function bindStudio(){
   document.querySelectorAll('[data-icon]').forEach(n=>n.innerHTML=studioIcon(n.dataset.icon));
   on('previousLookBtn','click',()=>{
     const snapshot=studioUndo.pop();if(!snapshot)return;
-    state.currentLook=snapshot.look;state.lockedRoles=snapshot.locks;saveState();renderToday();animateLookChange();toast('חזרת ללוק הקודם');
+    state.currentLook=snapshot.look;state.lockedRoles={};saveState();renderToday();animateLookChange();toast('חזרת ללוק הקודם');
   });
   on('downloadLookBtn','click',downloadStudioLook);
   on('detailDownloadBtn','click',downloadStudioLook);

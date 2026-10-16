@@ -1,7 +1,7 @@
 'use strict';
 
 // Wada still supplies every complete palette. These rules rank only candidates
-// that have already passed its original color, role and harmony constraints.
+// that have already passed the current role rules and original harmony limits.
 const LOOK_VARIETY = Object.freeze({
   mainChange: .14,
   constrainedChange: .10,
@@ -10,7 +10,7 @@ const LOOK_VARIETY = Object.freeze({
 });
 
 // Composition is separate from change between consecutive looks. Light/dark
-// versions of one hue must not pass as a new color inside the same outfit.
+// versions of one hue count together when measuring the outfit's diversity.
 const LOOK_COMPOSITION = Object.freeze({
   nearDistance: .11,
   neutralDistance: .23,
@@ -58,9 +58,12 @@ function wadaComposition(colors){
       &&!wadaSameTone(labs[i],labs[j]))colorfulPair=true;
   }
   const mainColor=Math.max(chroma[0],chroma[1]);
-  const valid=!matchingShoes&&!tonalMain&&colorfulPair&&mainColor>=LOOK_COMPOSITION.mainChroma;
+  // Personal style allows tonal denim and a repeated shoe hue. Interest can
+  // come from depth and an accessory rather than two saturated garments.
+  const valid=wadaDistance(labs[0],labs[1])>=.085&&distinctColors>=2
+    &&Math.max(...chroma)>=.045;
   // Saturation rewards stop early: deep, muted and pastel colors still belong.
-  const score=Math.min(1,mainColor/.14)*8+Math.min(3,distinctColors)*3;
+  const score=Math.min(3,distinctColors)*2;
   return {valid,matchingShoes,tonalMain,colorfulPair,mainColor,distinctColors,score};
 }
 
@@ -86,33 +89,13 @@ function wadaLockedStyleMessage(fixed){
 }
 
 function wadaCanPlaceColor(colors,index,color){
-  const lab=wadaLab(color.hex);
-  for(const [a,b] of [[0,1],[0,2]]){
-    if(index!==a&&index!==b)continue;
-    const other=colors[index===a?b:a];if(!other)continue;
-    const otherLab=wadaLab(other.hex);
-    if(wadaSameTone(lab,otherLab)||(b===1&&wadaDistance(lab,otherLab)<LOOK_COMPOSITION.mainDistance))return false;
-  }
-  return true;
+  if(index>1)return true;
+  const other=colors[1-index];
+  return !other||wadaDistance(wadaLab(color.hex),wadaLab(other.hex))>=.085;
 }
 
 function wadaCoverageTargets(fixed,replaceRole){
-  if(replaceRole)return [];
-  const seq=state.suggestionSeq||0,current=state.currentLook;
-  const covered=new Set(wadaCoverageCycle().seen);
-  const recentIds=new Set(recentHomeHistory(6).flatMap(h=>h.ids||[]));
-  const ranked=Object.values(COLORS).filter(color=>!isBannedColor(color)&&!recentIds.has(color.id)
-    &&WADA_ROLES.some(role=>!fixed[role]&&canUseColorForRole(color,role)
-      &&(!current||!['top','bottom'].includes(role)||wadaDistance(wadaLab(color.hex),wadaLab(current.mapping[role].color.hex))>=LOOK_VARIETY.mainChange)))
-    .map(color=>{
-      const use=state.colorUsage?.[color.id];
-      // Unseen colors lead. Afterwards, age keeps every shade returning, while
-      // count breaks near-ties in favor of colors that had fewer opportunities.
-      const priority=(covered.has(color.id)?0:2000)+(use?Math.min(800,seq-(use.lastSeq||0))-Math.min(40,(use.count||0)*2):1000);
-      return {color,priority:priority+Math.random()*12};
-    }).sort((a,b)=>b.priority-a.priority);
-  const pending=ranked.filter(x=>!covered.has(x.color.id));
-  return (pending.length?pending:ranked).slice(0,12).map(x=>x.color);
+  return []; // v3: personal taste replaces forced color coverage.
 }
 
 // Balance recognizable colors in every role, independently of how many
@@ -132,30 +115,7 @@ const WADA_COLOR_GROUPS=Object.freeze(Object.fromEntries(
     .filter(c=>!isBannedColor(c)&&wadaColorGroupById.get(c.id)===group).map(c=>c.id)])));
 
 function wadaGroupTargets(fixed,replaceRole){
-  // Let the last few rare shades finish the existing coverage cycle. Otherwise
-  // a color group could repeatedly occupy their only compatible slot.
-  if(!replaceRole){
-    const covered=new Set(wadaCoverageCycle().seen);
-    const pending=Object.values(COLORS).filter(c=>!isBannedColor(c)&&!covered.has(c.id));
-    if(pending.length>0&&pending.length<=4)return [];
-  }
-  const history=recentHomeHistory(36),targets=[];
-  for(const role of WADA_ROLES){
-    if(fixed[role]||(replaceRole&&replaceRole!==role))continue;
-    const eligible=Object.entries(WADA_COLOR_GROUPS).map(([group,ids])=>
-      [group,ids.filter(id=>canUseColorForRole(COLORS[id],role))]).filter(([,ids])=>ids.length);
-    for(const [group,ids] of eligible){
-      const last=history.findIndex(look=>wadaColorGroupById.get(look[role])===group);
-      const count=history.filter(look=>wadaColorGroupById.get(look[role])===group).length;
-      targets.push({role,index:WADA_ROLES.indexOf(role),group,ids:new Set(ids),
-        count,pressure:count*eligible.length,age:last<0?history.length+1:last});
-    }
-  }
-  // A blue seen in five different shades still counts as five blue items.
-  // Every group gets the same count/age rule, with random ties.
-  // Roles with fewer allowed groups (no red clothes) have a different fair
-  // share. Normalize counts so those roles are not starved by accessories.
-  return shuffleArray(targets).sort((a,b)=>a.pressure-b.pressure||b.age-a.age);
+  return []; // v3: personal taste replaces forced color coverage.
 }
 
 function wadaGroupFocus(refs,colors,targets,sources,replaceRole){
@@ -234,8 +194,8 @@ function rememberShadeCoverage(look){
 
 function updateShadeCoverageControl(){
   const label=el('shadeCoverageStatus');if(!label)return;
-  const cycle=wadaCoverageCycle(),total=Object.values(COLORS).filter(c=>!isBannedColor(c)).length;
-  label.textContent=`סבב צבעים ${cycle.round+1}: ${cycle.seen.length} מתוך ${total} גוונים הוצגו. גוונים שטרם הופיעו מקבלים קדימות; נעילות עשויות לצמצם את האפשרויות.`;
+  const count=state.styleFeedback?.ratings.length||0;
+  label.textContent=`${count?`${count} לוקים דורגו. `:''}ההעדפות נשמרות בדפדפן הזה. הצעות חדשות משלבות את הטעם שלך עם מקום להפתעות.`;
 }
 
 function wadaVarietyContext(fixed,replaceRole){
