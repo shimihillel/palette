@@ -8,8 +8,8 @@ const PERSONAL_STYLE = Object.freeze({
   pairs: [
     ['chocolate','lime'],
     ['lilac','denim'], ['magenta','slate'], ['chocolate','denim'],
-    ['sage','camel'], ['black','army'],
-    ['cornflower','indigo'], ['powderblue','rust'],
+    ['navy','mustard'], ['sage','camel'], ['black','army'],
+    ['cornflower','indigo'], ['mustard','slate'], ['powderblue','rust'],
     ['espresso','sage'], ['cognac','black'],
     ['denim','caramel'], ['fuchsia','olive']
   ]
