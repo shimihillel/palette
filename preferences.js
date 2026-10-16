@@ -6,11 +6,11 @@
 const PERSONAL_STYLE = Object.freeze({
   maxRatings: 600,
   pairs: [
-    ['chocolate','lime'],
+    ['wine','olive'], ['chocolate','lime'],
     ['lilac','denim'], ['magenta','slate'], ['chocolate','denim'],
     ['navy','mustard'], ['sage','camel'], ['black','army'],
     ['cornflower','indigo'], ['mustard','slate'], ['powderblue','rust'],
-    ['espresso','sage'], ['cognac','black'],
+    ['espresso','sage'], ['cognac','black'], ['wine','camel'],
     ['denim','caramel'], ['fuchsia','olive']
   ]
 });
