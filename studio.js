@@ -2,6 +2,8 @@
 
 const STUDIO_ROLES = ['top','bottom','shoes','accessory'];
 const STUDIO_LABELS = {top:'עליון',bottom:'תחתון',shoes:'נעליים',accessory:'תיק'};
+function studioRoleLabel(role,mapping){return role==='bottom'&&mapping.bottom.fabric==='denim'?'מכנסי ג׳ינס':STUDIO_LABELS[role];}
+function artSignature(mapping){return (mapping.bottom.fabric==='denim'?'denim|':'')+STUDIO_ROLES.map(r=>mapping[r].color.id).join('|');}
 const CHARACTER_FILES = {base:'assets/shimi-character-art-v190.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-mask-${r}-v190.png`]))};
 const STUDIO_ICONS = {
   zoom:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
@@ -18,6 +20,7 @@ function studioIcon(name){return `<svg viewBox="0 0 24 24" aria-hidden="true">${
 function escapeStudio(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function parseCharacterHex(value){const m=String(value||'').match(/^#([0-9a-f]{6})$/i);if(!m)return [128,128,128];const n=parseInt(m[1],16);return [(n>>16)&255,(n>>8)&255,n&255];}
 let characterAssetPromise=null;
+let denimTexturePromise=null;
 let characterPaintSeq=0;
 let studioDetailSeq=0;
 let studioDetailRole=null;
@@ -65,13 +68,15 @@ function recolorArtPixel(target,lum,mean,role){
 }
 async function renderCharacterBitmap(mapping){
   const assets=await loadCharacterAssets(),{w,h,basePixels,pixels,means}=assets;
+  const denim=mapping.bottom.fabric==='denim'?await loadDenimTexture(assets):null;
   const out=new ImageData(new Uint8ClampedArray(basePixels.data),w,h);
   for(const role of STUDIO_ROLES){
-    const hex=mapping[role]?.color?.hex||'#888888',key=role+hex;let rgb=studioRasterCache.get(key);
-    const {indices,light}=pixels[role];
+    const jeans=role==='bottom'&&denim;
+    const hex=mapping[role]?.color?.hex||'#888888',key=(jeans?'denim':role)+hex;let rgb=studioRasterCache.get(key);
+    const {indices}=pixels[role],light=jeans?denim.light:pixels[role].light;
     if(!rgb){
       const target=parseCharacterHex(hex),table=new Uint8ClampedArray(768);rgb=new Uint8ClampedArray(indices.length*3);
-      for(let l=0;l<256;l++)table.set(recolorArtPixel(target,l,means[role],role),l*3);
+      for(let l=0;l<256;l++)table.set(recolorArtPixel(target,l,jeans?denim.mean:means[role],role),l*3);
       for(let n=0;n<indices.length;n++){const t=light[n]*3,i=n*3;rgb[i]=table[t];rgb[i+1]=table[t+1];rgb[i+2]=table[t+2];}
       // Bound memory on long browsing sessions (roughly 10 MB at most).
       if(studioRasterCache.size>=16)studioRasterCache.delete(studioRasterCache.keys().next().value);
@@ -82,17 +87,31 @@ async function renderCharacterBitmap(mapping){
   return out;
 }
 
+// Only the existing trouser mask receives the alternate fabric. Regular looks never load it.
+function loadDenimTexture({w,h,pixels}){
+  if(!denimTexturePromise)denimTexturePromise=loadCharacterImage('assets/denim-weave-v330.png').then(img=>{
+    if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error('מידות שכבת הג׳ינס אינן תואמות');
+    const work=document.createElement('canvas');work.width=w;work.height=h;
+    const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
+    const raw=ctx.getImageData(0,0,w,h).data,indices=pixels.bottom.indices,light=new Uint8Array(indices.length);
+    let sum=0;for(let i=0;i<light.length;i++){light[i]=raw[indices[i]*4];sum+=light[i];}
+    return {light,mean:sum/light.length};
+  }).catch(err=>{denimTexturePromise=null;throw err;});
+  return denimTexturePromise;
+}
+
 async function paintCharacter(canvas,mapping){
   if(!canvas||!mapping)return;
   const seq=++characterPaintSeq,frame=canvas.closest('.character-frame'),status=frame?.querySelector('.art-status');
+  canvas.dataset.requested=artSignature(mapping);
   if(frame)frame.setAttribute('aria-busy','true');
   try{
     const bitmap=await renderCharacterBitmap(mapping);
     if(seq!==characterPaintSeq||!canvas.isConnected)return;
     // Trim only the unused background so the full figure fills a phone screen.
     canvas.width=628;canvas.height=1620;canvas.getContext('2d').putImageData(bitmap,-170,-10);
-    canvas.dataset.painted='true';canvas.dataset.signature=STUDIO_ROLES.map(r=>mapping[r].color.id).join('|');
-    canvas.setAttribute('aria-label','איור הלוק: '+STUDIO_ROLES.map(r=>`${STUDIO_LABELS[r]} ${mapping[r].color.he}`).join(', '));
+    canvas.dataset.painted='true';canvas.dataset.signature=artSignature(mapping);
+    canvas.setAttribute('aria-label','איור הלוק: '+STUDIO_ROLES.map(r=>`${studioRoleLabel(r,mapping)} ${mapping[r].color.he}`).join(', '));
     if(status)status.hidden=true;
     if(frame)frame.setAttribute('aria-busy','false');
   }catch(err){
@@ -111,12 +130,13 @@ function renderLookVisual(container,mapping,options={}){
   }
   for(const role of STUDIO_ROLES){
     const row=container.querySelector(`[data-role-row="${role}"]`),color=mapping[role].color;
+    row.querySelector('.character-role-label').textContent=studioRoleLabel(role,mapping);
     row.querySelector('.character-role-dot').style.background=color.hex;
     row.querySelector('.character-role-name').textContent=color.he;
-    row.querySelector('.role-inspect').setAttribute('aria-label',`הגדלת ${STUDIO_LABELS[role]} בגוון ${color.he}`);
+    row.querySelector('.role-inspect').setAttribute('aria-label',`הגדלת ${studioRoleLabel(role,mapping)} בגוון ${color.he}`);
   }
-  const canvas=container.querySelector('[data-character-canvas]'),signature=STUDIO_ROLES.map(r=>mapping[r].color.id).join('|');
-  if(canvas.dataset.signature!==signature)paintCharacter(canvas,mapping);
+  const canvas=container.querySelector('[data-character-canvas]');
+  if(canvas.dataset.requested!==artSignature(mapping))paintCharacter(canvas,mapping);
 }
 
 function rememberStudioPreview(){
@@ -125,8 +145,10 @@ function rememberStudioPreview(){
   if(studioUndo.length>12)studioUndo.shift();
 }
 function updateStudioActions(){
-  const next=$('nextLookBtn'),previous=$('previousLookBtn'),busy=next?.dataset.busy==='1';
-  if(next){next.disabled=busy;next.setAttribute('aria-busy',String(busy));next.innerHTML=busy?'בוחרת שילוב…':`<span>הלוק הבא</span>${studioIcon('next')}`;}
+  const next=$('nextLookBtn'),denim=$('denimLookBtn'),previous=$('previousLookBtn'),busy=next?.dataset.busy==='1';
+  const jeansBusy=busy&&next.dataset.request==='denim';
+  if(next){next.disabled=busy;next.setAttribute('aria-busy',String(busy&&!jeansBusy));next.innerHTML=busy&&!jeansBusy?'בוחרת שילוב…':`<span>הלוק הבא</span>${studioIcon('next')}`;}
+  if(denim){denim.disabled=busy;denim.setAttribute('aria-busy',String(jeansBusy));denim.textContent=jeansBusy?'בוחרת ג׳ינס…':'היום בא לי ג׳ינס';}
   if(previous)previous.disabled=!studioUndo.length||busy;
   if($('sourceTag'))$('sourceTag').textContent=state.currentLook?.wada?`Wada · ${String(state.currentLook.wada.plate).padStart(3,'0')}`:'';
   renderStyleFeedback();
@@ -154,7 +176,7 @@ function bindStudio(){
 
 async function openStudioDetail(role=null){
   studioDetailRole=role;const seq=++studioDetailSeq,dialog=$('artDialog'),canvas=$('detailCanvas'),mapping=JSON.parse(JSON.stringify(state.currentLook.mapping));
-  $('detailTitle').textContent=role?`${STUDIO_LABELS[role]} · ${mapping[role].color.he}`:'מבט מקרוב';
+  $('detailTitle').textContent=role?`${studioRoleLabel(role,mapping)} · ${mapping[role].color.he}`:'מבט מקרוב';
   $('detailCaption').textContent=role?'מרקם, קפלים ופרטים קטנים':'איור אופנה בצבעים של הלוק שלך';
   $('detailStatus').textContent='טוענת את האיור…';canvas.hidden=true;if(!dialog.open)dialog.showModal();
   try{
@@ -184,7 +206,7 @@ async function downloadStudioLook(){
     for(let i=0;i<4;i++){
       const role=STUDIO_ROLES[i],c=look.mapping[role].color,x=855-i*210;
       ctx.fillStyle=c.hex;ctx.beginPath();ctx.roundRect(x-74,1710,148,54,9);ctx.fill();
-      ctx.fillStyle='#756356';ctx.font='26px Assistant, sans-serif';ctx.fillText(STUDIO_LABELS[role],x,1801);
+      ctx.fillStyle='#756356';ctx.font='26px Assistant, sans-serif';ctx.fillText(studioRoleLabel(role,look.mapping),x,1801);
       ctx.fillStyle='#34281f';ctx.font='600 27px Assistant, sans-serif';ctx.fillText(c.he,x,1839,196);
     }
     const blob=await new Promise(resolve=>out.toBlob(resolve,'image/png'));if(!blob)throw Error('export');
