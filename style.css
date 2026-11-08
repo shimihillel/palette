@@ -72,7 +72,7 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);border
 .wardrobe-chip:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
 .wardrobe-chip:has(:checked) { border-color: var(--accent); background: var(--accent-soft); }
 .wardrobe-swatch { background: var(--shade); width: 26px; height: 26px; flex: none; border: 1px solid #34281f30; border-radius: 50%; position: relative; }
-.wardrobe-chip input:checked + .wardrobe-swatch::after { content: '✓'; display: grid; place-content: center; position: absolute; bottom: -4px; left: -4px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: white; font: bold 12px/1 system-ui; }
+.wardrobe-chip input:checked + .wardrobe-swatch::after { content: '×'; display: grid; place-content: center; position: absolute; bottom: -4px; left: -4px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); color: white; font: bold 15px/1 system-ui; }
 .wardrobe-footer { display: flex; flex: none; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--line); }
 .wardrobe-footer button { padding: 4px 18px; min-height: 44px; }
 .today-layout:not(.wardrobe-empty) #emptyWardrobe, .wardrobe-empty :is(#lookVisual,.feedback-panel,.why-card,.studio-actions) { display: none; }
