@@ -1,7 +1,8 @@
 'use strict';
 
 const wardrobeRoles = {shoes:'נעליים', top:'חולצות', bottom:'מכנסיים', outerwear:'ג׳קטים', accessory:'תיקים'};
-const lightBlueIds = new Set(['powderblue','sky','cloudblue','denimlight','cornflower','capri']);
+const lightBlueIds = new Set(['powderblue','sky','cloudblue','denimlight','cornflower','capri',
+  'arctic','iceblue','robin','babyblue','skyblue','airyblue','horizon']);
 let wardrobeDraft;
 let wardrobeRole = 'shoes';
 
@@ -20,11 +21,11 @@ function wardrobeFamily(color){
   return family || 'גוונים נוספים';
 }
 
-function wardrobeColorGroups(role,search){
+function wardrobeColorGroups(search){
   const groups = new Map();
   const query = search.trim().toLowerCase();
-  const colors = Object.values(COLORS).filter(color => catalogAllowsRole(color,role));
-  for(const color of colors){
+  for(const id of WARDROBE_COLOR_IDS){
+    const color = COLORS[id];
     const family = wardrobeFamily(color);
     if(![family,color.he,color.en].some(label => label.toLowerCase().includes(query)))continue;
     if(!groups.has(family))groups.set(family,[]);
@@ -42,7 +43,7 @@ function renderWardrobeCount(){
 }
 
 function renderWardrobeGroups(){
-  const groups = wardrobeColorGroups(wardrobeRole,$('wardrobeSearch').value);
+  const groups = wardrobeColorGroups($('wardrobeSearch').value);
   const selected = wardrobeDraft[wardrobeRole];
   const container = $('wardrobeGroups');
   container.innerHTML = groups.map(([family,colors])=>{
@@ -69,8 +70,9 @@ function chooseWardrobeRole(role){
 }
 
 function openWardrobe(){
-  const saved = normalizeWardrobeExclusions(state.wardrobeExclusions);
-  wardrobeDraft = Object.fromEntries(Object.entries(saved).map(([role,ids])=>[role,new Set(ids)]));
+  wardrobeDraft = Object.fromEntries(WARDROBE_ROLES.map(role=>[
+    role,new Set(WARDROBE_COLOR_IDS.filter(id=>!canUseColorForRole(COLORS[id],role)))
+  ]));
   $('wardrobeSearch').value = '';
   chooseWardrobeRole('shoes');
   $('wardrobeDialog').showModal();
@@ -79,8 +81,16 @@ function openWardrobe(){
 }
 
 function saveWardrobe(){
-  const before = state.wardrobeExclusions, previousLook = state.currentLook;
-  state.wardrobeExclusions = Object.fromEntries(Object.entries(wardrobeDraft).map(([role,ids])=>[role,[...ids]]));
+  const before = state.wardrobeExclusions, beforeRestorations = state.wardrobeRestorations;
+  const previousLook = state.currentLook;
+  const exclusions = {}, restorations = {};
+  for(const role of WARDROBE_ROLES){
+    const marked = wardrobeDraft[role];
+    exclusions[role] = [...marked].filter(id=>catalogAllowsRole(COLORS[id],role));
+    restorations[role] = WARDROBE_COLOR_IDS.filter(id=>!marked.has(id) && !catalogAllowsRole(COLORS[id],role));
+  }
+  state.wardrobeExclusions = exclusions;
+  state.wardrobeRestorations = restorations;
   resetWardrobeCaches();
   try{
     if(!previousLook || !WADA_ROLES.every(role => canUseColorForRole(previousLook.mapping[role].color,role))){
@@ -91,6 +101,7 @@ function saveWardrobe(){
     if(!saveState())throw Error('wardrobe storage');
   }catch(error){
     state.wardrobeExclusions = before;
+    state.wardrobeRestorations = beforeRestorations;
     state.currentLook = previousLook;
     resetWardrobeCaches();
     $('wardrobeCount').textContent = 'הבחירה לא נשמרה. נסי שוב.';

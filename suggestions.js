@@ -107,7 +107,7 @@ const wadaColorGroupById=new Map(Object.entries(COLOR_FAMILIES)
   .flatMap(([group,ids])=>ids.map(id=>[id,group])));
 wadaColorGroupById.set('black','black');
 for(const color of Object.values(COLORS)){
-  if(wadaColorGroupById.has(color.id)||isBannedColor(color))continue;
+  if(wadaColorGroupById.has(color.id))continue;
   const group={neutral:'אפור / שחור',light:'לבן / שמנת','dark-neutral':'בז׳ / חום',
     'warm-neutral':'בז׳ / חום',blue:'כחול / תכלת',green:'ירוק',soft:'ורוד',
     purple:'סגול','warm-accent':'צהוב / כתום',red:'אדום מוגבל'}[color.family];
