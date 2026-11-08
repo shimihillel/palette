@@ -17,8 +17,8 @@ function shoeStyle(mapping,view){
   return (hash>>>8)%2 ? 'sneakers' : 'loafers';
 }
 const WINTER_PATCH = {x:210,y:245,w:550,h:600};
-function studioView(){
-  return state.seasonMode==='summer' ? 'summer' : state.showJacket ? 'jacket' : 'sleeves';
+function studioView(mapping=state.currentLook?.mapping){
+  return state.seasonMode==='summer' ? 'summer' : state.showJacket && mapping?.outerwear ? 'jacket' : 'sleeves';
 }
 function visibleRoles(view){return view==='jacket' ? WINTER_ROLES : STUDIO_ROLES;}
 function studioRoleLabel(role,mapping,view=studioView()){
@@ -298,7 +298,7 @@ async function paintCharacter(canvas,mapping,view=studioView()){
 }
 
 function renderLookVisual(container,mapping){
-  const view=studioView();
+  const view=studioView(mapping);
   if(!container||!mapping)return;
   if(!container.querySelector('[data-character-canvas]')){
     container.innerHTML=`<div class="character-frame" aria-busy="true"><div class="character-art"><canvas class="character-canvas" data-character-canvas role="img"></canvas><button class="art-inspect" type="button" data-inspect-art aria-label="הגדלת איור הלוק"><span>${studioIcon('zoom')}</span></button><span class="stage-caption" lang="en">The art of getting dressed.</span><div class="art-status" role="status">מכינה את האיור שלך…</div></div></div><div class="character-role-grid" aria-label="צבעי הלוק">${WINTER_ROLES.map(role=>`<article class="character-role" data-role-row="${role}"><button class="role-inspect" data-inspect-role="${role}" type="button"><span class="character-role-dot"></span><span><span class="character-role-label">${STUDIO_LABELS[role]}</span><span class="character-role-name"></span></span></button></article>`).join('')}</div>`;
@@ -314,7 +314,7 @@ function renderLookVisual(container,mapping){
     row.querySelector('.role-inspect').setAttribute('aria-label',`הגדלת ${studioRoleLabel(role,mapping)} בגוון ${color.he}`);
   }
   const canvas=container.querySelector('[data-character-canvas]');
-  if(canvas.dataset.requested!==artSignature(mapping))paintCharacter(canvas,mapping);
+  if(canvas.dataset.requested!==artSignature(mapping,view))paintCharacter(canvas,mapping,view);
 }
 
 function rememberStudioPreview(){
@@ -326,7 +326,7 @@ function updateStudioActions(){
   const next=$('nextLookBtn'),toggle=$('jacketToggle'),previous=$('previousLookBtn'),busy=next?.dataset.busy==='1';
   if(next){next.disabled=busy;next.setAttribute('aria-busy',String(busy));next.innerHTML=busy?'בוחרת שילוב…':`<span>הלוק הבא</span>${studioIcon('next')}`;}
   if(toggle){
-    toggle.hidden=state.seasonMode==='summer';
+    toggle.hidden=state.seasonMode==='summer' || !state.currentLook?.mapping?.outerwear;
     toggle.disabled=busy;
     toggle.setAttribute('aria-pressed',String(state.showJacket));
     toggle.textContent=state.showJacket?'הסתרת ג׳קט':'הצגת ג׳קט';
@@ -339,6 +339,7 @@ function updateStudioActions(){
 function bindStudio(){
   document.querySelectorAll('[data-icon]').forEach(n=>n.innerHTML=studioIcon(n.dataset.icon));
   on('settingsBtn','click',()=>$('settingsDialog').showModal());
+  bindWardrobe();
   on('closeSettingsBtn','click',()=>$('settingsDialog').close());
   on('jacketToggle','click',()=>{state.showJacket=!state.showJacket;saveState();renderToday();});
   on('previousLookBtn','click',()=>{
