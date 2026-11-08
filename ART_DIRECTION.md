@@ -23,3 +23,5 @@ The runtime uses `assets/long-sleeves-v340.webp` with `assets/long-sleeves-roles
 Each view composites the shoulder strands from its own registered reference using separate hair, shirt and jacket coverage. The source copper pigment and subpixel edges are stored in `assets/shoulder-strands-v350.webp`.
 
 Three built-in ImageGen localized edits of the original cropped feet requested lace-up court sneakers, penny loafers with a stitched apron and keeper strap, and flat Y-strap thong flip-flops with a visible toe post. All three retain the original foot positions, trouser hems and illustration style. `assets/footwear-v350.webp` stores the registered textures and recoloring masks.
+
+The denim jacket in 3.5.1 uses a registered built-in ImageGen edit of the open jacket. The prompt requested medium-blue twill, a shoulder yoke, two flap pockets, buttons and double topstitching within the existing silhouette. The app uses the fabric luminance layer in `assets/denim-jacket-v351.png`, keeping the original coverage for the jacket and each strand of hair.
