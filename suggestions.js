@@ -58,9 +58,8 @@ function wadaComposition(colors){
       &&!wadaSameTone(labs[i],labs[j]))colorfulPair=true;
   }
   const mainColor=Math.max(chroma[0],chroma[1]);
-  // Personal style allows tonal denim and a repeated shoe hue. Interest can
-  // come from depth and an accessory rather than two saturated garments.
-  const valid=wadaDistance(labs[0],labs[1])>=.085&&distinctColors>=2
+  // A tonal shirt/trouser combination can still work, with distinct shoes.
+  const valid=!matchingShoes&&wadaDistance(labs[0],labs[1])>=.085&&distinctColors>=2
     &&Math.max(...chroma)>=.045;
   // Saturation rewards stop early: deep, muted and pastel colors still belong.
   const score=Math.min(3,distinctColors)*2;
@@ -89,6 +88,10 @@ function wadaLockedStyleMessage(fixed){
 }
 
 function wadaCanPlaceColor(colors,index,color){
+  if(index===0||index===2){
+    const partner=colors[index===0?2:0];
+    if(partner && wadaSameTone(wadaLab(color.hex),wadaLab(partner.hex)))return false;
+  }
   if(index>1)return true;
   const other=colors[1-index];
   return !other||wadaDistance(wadaLab(color.hex),wadaLab(other.hex))>=.085;

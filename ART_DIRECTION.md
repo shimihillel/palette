@@ -17,3 +17,9 @@ Composition: one full body figure only, tall portrait around 1024x1792; entire h
 Two built-in ImageGen clothing edits used the original character illustration as their registration reference. The shirt edit requested fitted lilac jersey sleeves covering both arms to the wrists, with a soft cuff and natural elbow folds. The jacket edit requested an unbuttoned, hip-length emerald jacket with narrow notched lapels and a wide opening showing the lilac shirt. Both requested the original framing, hands, pose, bag and strap, hair, face and full-body pencil and gouache treatment. The source pigments separate the clothing for recoloring.
 
 The runtime uses `assets/long-sleeves-v340.webp` with `assets/long-sleeves-roles-v340.png` for the winter shirt, and `assets/open-jacket-v340.png` for the tintable jacket overlay. The shared summer base supplies the rest of the illustration.
+
+## Shoulder strands and shoes, version 3.5
+
+Each view composites the shoulder strands from its own registered reference using separate hair, shirt and jacket coverage. The source copper pigment and subpixel edges are stored in `assets/shoulder-strands-v350.webp`.
+
+Three built-in ImageGen localized edits of the original cropped feet requested lace-up court sneakers, penny loafers with a stitched apron and keeper strap, and flat Y-strap thong flip-flops with a visible toe post. All three retain the original foot positions, trouser hems and illustration style. `assets/footwear-v350.webp` stores the registered textures and recoloring masks.

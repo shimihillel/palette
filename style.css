@@ -41,3 +41,5 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);border
 @media(max-width:600px){.studio-actions .previous-btn{width:48px;padding:0}.studio-actions .previous-btn span:last-child{display:none}.studio-actions .previous-btn span:first-child{display:flex}}
 @media(max-width:350px){.studio-actions{gap:6px}.studio-actions .previous-btn{width:44px}.studio-actions .primary-btn{gap:4px}.jacket-toggle{padding-inline:10px}}
 @media(max-height:740px){.role-inspect{grid-template-columns:18px minmax(0,1fr);gap:5px;text-align:right;justify-items:start}.character-role-dot{width:18px;height:18px}.character-role-grid{padding:0}.character-role-name{margin-top:2px}}
+
+.detail-footer [hidden]{display:none}.detail-footer #detailDownloadBtn{margin-inline-start:auto}

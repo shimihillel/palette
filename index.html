@@ -10,13 +10,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
   <title>Shimi Looks — Art Studio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=340" />
-  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=340" />
-  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=340" />
+  <link rel="manifest" href="manifest.webmanifest?v=350" />
+  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=350" />
+  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=350" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=340" />
+  <link rel="stylesheet" href="style.css?v=350" />
 </head>
 <body>
   <div class="app-shell">
@@ -38,7 +38,7 @@
             <div id="feedbackReasons" class="feedback-reasons" role="group" aria-label="סיבה לדירוג, לבחירה בלבד" hidden><span>מה פחות עבד? לא חובה</span><div><button type="button" data-feedback-reason="light" aria-pressed="false">בהיר מדי</button><button type="button" data-feedback-reason="bright" aria-pressed="false">זרחני מדי</button><button type="button" data-feedback-reason="boring" aria-pressed="false">משעמם</button><button type="button" data-feedback-reason="clash" aria-pressed="false">הצבעים לא עובדים יחד</button></div></div>
           </section>
           <div class="studio-actions"><button class="primary-btn" id="nextLookBtn" type="button">הלוק הבא</button><button class="jacket-toggle" id="jacketToggle" type="button" aria-label="הצגת ג׳קט" aria-pressed="true">הסתרת ג׳קט</button><button class="previous-btn" id="previousLookBtn" type="button" disabled aria-label="חזרה ללוק הקודם" title="חזרה ללוק הקודם"><span data-icon="previous"></span><span>חזרה</span></button></div>
-          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.4.0</small></div></details>
+          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.5.0</small></div></details>
         </section>
       </section>
       <section class="screen" id="anchorScreen">
@@ -101,7 +101,7 @@
     <header class="dialog-head"><h2 id="settingsTitle">הגדרות</h2><button class="tool-btn" type="button" id="closeSettingsBtn" aria-label="סגירת הגדרות" data-icon="close"></button></header>
     <fieldset class="season-options"><legend>עונת הלבוש</legend>
       <label><input type="radio" name="displaySeason" value="winter" data-season="winter"><span><strong>חורף</strong><small>חולצה ארוכה וג׳קט לבחירה</small></span></label>
-      <label><input type="radio" name="displaySeason" value="summer" data-season="summer"><span><strong>קיץ</strong><small>חולצה קצרה</small></span></label>
+      <label><input type="radio" name="displaySeason" value="summer" data-season="summer"><span><strong>קיץ</strong><small>חולצה קצרה וכפכפי אצבע</small></span></label>
     </fieldset>
   </dialog>
   <dialog id="lookDialog"><div class="dialog-inner"><button class="dialog-close" id="closeDialogBtn" type="button">×</button><p class="eyebrow soft" id="dialogDate"></p><h3 id="dialogTitle"></h3><p id="dialogVibe" class="dialog-vibe"></p><div class="palette-row large" id="dialogPalette"></div><div class="mapping-list dialog-map" id="dialogMapping"></div><div class="why-card dialog-why"><h3>למה זה עובד?</h3><p id="dialogWhy"></p></div></div></dialog>
@@ -115,7 +115,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '3.4.0-seasons';
+const APP_VERSION = '3.5.0-footwear';
 
 const COLORS = {
   // Whites / creams
@@ -1078,16 +1078,23 @@ function sanitizeStoredLooks(){
   if(Array.isArray(state.recentHome)) state.recentHome = state.recentHome.filter(look => !lookHasBannedColor(look));
 }
 
+function restoreStudioLook(){
+  const look=state.currentLook;
+  if(look && !wadaSameTone(wadaLab(look.mapping.top.color.hex),wadaLab(look.mapping.shoes.color.hex))){
+    state.currentLook=applySeasonToLook(look);
+    return;
+  }
+  const next=look?.mapping.bottom.fabric==='denim' ? generateDenimLook() : wadaSelect();
+  if(!next)throw Error('לא נמצא לוק מתאים');
+  state.currentLook=applySeasonToLook(next);
+  remember(state.currentLook,'today');
+}
+
 function init(){
   try{
     initializePersonalStyle();
     sanitizeStoredLooks();
-    if(state.currentLook){
-      state.currentLook = applySeasonToLook(state.currentLook);
-    }else{
-      state.currentLook = applySeasonToLook(generateBestLook('super'));
-      remember(state.currentLook, 'today');
-    }
+    restoreStudioLook();
     // Persist both the visible current look and the hidden diversity history.
     saveState();
     bindEvents();
@@ -2851,11 +2858,7 @@ function restoreDataFromFile(event){
       state.editingPrintzId = null;
       mergeCustomColorsIntoPalette();
       sanitizeStoredLooks();
-      if(!state.currentLook){
-        state.currentLook = applySeasonToLook(generateBestLook('super'));
-        remember(state.currentLook, 'today');
-      }
-      state.currentLook = applySeasonToLook(state.currentLook);
+      restoreStudioLook();
       studioUndo = [];
       renderSeasonSettings();
       saveState();
@@ -3248,16 +3251,20 @@ function pairedRedJacket(top,bottom){
   return best;
 }
 
+function jacketFitsTrousers(color,bottom){
+  return canUseColorForRole(color,'outerwear') && !wadaSameTone(wadaLab(color.hex),wadaLab(bottom.hex));
+}
+
 function pickOuterwearColor(look){
   const {top,bottom,shoes,accessory} = look.mapping;
   const topLab = wadaLab(top.color.hex);
   const vividBase = Math.max(wadaChroma(topLab),wadaChroma(wadaLab(bottom.color.hex))) > .14;
-  const options = [accessory,shoes,bottom].map(item=>item.color)
-    .filter(color=>color.id!==top.color.id && canUseColorForRole(color,'outerwear'));
+  const options = [accessory,shoes].map(item=>item.color)
+    .filter(color=>color.id!==top.color.id && jacketFitsTrousers(color,bottom.color));
   const quietOutfit = [top,bottom,shoes,accessory].every(({color})=>!isRedColor(color) && wadaChroma(wadaLab(color.hex))<.125);
   if(quietOutfit){
     const red=pairedRedJacket(top.color,bottom.color);
-    if(red)options.push(red);
+    if(red && jacketFitsTrousers(red,bottom.color))options.push(red);
   }
   const recent=recentHomeHistory(4);
   function score(color){
@@ -3269,12 +3276,24 @@ function pickOuterwearColor(look){
     const colorInterest = wadaChroma(lab) * (vividBase ? -1.4 : 1.4);
     return colorInterest + Math.min(.32,wadaDistance(topLab,lab)) - .2*Math.max(0,lab[0]-.75) - repetition;
   }
-  return options.sort((a,b)=>score(b)-score(a))[0] || top.color;
+  if(!options.length){
+    // First try the existing palette, including the shirt. A two-tone look
+    // can leave all other outfit colors too close to the trousers.
+    if(jacketFitsTrousers(top.color,bottom.color))return top.color;
+    const {sources}=wadaCatalog();
+    for(const ref of wadaReference(look)?.indices||[]){
+      const match=sources[ref].options.accessory.find(({color})=>jacketFitsTrousers(color,bottom.color));
+      if(match)options.push(match.color);
+    }
+    if(!options.length)options.push(...[COLORS.navy,COLORS.cognac,COLORS.cherry,COLORS.sage]
+      .filter(color=>jacketFitsTrousers(color,bottom.color)));
+  }
+  return options.sort((a,b)=>score(b)-score(a))[0];
 }
 
 function applySeasonToLook(look){
   if(!look?.mapping || state.seasonMode!=='winter') return look;
-  if(canUseColorForRole(look.mapping.outerwear?.color,'outerwear')) return look;
+  if(jacketFitsTrousers(look.mapping.outerwear?.color,look.mapping.bottom.color)) return look;
   const color = pickOuterwearColor(look);
   return {...look,mapping:{...look.mapping,outerwear:{color,text:roleText('outerwear',color)}}};
 }
@@ -3694,9 +3713,9 @@ function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><span>כל הלוק, גם בתמונה לשמירה.</span><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
-<script src="studio.js?v=340"></script>
-<script src="preferences.js?v=340"></script>
-<script src="suggestions.js?v=340"></script>
+<dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><button type="button" id="changeShoesBtn" class="mini-item-btn" hidden></button><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
+<script src="studio.js?v=350"></script>
+<script src="preferences.js?v=350"></script>
+<script src="suggestions.js?v=350"></script>
 </body>
 </html>

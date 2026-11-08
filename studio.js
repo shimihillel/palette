@@ -3,18 +3,32 @@
 const STUDIO_ROLES = ['top','bottom','shoes','accessory'];
 const WINTER_ROLES = ['top','outerwear','bottom','shoes','accessory'];
 const STUDIO_LABELS = {top:'חולצה',outerwear:'ג׳קט',bottom:'מכנסי בד',shoes:'נעליים',accessory:'תיק'};
+const SHOE_LABELS={sneakers:'סניקרס',loafers:'לואפרס',flipflops:'כפכפי אצבע'};
+const FOOT_PATCH={x:358,y:1424,w:310,h:178};
+function shoeStyle(mapping,view){
+  if(view==='summer')return 'flipflops';
+  const preference=mapping.shoes.style;
+  if(preference==='sneakers'||preference==='loafers')return preference;
+  // Existing looks have no saved shoe model. Derive one from their colors
+  // so reload, export and back always agree, independently of trouser fabric.
+  const key=STUDIO_ROLES.map(role=>mapping[role].color.id).join('|');
+  let hash=5381;
+  for(let i=0;i<key.length;i++)hash=(Math.imul(hash,33)^key.charCodeAt(i))>>>0;
+  return (hash>>>8)%2 ? 'sneakers' : 'loafers';
+}
 const WINTER_PATCH = {x:210,y:245,w:550,h:600};
 function studioView(){
   return state.seasonMode==='summer' ? 'summer' : state.showJacket ? 'jacket' : 'sleeves';
 }
 function visibleRoles(view){return view==='jacket' ? WINTER_ROLES : STUDIO_ROLES;}
 function studioRoleLabel(role,mapping,view=studioView()){
+  if(role==='shoes')return SHOE_LABELS[shoeStyle(mapping,view)];
   if(role==='top')return view==='summer'?'חולצה קצרה':'חולצה ארוכה';
   if(role==='bottom'&&mapping.bottom.fabric==='denim')return 'מכנסי ג׳ינס';
   return STUDIO_LABELS[role];
 }
 function artSignature(mapping,view=studioView()){
-  return [view,mapping.bottom.fabric||'cloth',...visibleRoles(view).map(r=>mapping[r].color.id)].join('|');
+  return [view,shoeStyle(mapping,view),mapping.bottom.fabric||'cloth',...visibleRoles(view).map(r=>mapping[r].color.id)].join('|');
 }
 const CHARACTER_FILES = {base:'assets/shimi-character-art-v190.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-mask-${r}-v190.png`]))};
 const STUDIO_ICONS = {
@@ -114,15 +128,77 @@ function loadJacket(){
   return jacketPromise;
 }
 
-function paintJacket(bitmap,jacket,color){
-  const {indices,light,opacity,mean,bounds}=jacket,target=parseCharacterHex(color.hex);
-  const table=new Uint8ClampedArray(768);
-  for(let l=0;l<256;l++)table.set(recolorArtPixel(target,l,mean,'outerwear'),l*3);
+function paintJacket(bitmap,jacket,table){
+  const {indices,light,opacity,bounds}=jacket;
   for(let n=0;n<indices.length;n++){
     const p=indices[n],x=p%bounds.w+bounds.x,y=Math.floor(p/bounds.w)+bounds.y;
     const i=(y*bitmap.width+x)*4,t=light[n]*3,a=opacity[n]/255;
     for(let c=0;c<3;c++)bitmap.data[i+c]+=a*(table[t+c]-bitmap.data[i+c]);
   }
+}
+
+// Each view has a registered shoulder crop from its own illustration. The
+// left tile stores the foreground contribution of hair and skin. The right
+// tile stores shirt/jacket coverage and cloth luminance at the same pixel.
+const STRAND_PATCH={x:270,y:264,w:175,h:285};
+const appearanceAtlases=new Map();
+function loadAppearanceAtlas(file,patch){
+  if(!appearanceAtlases.has(file)){
+    const asset=loadCharacterImage('assets/'+file).then(img=>{
+      const {w,h}=patch,work=document.createElement('canvas');
+      work.width=2*w;work.height=3*h;
+      if(img.naturalWidth!==work.width||img.naturalHeight!==work.height)throw Error('מידות שכבות האיור אינן תואמות');
+      const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
+      return ctx.getImageData(0,0,work.width,work.height).data;
+    }).catch(err=>{appearanceAtlases.delete(file);throw err;});
+    appearanceAtlases.set(file,asset);
+  }
+  return appearanceAtlases.get(file);
+}
+
+const footwearMeans=new Map();
+function compositeFootwear(bitmap,atlas,style,color,trousers){
+  const patch=FOOT_PATCH,mode=['sneakers','loafers','flipflops'].indexOf(style);
+  if(!footwearMeans.has(style)){
+    let total=0,weight=0;
+    for(let y=0;y<patch.h;y++)for(let x=0;x<patch.w;x++){
+      const meta=((mode*patch.h+y)*2*patch.w+patch.w+x)*4;
+      total+=atlas[meta+1]*atlas[meta];weight+=atlas[meta];
+    }
+    footwearMeans.set(style,total/weight);
+  }
+  const table=garmentShader(color,footwearMeans.get(style),'shoes');
+  for(let y=0;y<patch.h;y++)for(let x=0;x<patch.w;x++){
+    const p=(patch.y+y)*bitmap.width+patch.x+x;
+    if(trousers[p])continue;
+    const i=((mode*patch.h+y)*2*patch.w+x)*4,meta=i+patch.w*4;
+    if(!atlas[meta+2])continue;
+    const alpha=atlas[meta]/255,t=atlas[meta+1]*3;
+    const edge=Math.min(1,x/8,y/8,(patch.w-1-x)/8,(patch.h-1-y)/8);
+    for(let c=0;c<3;c++){
+      const value=atlas[i+c]+alpha*table[t+c];
+      bitmap.data[4*p+c]+=edge*(value-bitmap.data[4*p+c]);
+    }
+  }
+}
+function compositeStrands(bitmap,atlas,view,shader){
+  const patch=STRAND_PATCH,mode=['summer','sleeves','jacket'].indexOf(view);
+  for(let y=0;y<patch.h;y++)for(let x=0;x<patch.w;x++){
+    const i=((mode*patch.h+y)*2*patch.w+x)*4,meta=i+patch.w*4;
+    const dest=((patch.y+y)*bitmap.width+patch.x+x)*4,t=atlas[meta+2]*3;
+    const shirt=atlas[meta]/255,jacket=atlas[meta+1]/255;
+    const edge=Math.min(1,x/9,y/9,(patch.w-1-x)/9,(patch.h-1-y)/9);
+    for(let c=0;c<3;c++){
+      const value=atlas[i+c]+shirt*shader.top[t+c]+(jacket?jacket*shader.outerwear[t+c]:0);
+      bitmap.data[dest+c]+=edge*(value-bitmap.data[dest+c]);
+    }
+  }
+}
+
+function garmentShader(color,mean,role){
+  const target=parseCharacterHex(color.hex),table=new Uint8ClampedArray(768);
+  for(let l=0;l<256;l++)table.set(recolorArtPixel(target,l,mean,role),l*3);
+  return table;
 }
 
 function recolorArtPixel(target,lum,mean,role){
@@ -136,7 +212,9 @@ function recolorArtPixel(target,lum,mean,role){
   return target.map(c=>c+(255-c)*lift);
 }
 async function renderCharacterBitmap(mapping,view=studioView()){
-  const assets=await loadCharacterAssets(view),{w,h,basePixels,pixels,means}=assets;
+  const [assets,strands,footwear]=await Promise.all([loadCharacterAssets(view),
+    loadAppearanceAtlas('shoulder-strands-v350.webp',STRAND_PATCH),loadAppearanceAtlas('footwear-v350.webp',FOOT_PATCH)]);
+  const {w,h,basePixels,pixels,means}=assets;
   const denim=mapping.bottom.fabric==='denim'?await loadDenimTexture(assets):null;
   const out=new ImageData(new Uint8ClampedArray(basePixels.data),w,h);
   for(const role of STUDIO_ROLES){
@@ -153,7 +231,14 @@ async function renderCharacterBitmap(mapping,view=studioView()){
     }
     for(let n=0;n<indices.length;n++){const i=indices[n]*4,j=n*3;out.data[i]=rgb[j];out.data[i+1]=rgb[j+1];out.data[i+2]=rgb[j+2];}
   }
-  if(view==='jacket')paintJacket(out,await loadJacket(),mapping.outerwear.color);
+  const shader={top:garmentShader(mapping.top.color,means.top,'top')};
+  if(view==='jacket'){
+    const jacket=await loadJacket();
+    shader.outerwear=garmentShader(mapping.outerwear.color,jacket.mean,'outerwear');
+    paintJacket(out,jacket,shader.outerwear);
+  }
+  compositeStrands(out,strands,view,shader);
+  compositeFootwear(out,footwear,shoeStyle(mapping,view),mapping.shoes.color,assets.masks.bottom);
   return out;
 }
 
@@ -245,6 +330,12 @@ function bindStudio(){
   });
   on('downloadLookBtn','click',downloadStudioLook);
   on('detailDownloadBtn','click',downloadStudioLook);
+  on('changeShoesBtn','click',()=>{
+    if(studioDetailRole!=='shoes'||studioView()==='summer')return;
+    const mapping=state.currentLook.mapping;
+    mapping.shoes.style=shoeStyle(mapping,studioView())==='sneakers'?'loafers':'sneakers';
+    saveState();renderToday();openStudioDetail('shoes');
+  });
   on('closeDetailBtn','click',()=>$('artDialog').close());
   on('artDialog','click',e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.currentTarget.close();}});
   on('artDialog','close',()=>{studioDetailSeq++;});
@@ -261,12 +352,15 @@ async function openStudioDetail(role=null){
   const view=studioView();
   studioDetailRole=role;const seq=++studioDetailSeq,dialog=$('artDialog'),canvas=$('detailCanvas'),mapping=JSON.parse(JSON.stringify(state.currentLook.mapping));
   $('detailTitle').textContent=role?`${studioRoleLabel(role,mapping)} · ${mapping[role].color.he}`:'מבט מקרוב';
+  const shoeButton=$('changeShoesBtn');
+  shoeButton.hidden=role!=='shoes'||view==='summer';
+  if(!shoeButton.hidden)shoeButton.textContent=shoeStyle(mapping,view)==='sneakers'?'החלפה ללואפרס':'החלפה לסניקרס';
   $('detailCaption').textContent=role?'מרקם, קפלים ופרטים קטנים':'איור אופנה בצבעים של הלוק שלך';
   $('detailStatus').textContent='טוענת את האיור…';canvas.hidden=true;if(!dialog.open)dialog.showModal();
   try{
     const [bitmap,assets]=await Promise.all([renderCharacterBitmap(mapping,view),loadCharacterAssets(view)]);
     if(seq!==studioDetailSeq||!dialog.open)return;
-    const b=role==='outerwear'?WINTER_PATCH:role?assets.bounds[role]:{x:160,y:0,w:650,h:1630},pad=role?30:0;
+    const b=role==='shoes'?FOOT_PATCH:role==='outerwear'?WINTER_PATCH:role?assets.bounds[role]:{x:160,y:0,w:650,h:1630},pad=role?30:0;
     const x=Math.max(0,b.x-pad),y=Math.max(0,b.y-pad);
     canvas.width=Math.min(assets.w-x,b.w+pad*2);canvas.height=Math.min(assets.h-y,b.h+pad*2);
     canvas.getContext('2d').putImageData(bitmap,-x,-y);canvas.hidden=false;$('detailStatus').textContent='';
