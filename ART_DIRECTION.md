@@ -11,3 +11,9 @@ Primary request: Redraw this same woman as a premium expressive fashion illustra
 Technical color separation for interactive recoloring: shirt a clear matte lilac/purple, trousers muted sage green, bag and its entire strap deep muted blue, both shoes dusty berry pink. Each garment is one coherent local color with tonal hatching/folds that stay in that color family. Sharp, clean garment boundaries. NO strokes, watercolor splatters or loose color washes outside garment silhouettes. Skin warm peach, hair copper, metal hardware gold; these must be visually distinct from the four garment colors. Gold buckles and jewelry remain gold. Keep the bag strap unobstructed where possible, with exact clean edges across shirt.
 Background: solid very pale warm ivory #F7F3EC, tiny soft ground shadow only. No room, scenery, decorative blobs, paper swatches, type or layout.
 Composition: one full body figure only, tall portrait around 1024x1792; entire hair and both feet visible, figure fills 93% of height with modest equal margins. Crisp beautiful artwork readable at phone size. No text, watermark, duplicates or panels.
+
+## Winter garments, version 3.4
+
+Two built-in ImageGen clothing edits used the original character illustration as their registration reference. The shirt edit requested fitted lilac jersey sleeves covering both arms to the wrists, with a soft cuff and natural elbow folds. The jacket edit requested an unbuttoned, hip-length emerald jacket with narrow notched lapels and a wide opening showing the lilac shirt. Both requested the original framing, hands, pose, bag and strap, hair, face and full-body pencil and gouache treatment. The source pigments separate the clothing for recoloring.
+
+The runtime uses `assets/long-sleeves-v340.webp` with `assets/long-sleeves-roles-v340.png` for the winter shirt, and `assets/open-jacket-v340.png` for the tintable jacket overlay. The shared summer base supplies the rest of the illustration.
