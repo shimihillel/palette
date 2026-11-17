@@ -3,18 +3,10 @@
 const STUDIO_ROLES = ['top','bottom','shoes','accessory'];
 const WINTER_ROLES = ['top','outerwear','bottom','shoes','accessory'];
 const STUDIO_LABELS = {top:'חולצה',outerwear:'ג׳קט',bottom:'מכנסי בד',shoes:'נעליים',accessory:'תיק'};
-const SHOE_LABELS={sneakers:'סניקרס',loafers:'לואפרס',flipflops:'כפכפי אצבע'};
+const SHOE_LABELS={loafers:'לואפרס',flipflops:'כפכפי אצבע'};
 const FOOT_PATCH={x:358,y:1424,w:310,h:178};
-function shoeStyle(mapping,view){
-  if(view==='summer')return 'flipflops';
-  const preference=mapping.shoes.style;
-  if(preference==='sneakers'||preference==='loafers')return preference;
-  // Existing looks have no saved shoe model. Derive one from their colors
-  // so reload, export and back always agree, independently of trouser fabric.
-  const key=STUDIO_ROLES.map(role=>mapping[role].color.id).join('|');
-  let hash=5381;
-  for(let i=0;i<key.length;i++)hash=(Math.imul(hash,33)^key.charCodeAt(i))>>>0;
-  return (hash>>>8)%2 ? 'sneakers' : 'loafers';
+function shoeStyle(view){
+  return view==='summer' ? 'flipflops' : 'loafers';
 }
 const WINTER_PATCH = {x:210,y:245,w:550,h:600};
 function studioView(mapping=state.currentLook?.mapping){
@@ -23,13 +15,13 @@ function studioView(mapping=state.currentLook?.mapping){
 function visibleRoles(view){return view==='jacket' ? WINTER_ROLES : STUDIO_ROLES;}
 function studioRoleLabel(role,mapping,view=studioView()){
   if(role==='outerwear'&&mapping.outerwear?.fabric==='denim')return 'ג׳קט ג׳ינס';
-  if(role==='shoes')return SHOE_LABELS[shoeStyle(mapping,view)];
+  if(role==='shoes')return SHOE_LABELS[shoeStyle(view)];
   if(role==='top')return view==='summer'?'חולצה קצרה':'חולצה ארוכה';
   if(role==='bottom'&&mapping.bottom.fabric==='denim')return 'מכנסי ג׳ינס';
   return STUDIO_LABELS[role];
 }
 function artSignature(mapping,view=studioView()){
-  return [view,view==='jacket'?(mapping.outerwear?.fabric||'cloth'):'',shoeStyle(mapping,view),mapping.bottom.fabric||'cloth',...visibleRoles(view).map(r=>mapping[r].color.id)].join('|');
+  return [view,view==='jacket'?(mapping.outerwear?.fabric||'cloth'):'',shoeStyle(view),mapping.bottom.fabric||'cloth',...visibleRoles(view).map(r=>mapping[r].color.id)].join('|');
 }
 const CHARACTER_FILES = {base:'assets/shimi-character-art-v190.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-mask-${r}-v190.png`]))};
 const STUDIO_ICONS = {
@@ -51,7 +43,6 @@ const characterAssets=new Map();
 let jacketPromise=null;
 let characterPaintSeq=0;
 let studioDetailSeq=0;
-let studioDetailRole=null;
 let studioUndo=[];
 let studioExporting=false;
 const studioRasterCache=new Map();
@@ -255,7 +246,7 @@ async function renderCharacterBitmap(mapping,view=studioView()){
     paintJacket(out,jacket,shader.outerwear,weave);
   }
   compositeStrands(out,strands,view,shader);
-  compositeFootwear(out,footwear,shoeStyle(mapping,view),mapping.shoes.color,assets.masks.bottom);
+  compositeFootwear(out,footwear,shoeStyle(view),mapping.shoes.color,assets.masks.bottom);
   return out;
 }
 
@@ -348,12 +339,6 @@ function bindStudio(){
   });
   on('downloadLookBtn','click',downloadStudioLook);
   on('detailDownloadBtn','click',downloadStudioLook);
-  on('changeShoesBtn','click',()=>{
-    if(studioDetailRole!=='shoes'||studioView()==='summer')return;
-    const mapping=state.currentLook.mapping;
-    mapping.shoes.style=shoeStyle(mapping,studioView())==='sneakers'?'loafers':'sneakers';
-    saveState();renderToday();openStudioDetail('shoes');
-  });
   on('closeDetailBtn','click',()=>$('artDialog').close());
   on('artDialog','click',e=>{if(e.target===e.currentTarget){const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.currentTarget.close();}});
   on('artDialog','close',()=>{studioDetailSeq++;});
@@ -368,11 +353,8 @@ function bindStudio(){
 
 async function openStudioDetail(role=null){
   const view=studioView();
-  studioDetailRole=role;const seq=++studioDetailSeq,dialog=$('artDialog'),canvas=$('detailCanvas'),mapping=JSON.parse(JSON.stringify(state.currentLook.mapping));
+  const seq=++studioDetailSeq,dialog=$('artDialog'),canvas=$('detailCanvas'),mapping=JSON.parse(JSON.stringify(state.currentLook.mapping));
   $('detailTitle').textContent=role?`${studioRoleLabel(role,mapping)} · ${mapping[role].color.he}`:'מבט מקרוב';
-  const shoeButton=$('changeShoesBtn');
-  shoeButton.hidden=role!=='shoes'||view==='summer';
-  if(!shoeButton.hidden)shoeButton.textContent=shoeStyle(mapping,view)==='sneakers'?'החלפה ללואפרס':'החלפה לסניקרס';
   $('detailCaption').textContent=role?'מרקם, קפלים ופרטים קטנים':'איור אופנה בצבעים של הלוק שלך';
   $('detailStatus').textContent='טוענת את האיור…';canvas.hidden=true;if(!dialog.open)dialog.showModal();
   try{

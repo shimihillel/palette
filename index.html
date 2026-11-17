@@ -10,13 +10,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
   <title>Shimi Looks — Art Studio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=363" />
-  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=363" />
-  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=363" />
+  <link rel="manifest" href="manifest.webmanifest?v=364" />
+  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=364" />
+  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=364" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=363" />
+  <link rel="stylesheet" href="style.css?v=364" />
 </head>
 <body>
   <div class="app-shell">
@@ -39,7 +39,7 @@
             <div id="feedbackReasons" class="feedback-reasons" role="group" aria-label="סיבה לדירוג, לבחירה בלבד" hidden><span>מה פחות עבד? לא חובה</span><div><button type="button" data-feedback-reason="light" aria-pressed="false">בהיר מדי</button><button type="button" data-feedback-reason="bright" aria-pressed="false">זרחני מדי</button><button type="button" data-feedback-reason="boring" aria-pressed="false">משעמם</button><button type="button" data-feedback-reason="clash" aria-pressed="false">הצבעים לא עובדים יחד</button></div></div>
           </section>
           <div class="studio-actions"><button class="primary-btn" id="nextLookBtn" type="button">הלוק הבא</button><button class="jacket-toggle" id="jacketToggle" type="button" aria-label="הצגת ג׳קט" aria-pressed="true">הסתרת ג׳קט</button><button class="previous-btn" id="previousLookBtn" type="button" disabled aria-label="חזרה ללוק הקודם" title="חזרה ללוק הקודם"><span data-icon="previous"></span><span>חזרה</span></button></div>
-          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.6.3</small></div></details>
+          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.6.4</small></div></details>
         </section>
       </section>
       <section class="screen" id="anchorScreen">
@@ -127,7 +127,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '3.6.3-jackets';
+const APP_VERSION = '3.6.4-shoes';
 
 const COLORS = {
   // Whites / creams
@@ -1352,7 +1352,7 @@ function renderAnchor(){
 }
 
 function renderPieceChoices(){
-  const sub = {top:'חולצה / סריג / ג׳קט', bottom:'ג׳ינס / מכנס / חצאית', shoes:'סניקרס / סנדלים / מגפיים', accessory:'תיק / תכשיט / חגורה'};
+  const sub = {top:'חולצה / סריג / ג׳קט', bottom:'ג׳ינס / מכנס / חצאית', shoes:'לואפרס / כפכפי אצבע', accessory:'תיק / תכשיט / חגורה'};
   $('pieceChoices').innerHTML = PIECES.map(piece => `
     <button class="choice-btn piece-choice-btn ${state.anchorPiece === piece.id ? 'selected' : ''}" data-piece="${piece.id}" type="button">
       <strong>${piece.label}</strong>
@@ -3790,6 +3790,7 @@ function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
     const freshPlates=pool.filter(c=>!recentHomeHistory(24).some(h=>h.wadaPlate===c.plate.id));
     if(freshPlates.length)pool=freshPlates;
   }
+  if(!fixed.shoes && (!replaceRole || replaceRole==='shoes'))rankShoeVariety(pool);
   // Avoid one successful palette flooding the shortlist with near-identical candidates.
   const bestPerPlate=new Map();
   for(const c of pool){if(!bestPerPlate.has(c.plate.id)||c.score>bestPerPlate.get(c.plate.id).score)bestPerPlate.set(c.plate.id,c);}
@@ -3800,10 +3801,10 @@ function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
-<dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><button type="button" id="changeShoesBtn" class="mini-item-btn" hidden></button><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
-<script src="studio.js?v=363"></script>
-<script src="preferences.js?v=363"></script>
-<script src="suggestions.js?v=363"></script>
-<script src="wardrobe.js?v=363"></script>
+<dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
+<script src="studio.js?v=364"></script>
+<script src="preferences.js?v=364"></script>
+<script src="suggestions.js?v=364"></script>
+<script src="wardrobe.js?v=364"></script>
 </body>
 </html>

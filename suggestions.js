@@ -76,6 +76,37 @@ function prioritizeColorComposition(candidates,context){
   return candidates;
 }
 
+// Score the shoe within complete, validated outfits, before picking a finalist per plate.
+function rankShoeVariety(candidates){
+  const history=recentHomeHistory(24);
+  const recent=history.map(row=>COLORS[row.shoes]).filter(Boolean);
+  const current=state.currentLook;
+  if(current?.mapping?.shoes?.color && current.signature!==history[0]?.signature){
+    recent.unshift(current.mapping.shoes.color);
+  }
+  if(!recent.length)return;
+  const penalties=new Map();
+  for(const candidate of candidates){
+    const shoe=candidate.colors[2];
+    if(!penalties.has(shoe.id)){
+      const family=wardrobeFamily(shoe),lab=wadaLab(shoe.hex);
+      const penalty=recent.reduce((sum,old,i)=>{
+        const sameFamily=wardrobeFamily(old)===family;
+        if(i<3){
+          const recency=[32,19,11][i];
+          if(sameFamily)sum+=recency;
+          if(wadaDistance(lab,wadaLab(old.hex))<LOOK_COMPOSITION.nearDistance)sum+=recency;
+        }
+        if(sameFamily && i<16)sum+=2;
+        if(old.id===shoe.id)sum+=18*(1-i/recent.length);
+        return sum;
+      },0);
+      penalties.set(shoe.id,penalty);
+    }
+    candidate.score-=penalties.get(shoe.id);
+  }
+}
+
 function wadaLockedStyleMessage(fixed){
   const current=state.currentLook;
   if(!current)return null;
