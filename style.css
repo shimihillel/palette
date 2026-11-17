@@ -25,7 +25,7 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);border
 @media(max-height:740px){.feedback-note{font-size:12px;min-height:28px}.feedback-btn{min-height:44px}.role-inspect{grid-template-columns:1fr;text-align:center;justify-items:center;gap:3px}.character-role-dot{width:25px;height:25px}.character-role-label{font-size:11px}.character-role-name{font-size:13px}.character-role{padding:3px 0}.today-layout:has(.feedback-reasons:not([hidden])){grid-template-rows:auto minmax(200px,1fr) auto auto auto}.app-shell:has(.feedback-reasons:not([hidden])){height:auto;min-height:100dvh} }
 
 /* The season controls use the same ink, paper and focus styles as the studio. */
-.studio-actions{grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:stretch}
+.studio-actions{grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:stretch}
 .studio-actions:has(.jacket-toggle[hidden]){grid-template-columns:minmax(0,1fr) auto}
 .jacket-toggle{padding:6px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper);font-weight:600}
 .jacket-toggle:hover:not(:disabled){border-color:var(--accent)}
@@ -84,3 +84,10 @@ dialog{border:1px solid var(--line);background:var(--bg);color:var(--ink);border
   #wardrobeDialog .dialog-head, .wardrobe-controls, .wardrobe-footer { padding-block: 4px; }
   .wardrobe-controls { gap: 4px; }
 }
+
+.complement-swatch{display:flex;align-items:center;text-align:start;gap:10px;width:100%;padding:5px 0;min-height:44px;align-self:center;background:none;border:0;color:var(--ink);cursor:pointer}
+.complement-swatch .character-role-dot{flex:none;width:25px;height:25px;outline:1px dashed #a99786;outline-offset:3px;margin:4px}
+.complement-swatch small{display:block;color:var(--muted);font-size:11px;white-space:nowrap}
+.complement-swatch[hidden]{display:none}
+@media(max-width:600px){.complement-swatch{flex-direction:column;text-align:center;justify-content:center;gap:3px}.complement-swatch .character-role-label{white-space:nowrap}.complement-swatch .character-role-name{font-size:15px}.complement-swatch .character-role-dot{width:22px;height:22px}}
+@media(max-height:650px){.complement-swatch{flex-direction:row;text-align:start;gap:3px}.complement-swatch .character-role-dot{width:15px;height:15px}.complement-swatch small{font-size:10px}}

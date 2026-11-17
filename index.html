@@ -10,13 +10,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Shimi Looks" />
   <title>Shimi Looks — Art Studio</title>
-  <link rel="manifest" href="manifest.webmanifest?v=364" />
-  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=364" />
-  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=364" />
+  <link rel="manifest" href="manifest.webmanifest?v=400" />
+  <link rel="icon" type="image/png" href="assets/shimi-looks-icon-v3-32.png?v=400" />
+  <link rel="apple-touch-icon" href="assets/shimi-looks-icon-v3-180.png?v=400" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=364" />
+  <link rel="stylesheet" href="style.css?v=400" />
 </head>
 <body>
   <div class="app-shell">
@@ -38,8 +38,8 @@
             <div class="feedback-note"><span id="feedbackStatus" role="status" aria-live="polite">מה דעתך על השילוב?</span><button id="undoFeedbackBtn" type="button" hidden>ביטול דירוג</button></div>
             <div id="feedbackReasons" class="feedback-reasons" role="group" aria-label="סיבה לדירוג, לבחירה בלבד" hidden><span>מה פחות עבד? לא חובה</span><div><button type="button" data-feedback-reason="light" aria-pressed="false">בהיר מדי</button><button type="button" data-feedback-reason="bright" aria-pressed="false">זרחני מדי</button><button type="button" data-feedback-reason="boring" aria-pressed="false">משעמם</button><button type="button" data-feedback-reason="clash" aria-pressed="false">הצבעים לא עובדים יחד</button></div></div>
           </section>
-          <div class="studio-actions"><button class="primary-btn" id="nextLookBtn" type="button">הלוק הבא</button><button class="jacket-toggle" id="jacketToggle" type="button" aria-label="הצגת ג׳קט" aria-pressed="true">הסתרת ג׳קט</button><button class="previous-btn" id="previousLookBtn" type="button" disabled aria-label="חזרה ללוק הקודם" title="חזרה ללוק הקודם"><span data-icon="previous"></span><span>חזרה</span></button></div>
-          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 3.6.4</small></div></details>
+          <div class="studio-actions"><button class="primary-btn" id="nextLookBtn" type="button">הלוק הבא</button><button class="previous-btn" id="previousLookBtn" type="button" disabled aria-label="חזרה ללוק הקודם" title="חזרה ללוק הקודם"><span data-icon="previous"></span><span>חזרה</span></button></div>
+          <details class="why-card"><summary>מה מחבר את הצבעים?<span data-icon="chevron"></span></summary><div class="why-body"><p id="whyWorks"></p><small>לחצי על גוון כדי לראות את הפריט מקרוב. הדירוג מתייחס ללוק כולו; לחיצה נוספת עליו מבטלת אותו. מעבר ללוק הבא והורדה אינם דירוג.</small><small id="shadeCoverageStatus"></small><small id="appVersion">גרסה 4.0.0</small></div></details>
         </section>
       </section>
       <section class="screen" id="anchorScreen">
@@ -100,10 +100,6 @@
   </div>
   <dialog id="settingsDialog" aria-labelledby="settingsTitle">
     <header class="dialog-head"><h2 id="settingsTitle">הגדרות</h2><button class="tool-btn" type="button" id="closeSettingsBtn" aria-label="סגירת הגדרות" data-icon="close"></button></header>
-    <fieldset class="season-options"><legend>עונת הלבוש</legend>
-      <label><input type="radio" name="displaySeason" value="winter" data-season="winter"><span><strong>חורף</strong><small>חולצה ארוכה וג׳קט לבחירה</small></span></label>
-      <label><input type="radio" name="displaySeason" value="summer" data-season="summer"><span><strong>קיץ</strong><small>חולצה קצרה וכפכפי אצבע</small></span></label>
-    </fieldset>
     <button id="openWardrobe" class="wardrobe-entry" type="button" aria-haspopup="dialog"><strong>הצבעים בארון שלי</strong><span>בחירת גוונים לכל פריט</span></button>
   </dialog>
   <dialog id="wardrobeDialog" aria-labelledby="wardrobeTitle" aria-describedby="wardrobeHelp">
@@ -127,7 +123,7 @@ function on(id, event, fn){ const node = el(id); if(node) node.addEventListener(
 'use strict';
 
 const STORAGE_KEY = 'shimi-looks-v12-full-spectrum';
-const APP_VERSION = '3.6.4-shoes';
+const APP_VERSION = '4.0.0-trio';
 
 const COLORS = {
   // Whites / creams
@@ -573,7 +569,7 @@ Object.assign(COLORS, EXTRA_COLORS, FULL_COLOR_EXPANSION);
 // This selection supplies the defaults until a shade is restored for a specific item.
 const SELECTED_COLOR_IDS = new Set(["terracotta","rust","copper","pumpkin","terracotta2","paprika","butterscotch","paprika2","ginger","cider","clayorange","ballet","blush","rose","rosepink","dustypink","dustyrose","pinksand","salmon","nudepink","nudeblush","peony","flamingo","watermelon","rosebud","cerisepink","raspberrypink","mauvepink","mauve","antiquepink","barbie","rosewood","fuchsia","magenta","tomato","cherry","lipstick","scarlet","wine","ruby","vermilion","currant","pomegranate","merlot","oxblood","sangria","cranberry","brick","garnet","garnet2","poppy","raspberryred","bordeaux","lavgray","heather","lilac","wisteria","orchid","amethyst","violet","violet2","iris","pansy","plum","royalplum","mulberry","boysenberry","aubergine","eggplant","fig","mauvedust","thistle","blackcurrant","plumdeep","straw","mustard","ochre","amber","saffron","honey","pistachio","pear","pearleaf","apple","meadow","clover","kelly","shamrock","fernlight","fern","leaf","sage","eucalyptus","matcha","avocado","artichoke","cactus","laurel","olivebright","olive","oliveleaf","army","moss","ivy","loden","jungle","hunter","forest","bottle","pine","spruce","crocodile","emerald","parsley","basil","powderblue","sky","cloudblue","cornflower","capri","cerulean","cerulean2","azure","frenchblue","denimlight","denim","denimmid","harbor","steelblue","cadet","slateblue","royal","royalblue","cobalt","cobalt2","ultramarine","ultramarine2","lapis","sapphire","sapphire2","indigo","indigo2","marine","atlantic","ink","midnight","nightblue","stormblue","prussian","mazarine","navy","denimdark","beige","khaki","camel","tan","caramel","cognac","tobacco","chestnut","cocoa","chocolate","espresso","bark","biscuit","almond","latte","toffee","mocha","hazelnut","walnut","umber","dune","flax","sesame","fawn","truffle","coffee","sepia","clay","driftwood","sable","espresso2","fog","silver","dove","stone","pewter","graphite","charcoal","black","ash","smoke","cement","pebble","putty","mushroom","slate","pepper","raven","licorice","taupe","greige","opticwhite","white","milk","snow","porcelain","shell","lace","frost","moon","pearl","ivory","cream","champagne","linen","oat","sand","alabaster","bone","ecru","parchment","gesso"]);
 const WARDROBE_COLOR_IDS = Object.keys(COLORS);
-const WARDROBE_ROLES = ['shoes','top','bottom','outerwear','accessory'];
+const WARDROBE_ROLES = ['top','bottom','shoes'];
 const BANNED_COLOR_IDS = WARDROBE_COLOR_IDS.filter(id => !SELECTED_COLOR_IDS.has(id));
 const RESTRICTED_REDS = ['tomato','cherry','lipstick','cranberry','poppy','scarlet','ruby'];
 const RESTRICTED_WHITES = ['opticwhite','white','milk','snow','porcelain','shell','lace','frost','moon','pearl','cream','linen','alabaster','bone','parchment','gesso'];
@@ -709,7 +705,7 @@ function canUseColorForRole(color, role){
 // for previously available colors and no explicit restorations.
 function normalizeWardrobeChanges(raw, originallyAllowed){
   const result = {};
-  for(const role of WARDROBE_ROLES){
+  for(const role of [...WARDROBE_ROLES,'accessory','outerwear']){
     const ids = Array.isArray(raw?.[role]) ? raw[role] : [];
     result[role] = [...new Set(ids.filter(id => WARDROBE_COLOR_IDS.includes(id)
       && catalogAllowsRole(COLORS[id],role) === originallyAllowed))];
@@ -945,9 +941,6 @@ function loadState(){
       shadeCoverage: parsed.shadeCoverage || null,
       wadaUsage: parsed.wadaUsage && typeof parsed.wadaUsage==='object' ? parsed.wadaUsage : {},
       suggestionSeq: parsed.suggestionSeq || 0,
-      // Earlier releases always wrote summer, even when no season was chosen.
-      seasonMode: parsed.displaySeason === 'summer' ? 'summer' : 'winter',
-      showJacket: parsed.showJacket !== false,
       screen: parsed.screen || 'todayScreen',
       installDate: parsed.installDate || new Date().toISOString(),
       wearAnswers: Array.isArray(parsed.wearAnswers) ? parsed.wearAnswers : [],
@@ -982,7 +975,6 @@ function saveState(){
 function buildPersistableState(){
   const persist = {
     ...state,
-    displaySeason: state.seasonMode,
     printz: [],
     printzDraftImage: null,
     printzSelectedColors: [],
@@ -1085,54 +1077,40 @@ async function optimizeStoredPrintzImages(){
   }
 }
 
-function lookHasBannedColor(look, allows=canUseColorForRole){
-  if(!look) return false;
-  const colors = [
-    ...(look.colors || []),
-    look.mapping?.top?.color,
-    look.mapping?.bottom?.color,
-    look.mapping?.shoes?.color,
-    look.mapping?.accessory?.color,
-    look.mapping?.outerwear?.color
-  ].filter(Boolean);
-  if(colors.some(isBannedColor) || (look.ids || []).some(id => !COLORS[id] || isBannedColor(COLORS[id]))) return true;
-  const roles = ['top','bottom','shoes','accessory','outerwear'];
-  return roles.some((role,index) => {
-    const mapped = look.mapping?.[role]?.color;
-    const ordered = look.colors?.[index];
-    if(look[role] && !allows(COLORS[look[role]],role)) return true;
-    return [mapped,ordered].filter(Boolean).some(color => !allows(color,role));
+function lookHasBannedColor(look,allows=canUseColorForRole){
+  if(!look)return false;
+  return WADA_ROLES.some((role,i)=>{
+    const id=look.mapping?.[role]?.color?.id || look[role] || look.ids?.[i];
+    return !COLORS[id] || !allows(COLORS[id],role);
   });
 }
 
 function sanitizeStoredLooks(){
   removePrintzEverywhere();
-  if(!canUseColorForRole(COLORS[state.anchorColorId],state.anchorPiece)) state.anchorColorId = 'cocoa';
-  // An older look may have a white jacket. Keep its four base pieces when
-  // only the optional layer needs replacing, including in a restored backup.
-  for(const look of [state.currentLook,state.anchorLook]){
-    const jacket = look?.mapping?.outerwear?.color;
-    if(jacket && !canUseColorForRole(jacket,'outerwear') && !isBannedColor(jacket)){
-      delete look.mapping.outerwear;
-      if(look.colors?.length===5)look.colors=look.colors.slice(0,4);
-      delete look.outerwear;
+  for(const key of ['currentLook','anchorLook']){
+    const look=state[key];
+    if(!look || lookHasBannedColor(look)){state[key]=null;continue;}
+    if(look.colors?.length!==3 || look.mapping.accessory || look.mapping.outerwear){
+      const colors=WADA_ROLES.map(role=>COLORS[look.mapping[role].color.id]);
+      const mapping=Object.fromEntries(WADA_ROLES.map((role,i)=>[role,{...look.mapping[role],color:colors[i]}]));
+      const denim=mapping.bottom.fabric==='denim';
+      state[key]={...look,mapping,colors,title:buildTitle(colors),vibe:trioVibe(colors),
+        why:trioExplanation(colors,look.wada?.plate),signature:trioSignature(colors,denim),
+        wada:look.wada?{...look.wada,refs:look.wada.refs?.slice(0,3)}:null};
     }
   }
-  if(lookHasBannedColor(state.currentLook)) state.currentLook = null;
-  if(lookHasBannedColor(state.anchorLook)) state.anchorLook = null;
-  if(Array.isArray(state.lookbook)) state.lookbook = state.lookbook.filter(look => !lookHasBannedColor(look, wardrobeAllowsRole));
-  if(Array.isArray(state.recentHome)) state.recentHome = state.recentHome.filter(look => !lookHasBannedColor(look, wardrobeAllowsRole));
+  state.recentHome=state.recentHome.filter(row=>!lookHasBannedColor(row,wardrobeAllowsRole)).map(row=>({...row,ids:WADA_ROLES.map(role=>row[role])}));
 }
 
 function restoreStudioLook(){
   const look=state.currentLook;
   if(look && WADA_ROLES.every(role => canUseColorForRole(look.mapping?.[role]?.color,role)) && !wadaSameTone(wadaLab(look.mapping.top.color.hex),wadaLab(look.mapping.shoes.color.hex))){
-    state.currentLook=applySeasonToLook(look);
+    state.currentLook=withComplement(look);
     return;
   }
   state.currentLook = null;
   const next = selectAvailableStudioLook(look?.mapping.bottom.fabric === 'denim');
-  state.currentLook = applySeasonToLook(next);
+  state.currentLook = withComplement(next);
   if(next) remember(state.currentLook,'today');
 }
 
@@ -1147,13 +1125,13 @@ function init(){
     bindStudio();
     bindStyleFeedback();
     renderToday();
-    renderSeasonSettings();
+
     if(location.hash === '#wardrobe')openWardrobe();
   }catch(err){
     console.error(err);
     // Last-resort recovery: generate and render a look instead of showing an empty shell.
     try{
-      state.currentLook = applySeasonToLook(generateBestLook('super'));
+      state.currentLook = withComplement(generateBestLook('super'));
       remember(state.currentLook, 'today');
       saveState();
       renderToday();
@@ -1168,9 +1146,6 @@ function init(){
 }
 
 function bindEvents(){
-  document.querySelectorAll('[data-season]').forEach(input => {
-    input.addEventListener('change', () => setSeasonMode(input.value));
-  });
   on('nextLookBtn','click',requestStudioLook);
 }
 
@@ -1189,7 +1164,7 @@ function requestStudioLook(){
         const needsDenim = previous?.mapping.bottom.fabric !== 'denim';
         const look = selectAvailableStudioLook(needsDenim);
         if(!look){toast('לא נמצא שילוב נוסף כרגע. נסי שוב.');return;}
-        const next = applySeasonToLook(look);
+        const next = withComplement(look);
         rememberStudioPreview();
         state.currentLook = next;
         remember(state.currentLook, 'today');
@@ -1430,7 +1405,7 @@ function renderAnchorLook(look){
   $('anchorLookTitle').textContent = look.title;
   $('anchorLookVibe').textContent = look.vibe;
   $('anchorWhyWorks').textContent = look.why;
-  if(el('anchorLookVisual')) renderLookVisual($('anchorLookVisual'), applySeasonToLook(look).mapping);
+  if(el('anchorLookVisual')) renderLookVisual($('anchorLookVisual'), look.mapping);
   if(el('anchorPaletteRow')) renderPalette($('anchorPaletteRow'), look.colors);
   if(el('anchorMappingList')) renderMapping($('anchorMappingList'), look.mapping);
   const locked = el('anchorMappingList') ? $('anchorMappingList').querySelector(`[data-role="${state.anchorPiece}"]`) : null;
@@ -2085,13 +2060,9 @@ function compactLookForHistory(look){
     top:look.mapping?.top?.color?.id || '',
     bottom:look.mapping?.bottom?.color?.id || '',
     shoes:look.mapping?.shoes?.color?.id || '',
-    accessory:look.mapping?.accessory?.color?.id || '',
-    outerwear:look.mapping?.outerwear?.color?.id || '',
     topFamily:look.mapping?.top?.color?.family || '',
     bottomFamily:look.mapping?.bottom?.color?.family || '',
     shoesFamily:look.mapping?.shoes?.color?.family || '',
-    accessoryFamily:look.mapping?.accessory?.color?.family || '',
-    outerwearFamily:look.mapping?.outerwear?.color?.family || '',
     wadaPlate:look.wada?.plate || null,
     wadaSize:look.wada?.size || null,
     familySignature:lookFamilySignature(look)
@@ -2923,9 +2894,9 @@ function restoreDataFromFile(event){
       sanitizeStoredLooks();
       restoreStudioLook();
       studioUndo = [];
-      renderSeasonSettings();
+  
       saveState();
-      renderAll();
+      renderToday();
       toast('שוחזר מגיבוי ✨');
     }catch(err){
       toast('קובץ הגיבוי לא תקין');
@@ -3272,121 +3243,71 @@ function renderPrintzList(){
 
 
 function activeRoleIds(){
-  return ['top','bottom','shoes','accessory'];
+  return WADA_ROLES;
 }
 
-function renderSeasonSettings(){
-  document.querySelectorAll('[data-season]').forEach(input => {
-    input.checked = input.value === state.seasonMode;
-  });
+function trioSignature(colors,denim=false){
+  return (denim?'denim|':'')+'trio|'+colors.map(c=>c.id).join('|');
 }
 
-function setSeasonMode(mode){
-  state.seasonMode = mode === 'summer' ? 'summer' : 'winter';
-  state.currentLook = applySeasonToLook(state.currentLook);
-  saveState();
-  renderToday();
-  renderSeasonSettings();
+function trioVibe(colors){
+  const [top,bottom,shoes]=colors.map(c=>wadaLab(c.hex));
+  if(wardrobeFamily(colors[0])===wardrobeFamily(colors[1]))return 'שני גוונים קרובים, והלואפרס נותנים את הטוויסט.';
+  if(wadaChroma(shoes)>.085 && wadaChroma(shoes)>Math.max(wadaChroma(top),wadaChroma(bottom)))return 'הפעם הצבע המודגש מגיע מהלואפרס.';
+  if(Math.max(...[top,bottom,shoes].map(wadaChroma))<.085)return 'שילוב שקט עם הבדלים בעומק הצבע.';
+  if(shoes[0]>Math.max(top[0],bottom[0])+.12)return 'הלואפרס הם הנקודה הבהירה בלוק.';
+  if(wadaChroma(shoes)<.055)return 'הלואפרס בגוון שקט לצד החולצה והמכנסיים.';
+  return wadaChroma(top)>wadaChroma(bottom)?'החולצה מובילה את השילוב בצבע.':'המכנסיים נותנים ללוק את הצבע המודגש.';
+}
+function trioExplanation(colors,plate){
+  return 'חולצה בגוון '+colors[0].he+', מכנסיים בגוון '+colors[1].he+' ולואפרס בגוון '+colors[2].he+'. '+(plate?'בהשראת פלטה '+plate+' של Sanzo Wada.':'');
 }
 
-// Find companion swatches from Wada plates that also match the shirt or trousers.
-function pairedJacketReferences(top,bottom){
+function complementOptions(look){
   const {sources,plates}=wadaCatalog();
-  const topLab=wadaLab(top.hex),bottomLab=wadaLab(bottom.hex);
-  const anchorDistances=sources.map(ref=>Math.min(
-    ref.optionIds.top.has(top.id) ? wadaDistance(ref.lab,topLab) : Infinity,
-    ref.optionIds.bottom.has(bottom.id) ? wadaDistance(ref.lab,bottomLab) : Infinity
-  ));
-  const companions=new Map();
-  for(const {indices} of plates){
-    for(const anchor of indices){
-      const distance=anchorDistances[anchor];
-      if(!Number.isFinite(distance))continue;
-      for(const ref of indices){
-        if(ref!==anchor && distance<(companions.get(ref) ?? Infinity))companions.set(ref,distance);
-      }
+  const refs=new Set(look.wada?.refs || []);
+  const weights=new Map();
+  for(const plate of plates){
+    const overlap=plate.indices.filter(ref=>refs.has(ref)).length;
+    if(!overlap)continue;
+    for(const ref of plate.indices){
+      const score=(plate.id===look.wada?.plate?5:0)+overlap+(refs.has(ref)?0:3);
+      weights.set(ref,Math.max(weights.get(ref)||0,score));
     }
   }
-  return companions;
-}
-
-function jacketFitsOutfit(color,mapping,isDenimJacket){
-  if(!canUseColorForRole(color,'outerwear') || (isDenimJacket && mapping.bottom.fabric==='denim'))return false;
-  const lab=wadaLab(color.hex);
-  return color.hex.toLowerCase()!==mapping.shoes.color.hex.toLowerCase()
-    && !wadaSameTone(lab,wadaLab(mapping.bottom.color.hex))
-    && wadaDistance(lab,wadaLab(mapping.top.color.hex))>=LOOK_COMPOSITION.nearDistance
-    && wadaDistance(lab,wadaLab(mapping.accessory.color.hex))>=LOOK_COMPOSITION.nearDistance;
-}
-
-function pickOuterwearColor(look){
-  const {top,bottom,shoes,accessory}=look.mapping;
-  const {sources}=wadaCatalog();
-  const denim=COLORS.denim;
-  const options=new Map();
-  function add(color,distance){
-    if(distance>=(options.get(color) ?? Infinity))return;
-    if(jacketFitsOutfit(color,look.mapping,color.id===denim.id))options.set(color,distance);
-  }
-
-  const references=wadaReference(look)?.indices || [];
-  for(const ref of references){
-    for(const {color,distance} of sources[ref].options.outerwear)add(color,distance);
-  }
-  const supportsDenim=references.some(ref=>sources[ref].optionIds.outerwear.has(denim.id));
-  if(supportsDenim || [top,bottom].some(item=>wadaChroma(wadaLab(item.color.hex))<.075))add(denim,0);
-
-  const recent=recentHomeHistory(36).map(entry=>COLORS[entry.outerwear]).filter(Boolean).slice(0,16);
-  const current=state.currentLook?.mapping?.outerwear?.color;
-  if(current && recent[0]?.id!==current.id)recent.unshift(current);
-  const families=recent.map(wardrobeFamily);
-  const recentFamilies=families.slice(0,3);
-  const quiet=[top,bottom,shoes,accessory].every(({color})=>!isRedColor(color) && wadaChroma(wadaLab(color.hex))<.125);
-  if(quiet || ![...options.keys()].some(color=>!recentFamilies.includes(wardrobeFamily(color)))){
-    for(const [ref,anchorDistance] of pairedJacketReferences(top.color,bottom.color)){
-      for(const {color,distance} of sources[ref].options.outerwear){
-        if(quiet || !isRedColor(color))add(color,.065+anchorDistance+distance);
-      }
+  const worn=look.colors.map(c=>wadaLab(c.hex)),seen=look.complementHistory||[];
+  const best=new Map();
+  for(const [ref,weight] of weights){
+    for(const {color,distance} of sources[ref].companions){
+      if(worn.some(lab=>wadaDistance(lab,wadaLab(color.hex))<.085))continue;
+      const score=weight-distance*14;
+      if(score>(best.get(color)??-Infinity))best.set(color,score);
     }
   }
-  // A narrow wardrobe can have no Wada match for this look.
-  if(!options.size)for(const color of Object.values(COLORS))add(color,0);
-
-  const recentShades=recent.map(color=>color.id);
-  let best,bestScore=-Infinity;
-  for(const [color,distance] of options){
-    const family=wardrobeFamily(color);
-    const familyAge=recentFamilies.indexOf(family);
-    const shadeAge=recentShades.indexOf(color.id);
-    // Prefer a different family first. Within it, rotate shades and favor close Wada matches.
-    const familyPenalty=familyAge<0 ? 0 : 3-familyAge;
-    const shadePenalty=shadeAge<0 ? 0 : .4*(1-shadeAge/recent.length);
-    const frequency=families.filter(old=>old===family).length;
-    const score=Math.random()*.09-distance-familyPenalty-shadePenalty-frequency*.05;
-    if(score>bestScore){best=color;bestScore=score;}
+  if(!best.size)for(const color of Object.values(COLORS)){
+    if(SELECTED_COLOR_IDS.has(color.id) && worn.every(lab=>wadaDistance(lab,wadaLab(color.hex))>=.085))best.set(color,0);
   }
-  return best;
+  const previous=COLORS[look.complementId];
+  return [...best].filter(([color])=>color.id!==previous?.id).map(([color,score])=>{
+    const age=seen.indexOf(color.id);
+    const sameFamily=previous && wardrobeFamily(previous)===wardrobeFamily(color);
+    return {color,score:score+(age<0?0:-18+age)-(sameFamily?8:0)+Math.random()*2};
+  }).sort((a,b)=>b.score-a.score);
 }
-
-function applySeasonToLook(look){
-  if(!look?.mapping || state.seasonMode!=='winter') return look;
-  const jacket=look.mapping.outerwear;
-  if(jacket && jacketFitsOutfit(jacket.color,look.mapping,jacket.fabric==='denim')) return look;
-  const color = pickOuterwearColor(look);
-  if(!color){
-    const mapping = {...look.mapping};
-    delete mapping.outerwear;
-    return {...look,mapping};
-  }
-  const outerwear=color.id===COLORS.denim.id
-    ? {color,fabric:'denim',text:'ג׳קט ג׳ינס כחול'}
-    : {color,text:roleText('outerwear',color)};
-  return {...look,mapping:{...look.mapping,outerwear}};
+function withComplement(look){
+  if(look && (!COLORS[look.complementId] || look.colors.some(c=>c.id===look.complementId)))rotateComplement(look);
+  return look;
+}
+function rotateComplement(look){
+  const next=complementOptions(look)[0]?.color;
+  if(!next)return;
+  look.complementId=next.id;
+  look.complementHistory=[next.id,...(look.complementHistory||[]).filter(id=>id!==next.id)].slice(0,12);
 }
 
 function finalizeDailyLook(look){
   let next = applyLockedRolesToLook(look);
-  next = applySeasonToLook(next);
+  next = withComplement(next);
   return removePrintzFromLook(next);
 }
 
@@ -3557,7 +3478,7 @@ function toast(message){
 const WADA_DATA={"colors":["#f9c1ce","#f8b6ba","#e0b3b6","#d1b0a7","#b59392","#f58e84","#f6917e","#f48067","#f37f94","#f27291","#d46d7a","#e2625e","#da525d","#bb7125","#c56127","#eb5324","#e31f26","#dd4027","#c55347","#ae5224","#ab544d","#cb2f43","#cc1236","#c53c69","#b73f74","#b71f57","#a94151","#a84222","#a62c37","#ab2439","#a72144","#7c4226","#793327","#82241f","#7d133a","#802626","#642d5e","#6d4145","#f5ecc2","#ffefae","#fbe6a0","#ebd3a2","#fdd4bd","#fcc79b","#eeb480","#fdc57e","#fdbf68","#f3a257","#eea78c","#d8a37b","#c5a56e","#c59f6b","#c1c494","#c2ae93","#fff200","#f8ed43","#ffdd00","#cab356","#d6b43e","#e2b540","#fcb315","#f99d1b","#f68c50","#f37420","#f15a30","#d96629","#c27544","#c16b27","#c19f2c","#bc892b","#b2b73e","#b09f36","#96874d","#8b835b","#848061","#84875e","#837e31","#986f2d","#a36752","#6b7140","#806e4b","#635a3a","#71502f","#644b1e","#762c19","#653514","#4b3317","#b5decc","#b4cdc2","#b7c2a9","#afd472","#c7d14f","#87c540","#a6a159","#709390","#6d7e77","#8fa071","#719470","#648f7b","#00b49b","#00978d","#00908a","#489b6e","#009465","#819238","#1a7444","#437742","#555832","#42533e","#253122","#bce4e5","#a7d4e4","#a5c8d1","#97acc8","#96d1aa","#78cdd0","#62c6bf","#0093a5","#00939b","#099197","#5a82b3","#006eb8","#007190","#005b8d","#547076","#004f46","#1c4286","#40456a","#064f6e","#12354e","#1e0e3f","#051230","#112f2c","#b5b1d8","#c0a9b3","#ca92a8","#b984af","#bf5892","#9a72aa","#a36aa5","#80719e","#66629c","#6450a1","#84565b","#70727c","#8c4c62","#704357","#7a4456","#713b4c","#4f4086","#59256a","#501345","#4e1d4c","#ffffff","#b6bfc1","#a2b0ad","#a1a39a","#34454c","#111314"],"palettes":[[1,[65,117]],[2,[61,129]],[3,[13,39]],[4,[50,150]],[5,[106,128]],[6,[7,131]],[7,[63,88]],[8,[66,133]],[9,[36,140]],[10,[66,73]],[11,[41,155]],[12,[50,119]],[13,[13,145]],[14,[9,40]],[15,[100,133]],[16,[33,111]],[17,[12,99]],[18,[3,152]],[19,[85,92]],[20,[115,135]],[21,[7,99]],[22,[54,126]],[23,[45,138]],[24,[83,145]],[25,[18,110]],[26,[47,82]],[27,[1,157]],[28,[84,131]],[29,[75,113]],[30,[29,155]],[31,[17,39]],[32,[49,92]],[33,[13,157]],[34,[8,154]],[35,[4,28]],[36,[68,87]],[37,[27,150]],[38,[105,126]],[39,[22,123]],[40,[14,70]],[41,[73,115]],[42,[59,149]],[43,[1,139]],[44,[101,120]],[45,[42,55]],[46,[63,158]],[47,[18,134]],[48,[24,123]],[49,[111,121]],[50,[41,152]],[51,[28,121]],[52,[38,158]],[53,[61,152]],[54,[100,112]],[55,[10,153]],[56,[134,149]],[57,[147,157]],[58,[32,99]],[59,[8,71]],[60,[39,129]],[61,[91,151]],[62,[54,158]],[63,[37,117]],[64,[139,141]],[65,[68,115]],[66,[58,79]],[67,[120,129]],[68,[4,54]],[69,[156,158]],[70,[13,107]],[71,[29,49]],[72,[38,111]],[73,[82,96]],[74,[87,119]],[75,[111,127]],[76,[39,156]],[77,[12,128]],[78,[44,116]],[79,[84,119]],[80,[38,138]],[81,[47,156]],[82,[32,152]],[83,[52,127]],[84,[42,132]],[85,[14,122]],[86,[13,99]],[87,[1,70]],[88,[42,121]],[89,[61,127]],[90,[8,139]],[91,[37,67]],[92,[5,100]],[93,[71,112]],[94,[41,125]],[95,[32,130]],[96,[59,76]],[97,[1,18]],[98,[84,127]],[99,[39,117]],[100,[72,140]],[101,[2,126]],[102,[41,67]],[103,[66,152]],[104,[28,38]],[105,[2,97]],[106,[122,130]],[107,[56,74]],[108,[8,27]],[109,[39,108]],[110,[31,86]],[111,[39,90]],[112,[7,158]],[113,[42,86]],[114,[60,122]],[115,[40,64]],[116,[2,142]],[117,[22,158]],[118,[59,86]],[119,[112,129]],[120,[2,29]],[121,[31,49,107]],[122,[22,46,100]],[123,[5,55,147]],[124,[35,59,93]],[125,[3,117,127]],[126,[41,59,126]],[127,[45,98,141]],[128,[1,116,138]],[129,[56,69,113]],[130,[13,28,149]],[131,[13,65,118]],[132,[38,47,71]],[133,[33,71,99]],[134,[8,138,150]],[135,[38,106,113]],[136,[21,103,150]],[137,[18,45,98]],[138,[47,55,116]],[139,[113,131,154]],[140,[47,122,157]],[141,[63,90,129]],[142,[26,68,113]],[143,[121,136,156]],[144,[24,63,158]],[145,[31,70,130]],[146,[69,81,105]],[147,[9,33,87]],[148,[58,60,117]],[149,[58,63,132]],[150,[42,70,88]],[151,[38,61,128]],[152,[18,32,112]],[153,[8,60,70]],[154,[22,54,121]],[155,[15,100,131]],[156,[58,114,149]],[157,[34,58,120]],[158,[55,66,92]],[159,[69,115,133]],[160,[68,82,124]],[161,[31,44,123]],[162,[10,96,136]],[163,[56,87,122]],[164,[17,60,149]],[165,[2,9,37]],[166,[7,40,132]],[167,[53,111,128]],[168,[55,128,145]],[169,[1,39,156]],[170,[24,60,150]],[171,[35,61,88]],[172,[66,122,150]],[173,[55,84,87]],[174,[1,134,147]],[175,[44,52,142]],[176,[0,42,115]],[177,[35,72,133]],[178,[41,112,119]],[179,[17,47,126]],[180,[45,138,154]],[181,[28,149,151]],[182,[13,86,131]],[183,[144,145,150]],[184,[9,41,74]],[185,[4,18,39]],[186,[32,49,121]],[187,[123,134,139]],[188,[96,113,114]],[189,[55,109,116]],[190,[41,65,158]],[191,[4,59,121]],[192,[46,86,144]],[193,[7,40,101]],[194,[15,42,120]],[195,[9,39,154]],[196,[70,111,142]],[197,[8,141,154]],[198,[19,56,102]],[199,[20,80,126]],[200,[28,52,97]],[201,[7,76,114]],[202,[87,114,157]],[203,[39,48,107]],[204,[24,66,112]],[205,[35,48,149]],[206,[1,47,66]],[207,[78,88,158]],[208,[38,119,122]],[209,[41,61,113]],[210,[45,55,107]],[211,[62,93,131]],[212,[29,77,113]],[213,[48,56,111]],[214,[41,78,149]],[215,[46,121,137]],[216,[15,102,158]],[217,[35,49,105]],[218,[123,133,144]],[219,[15,97,125]],[220,[25,49,139]],[221,[28,154,158]],[222,[59,61,67]],[223,[4,49,87]],[224,[9,124,147]],[225,[22,125,146]],[226,[37,46,149]],[227,[0,112,117]],[228,[28,39,154]],[229,[47,109,154]],[230,[7,87,114]],[231,[2,32,120]],[232,[22,44,131]],[233,[28,72,127]],[234,[45,82,111]],[235,[41,61,134]],[236,[69,126,143]],[237,[28,84,113]],[238,[49,151,156]],[239,[4,57,88]],[240,[6,54,117]],[241,[17,39,50,124]],[242,[8,19,105,158]],[243,[13,41,79,157]],[244,[4,14,95,122]],[245,[28,104,129,157]],[246,[1,27,38,45]],[247,[13,56,100,126]],[248,[8,69,133,146]],[249,[32,53,58,124]],[250,[57,64,99,110]],[251,[30,54,105,157]],[252,[12,13,68,119]],[253,[55,62,151,157]],[254,[1,38,76,135]],[255,[13,57,115,158]],[256,[48,63,103,158]],[257,[16,60,121,139]],[258,[35,44,76,122]],[259,[55,119,123,156]],[260,[10,48,88,99]],[261,[30,39,115,156]],[262,[12,41,71,106]],[263,[19,44,87,157]],[264,[1,17,89,117]],[265,[10,56,93,130]],[266,[16,41,96,100]],[267,[46,61,100,121]],[268,[4,13,109,110]],[269,[13,35,139,158]],[270,[12,38,79,106]],[271,[25,114,119,132]],[272,[39,63,87,113]],[273,[0,34,78,154]],[274,[64,73,120,138]],[275,[18,53,84,147]],[276,[8,42,90,158]],[277,[9,24,76,130]],[278,[46,58,106,125]],[279,[13,48,53,129]],[280,[12,107,135,147]],[281,[39,100,114,122]],[282,[12,51,114,136]],[283,[20,35,97,116]],[284,[11,56,99,125]],[285,[4,19,64,87]],[286,[19,60,118,127]],[287,[8,57,111,115]],[288,[61,83,147,158]],[289,[55,91,127,130]],[290,[37,39,107,114]],[291,[91,99,114,115]],[292,[39,44,50,53]],[293,[13,87,94,102]],[294,[38,46,106,113]],[295,[46,54,121,130]],[296,[38,49,82,157]],[297,[19,61,79,127]],[298,[13,55,64,158]],[299,[23,48,104,122]],[300,[7,46,87,115]],[301,[16,41,96,139]],[302,[46,53,110,122]],[303,[40,64,109,154]],[304,[32,46,73,100]],[305,[44,56,70,87]],[306,[55,100,103,110]],[307,[22,133,139,151]],[308,[3,21,65,114]],[309,[47,62,127,128]],[310,[38,44,76,109]],[311,[29,46,89,91]],[312,[19,61,94,123]],[313,[22,54,105,158]],[314,[8,32,126,152]],[315,[7,38,47,137]],[316,[33,103,149,150]],[317,[43,53,55,87]],[318,[80,108,125,132]],[319,[13,56,61,106]],[320,[5,38,104,112]],[321,[4,38,109,113]],[322,[16,27,137,142]],[323,[45,70,84,158]],[324,[29,120,139,154]],[325,[12,40,59,132]],[326,[38,64,90,92]],[327,[8,13,53,134]],[328,[27,62,86,101]],[329,[46,134,151,157]],[330,[52,110,113,119]],[331,[23,130,138,149]],[332,[5,21,109,125]],[333,[19,55,114,121]],[334,[42,76,90,122]],[335,[33,61,149,157]],[336,[8,32,39,108]],[337,[37,135,148,158]],[338,[28,60,125,134]],[339,[49,65,112,127]],[340,[64,99,154,158]],[341,[7,106,109,112]],[342,[1,46,77,109]],[343,[19,41,81,128]],[344,[45,126,139,158]],[345,[32,110,116,142]],[346,[24,87,91,95]],[347,[93,99,123,136]],[348,[52,106,109,151]]]};
 // Book references are digital approximations, not new entries in COLORS.
 // Dataset: Matt DesLauriers / Dain M. Blodorn Kim, MIT (see THIRD_PARTY_NOTICES.md).
-const WADA_ROLES=['top','bottom','shoes','accessory'];
+const WADA_ROLES=WARDROBE_ROLES;
 const WADA_LIMITS=Object.freeze({maxDistance:.115,meanDistance:.072,relationshipError:.075});
 const wadaLabCache=new Map();
 let wadaCatalogCache=null;
@@ -3575,8 +3496,8 @@ function wadaDistance(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);}
 function wadaChroma(lab){return Math.hypot(lab[1],lab[2]);}
 function wadaAssignments(size){
   const out=[];
-  for(let a=0;a<size;a++)for(let b=0;b<size;b++)for(let c=0;c<size;c++)for(let d=0;d<size;d++){
-    const v=[a,b,c,d];if(new Set(v).size===size)out.push(v);
+  for(let a=0;a<size;a++)for(let b=0;b<size;b++)for(let c=0;c<size;c++){
+    const v=[a,b,c];if(new Set(v).size===Math.min(3,size))out.push(v);
   }
   return out;
 }
@@ -3593,32 +3514,32 @@ function wadaCatalog(){
         if(chroma>.065 && c>.04){const cosine=(lab[1]*x.lab[1]+lab[2]*x.lab[2])/(chroma*c);if(cosine<.78)return false;}
         return true;
       }).sort((a,b)=>a.distance-b.distance);
-    const options=Object.fromEntries([...WADA_ROLES,'outerwear'].map(role=>{
+    const options=Object.fromEntries(WADA_ROLES.map(role=>{
       const safe=ranked.filter(x=>canUseColorForRole(x.color,role));
       // Keep every eligible shade. The former nearest-nine shortcut made
       // several real app colors unreachable; wadaFit still validates the set.
       return [role,safe];
     }));
     const optionIds=Object.fromEntries(Object.entries(options).map(([role,items])=>[role,new Set(items.map(o=>o.color.id))]));
-    return {lab,options,optionIds};
+    return {lab,options,optionIds,companions:ranked.filter(o=>SELECTED_COLOR_IDS.has(o.color.id))};
   });
   const patterns={2:wadaAssignments(2),3:wadaAssignments(3),4:wadaAssignments(4)};
   const plates=WADA_DATA.palettes.map(([id,indices])=>({id,indices,size:indices.length,patterns:patterns[indices.length]}));
   wadaCatalogCache={sources,plates};return wadaCatalogCache;
 }
 function wadaHardValid(colors){
-  if(colors.length!==4 || colors.some((c,i)=>!c || !canUseColorForRole(c,WADA_ROLES[i]) || !COLORS[c.id] || COLORS[c.id].hex!==c.hex))return false;
-  if(new Set(colors.map(c=>c.id)).size!==4)return false;
+  if(colors.length!==3 || colors.some((c,i)=>!c || !canUseColorForRole(c,WADA_ROLES[i]) || !COLORS[c.id] || COLORS[c.id].hex!==c.hex))return false;
+  if(new Set(colors.map(c=>c.id)).size!==3)return false;
   if(colors.filter(isRedColor).length>1)return false;
   return !hasBlackWhiteConflict({top:{color:colors[0]},bottom:{color:colors[1]}});
 }
 function wadaFit(colors,refs){
   const source=wadaCatalog().sources, labs=colors.map(c=>wadaLab(c.hex));
   const distances=labs.map((lab,i)=>wadaDistance(lab,source[refs[i]].lab));
-  const mean=distances.reduce((a,b)=>a+b)/4,max=Math.max(...distances);
+  const mean=distances.reduce((a,b)=>a+b)/colors.length,max=Math.max(...distances);
   if(max>WADA_LIMITS.maxDistance || mean>WADA_LIMITS.meanDistance)return null;
   let relationship=0,pairs=0;
-  for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+  for(let i=0;i<colors.length;i++)for(let j=i+1;j<colors.length;j++){
     const original=wadaDistance(source[refs[i]].lab,source[refs[j]].lab);
     const actual=wadaDistance(labs[i],labs[j]);
     // Two shades of one source remain tonal; separate source colors stay distinct.
@@ -3639,7 +3560,7 @@ function wadaHistoryScore(colors,plate,fixed,usage){
   score+=use?Math.min(38,(seq-use.lastSeq)*.7)-Math.min(35,use.count*4):42;
   const sizeHits=recentHomeHistory(10).filter(h=>h.wadaSize===plate.size).length;
   score-=sizeHits*4;
-  for(let i=0;i<4;i++){
+  for(let i=0;i<colors.length;i++){
     const role=WADA_ROLES[i],color=colors[i];if(fixed[role])continue;
     score+=usage[color.id]*.22;
     history.slice(0,7).forEach((old,k)=>{
@@ -3662,11 +3583,10 @@ function wadaReference(look){
 function wadaMakeLook(candidate){
   const {colors,plate,refs,fit}=candidate;
   const mapping=Object.fromEntries(WADA_ROLES.map((role,i)=>[role,{color:colors[i],text:roleText(role,colors[i])}]));
-  const top=colors[0].he,bottom=colors[1].he;
   return {mapping,colors,title:buildTitle(colors),colorMode:'super',
-    signature:'wada-v180|'+colors.map(c=>c.id).join('|'),createdAt:new Date().toISOString(),
-    vibe:'צבע עמוק, חיבורים מפתיעים, הטעם שלך.',
-    why:`${top} ו${bottom}, עם נעליים ב${colors[2].he} ותיק ב${colors[3].he}. השילוב נבחר לפי ההעדפות שלך${state.styleFeedback?.ratings.length?' והדירוגים שנתת':''}, בהשראת פלטה ${plate.id} של Sanzo Wada.`,
+    signature:trioSignature(colors),createdAt:new Date().toISOString(),
+    vibe:trioVibe(colors),
+    why:trioExplanation(colors,plate.id),
     wada:{plate:plate.id,size:plate.size,refs:[...refs],meanDistance:fit.mean,maxDistance:fit.max,relationshipError:fit.relationship}
   };
 }
@@ -3682,7 +3602,7 @@ const DENIM_WASHES=[
 function denimAccent(colors){
   const blue=wadaLab(colors[1].hex);
   // A neutral can support the outfit, but beige or black alone isn't its colorful twist.
-  return [0,2,3].filter(i=>['green','purple','soft','red','warm-accent'].includes(colors[i].family)).map(i=>{
+  return [0,2].filter(i=>['green','purple','soft','red','warm-accent'].includes(colors[i].family)).map(i=>{
     const lab=wadaLab(colors[i].hex),chroma=wadaChroma(lab),gap=wadaHueGap(lab,blue);
     return {i,chroma,gap,d:wadaDistance(lab,blue),score:Math.min(gap,115)/115*Math.min(chroma,.18)};
   }).filter(x=>x.chroma>=.05&&x.gap>=48&&x.d>=.13).sort((a,b)=>b.score-a.score)[0];
@@ -3691,20 +3611,20 @@ function generateDenimLook(){
   const recent=recentHomeHistory(36).filter(h=>h.denim).slice(0,3);
   const penalty=w=>recent.reduce((sum,h,i)=>sum+(w.ids.has(h.bottom)?4-i:0),0);
   // Prefer a wash that hasn't appeared in the last few jeans requests.
+  let best=null,bestChanges=-1;
   for(const wash of shuffleArray(DENIM_WASHES).sort((a,b)=>penalty(a)-penalty(b))){
     const look=wadaSelect({denimWash:wash});
     if(!look)continue;
     look.mapping.bottom.fabric='denim';
     const garment='ג׳ינס '+wash.name;
     look.mapping.bottom.text=garment;
-    const accent=denimAccent(look.colors).i;
-    look.title=garment+' עם '+look.colors[accent].he;
-    look.vibe=['הפעם הטוויסט מגיע מהחולצה.','','הפעם הטוויסט מגיע מהנעליים.','הפעם הטוויסט מגיע מהתיק.'][accent];
-    look.why=garment+', חולצה בגוון '+look.colors[0].he+', נעליים בגוון '+look.colors[2].he+' ותיק בגוון '+look.colors[3].he+'. בהשראת פלטה '+look.wada.plate+' של Sanzo Wada.';
-    look.signature='denim|'+look.signature;
-    return look;
+    look.title=garment+' עם '+look.colors[0].he;
+    look.signature=trioSignature(look.colors,true);
+    const changes=WADA_ROLES.filter((role,i)=>clearlyChanged(look.colors[i],state.currentLook?.mapping?.[role]?.color)).length;
+    if(changes===3)return look;
+    if(changes>bestChanges){best=look;bestChanges=changes;}
   }
-  return null;
+  return best;
 }
 function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
   const {plates,sources}=wadaCatalog();
@@ -3751,7 +3671,7 @@ function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
       if(groupFocus)colors[groupFocus.index]=groupFocus.color;
       const focus=wadaCoverageFocus(refs,colors,coverageTargets,sources);
       if(focus)colors[focus.index]=focus.color;
-      for(const i of shuffleArray([0,1,2,3])){
+      for(const i of shuffleArray([0,1,2])){
         if(colors[i])continue;
         const options=sources[refs[i]].options[WADA_ROLES[i]].filter(o=>!colors.some(c=>c?.id===o.color.id)
           && (i!==1 || (denimWash?denimWash.ids.has(o.color.id):!o.color.id.startsWith('denim')))
@@ -3764,7 +3684,7 @@ function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
         const weighted=options.map(o=>({color:o.color,weight:Math.max(1,(12+shadeCoverageWeight(o.color,WADA_ROLES[i])*.25)*personalColorWeight(o.color,WADA_ROLES[i]))}));
         colors[i]=weightedPick(weighted);
       }
-      if(!valid||!wadaHardValid(colors)||(denimWash&&!denimAccent(colors)))continue;
+      if(!valid||!wadaHardValid(colors))continue;
       const composition=wadaComposition(colors);
       if(!composition.valid)continue;
       const key=colors.map(c=>c.id).join('|');if(seen.has(key))continue;
@@ -3772,7 +3692,7 @@ function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
       const unlocked=WADA_ROLES.filter(r=>!fixed[r]);
       if(current){
         const changes=unlocked.filter(r=>colors[WADA_ROLES.indexOf(r)].id!==current.mapping[r].color.id).length;
-        if(changes<Math.min(2,unlocked.length))continue;
+        if(!changes && Boolean(denimWash)===(current.mapping.bottom.fabric==='denim'))continue;
       }
       seen.add(key);
       const visual=wadaVisualMetrics(colors,variety);
@@ -3784,13 +3704,13 @@ function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
   if(!candidates.length)return null;
   let pool=personalSelectCandidates(candidates,variety);
   // Exclude recently used entire color sets, even when roles are permuted.
-  const freshSets=pool.filter(c=>!recentHomeHistory(24).some(h=>h.ids?.length===4&&c.colors.every(color=>h.ids.includes(color.id))));
+  const freshSets=pool.filter(c=>!recentHomeHistory(24).some(h=>h.ids?.length===3&&c.colors.every(color=>h.ids.includes(color.id))));
   if(freshSets.length)pool=freshSets;
   if(!replaceRole){
     const freshPlates=pool.filter(c=>!recentHomeHistory(24).some(h=>h.wadaPlate===c.plate.id));
     if(freshPlates.length)pool=freshPlates;
   }
-  if(!fixed.shoes && (!replaceRole || replaceRole==='shoes'))rankShoeVariety(pool);
+  rankGarmentVariety(pool,unlockedRolesForVariety(fixed,replaceRole));
   // Avoid one successful palette flooding the shortlist with near-identical candidates.
   const bestPerPlate=new Map();
   for(const c of pool){if(!bestPerPlate.has(c.plate.id)||c.score>bestPerPlate.get(c.plate.id).score)bestPerPlate.set(c.plate.id,c);}
@@ -3802,9 +3722,9 @@ function wadaSelect({fixed={},replaceRole=null,denimWash=null}={}){
 document.addEventListener('DOMContentLoaded', init);
 </script>
 <dialog id="artDialog" aria-labelledby="detailTitle"><header class="dialog-head"><div><h2 id="detailTitle">מבט מקרוב</h2><p id="detailCaption"></p></div><button class="tool-btn" id="closeDetailBtn" aria-label="סגירת ההגדלה" type="button" data-icon="close"></button></header><div class="detail-art"><canvas id="detailCanvas" role="img"></canvas><p id="detailStatus" role="status"></p></div><footer class="detail-footer"><button class="mini-item-btn" id="detailDownloadBtn" type="button">הורדת הלוק</button></footer></dialog>
-<script src="studio.js?v=364"></script>
-<script src="preferences.js?v=364"></script>
-<script src="suggestions.js?v=364"></script>
-<script src="wardrobe.js?v=364"></script>
+<script src="studio.js?v=400"></script>
+<script src="preferences.js?v=400"></script>
+<script src="suggestions.js?v=400"></script>
+<script src="wardrobe.js?v=400"></script>
 </body>
 </html>

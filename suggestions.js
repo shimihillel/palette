@@ -47,12 +47,12 @@ function wadaComposition(colors){
   let colorfulPair=false,distinctColors=1;
   // Only four garments: inspect every subset so group count does not depend on
   // garment order, and nearby hues cannot inflate the count through chaining.
-  for(let mask=1;mask<16;mask++){
-    const indices=[0,1,2,3].filter(i=>mask&(1<<i));
+  for(let mask=1;mask<(1<<colors.length);mask++){
+    const indices=[0,1,2].filter(i=>mask&(1<<i));
     if(indices.every((i,k)=>indices.slice(k+1).every(j=>!wadaSameTone(labs[i],labs[j]))))
       distinctColors=Math.max(distinctColors,indices.length);
   }
-  for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+  for(let i=0;i<colors.length;i++)for(let j=i+1;j<colors.length;j++){
     if(chroma[i]>=LOOK_COMPOSITION.accentChroma&&chroma[j]>=LOOK_COMPOSITION.accentChroma
       &&wadaHueGap(labs[i],labs[j])>=LOOK_COMPOSITION.accentHueDegrees
       &&!wadaSameTone(labs[i],labs[j]))colorfulPair=true;
@@ -76,34 +76,39 @@ function prioritizeColorComposition(candidates,context){
   return candidates;
 }
 
-// Score the shoe within complete, validated outfits, before picking a finalist per plate.
-function rankShoeVariety(candidates){
+function unlockedRolesForVariety(fixed,replaceRole){
+  return replaceRole?[replaceRole]:WADA_ROLES.filter(role=>!fixed[role]);
+}
+function clearlyChanged(color,previous){
+  return !previous || (wardrobeFamily(color)!==wardrobeFamily(previous)
+    && wadaDistance(wadaLab(color.hex),wadaLab(previous.hex))>=LOOK_VARIETY.mainChange);
+}
+function rankGarmentVariety(candidates,roles){
   const history=recentHomeHistory(24);
-  const recent=history.map(row=>COLORS[row.shoes]).filter(Boolean);
-  const current=state.currentLook;
-  if(current?.mapping?.shoes?.color && current.signature!==history[0]?.signature){
-    recent.unshift(current.mapping.shoes.color);
-  }
-  if(!recent.length)return;
-  const penalties=new Map();
-  for(const candidate of candidates){
-    const shoe=candidate.colors[2];
-    if(!penalties.has(shoe.id)){
-      const family=wardrobeFamily(shoe),lab=wadaLab(shoe.hex);
-      const penalty=recent.reduce((sum,old,i)=>{
-        const sameFamily=wardrobeFamily(old)===family;
-        if(i<3){
-          const recency=[32,19,11][i];
-          if(sameFamily)sum+=recency;
-          if(wadaDistance(lab,wadaLab(old.hex))<LOOK_COMPOSITION.nearDistance)sum+=recency;
-        }
-        if(sameFamily && i<16)sum+=2;
-        if(old.id===shoe.id)sum+=18*(1-i/recent.length);
-        return sum;
-      },0);
-      penalties.set(shoe.id,penalty);
+  for(const role of roles){
+    const index=WADA_ROLES.indexOf(role),recent=history.map(row=>COLORS[row[role]]).filter(Boolean);
+    const current=state.currentLook;
+    if(current && current.signature!==history[0]?.signature)recent.unshift(current.mapping[role].color);
+    const penalties=new Map();
+    for(const candidate of candidates){
+      const color=candidate.colors[index];
+      if(!penalties.has(color.id)){
+        const family=wardrobeFamily(color),lab=wadaLab(color.hex);
+        const penalty=recent.reduce((sum,old,i)=>{
+          const sameFamily=wardrobeFamily(old)===family;
+          if(i<3){
+            const weight=[22,12,6][i];
+            if(sameFamily)sum+=weight;
+            if(wadaDistance(lab,wadaLab(old.hex))<LOOK_COMPOSITION.nearDistance)sum+=weight;
+          }
+          if(sameFamily && i<16)sum+=1.4;
+          if(old.id===color.id)sum+=16*(1-i/recent.length);
+          return sum;
+        },0);
+        penalties.set(color.id,penalty);
+      }
+      candidate.score-=penalties.get(color.id);
     }
-    candidate.score-=penalties.get(shoe.id);
   }
 }
 
@@ -235,8 +240,7 @@ function updateShadeCoverageControl(){
 function wadaVarietyContext(fixed,replaceRole){
   // For a single-item replacement, the other three garments really are fixed.
   // For Next, only explicitly unlocked main garments drive visual novelty.
-  const mainRoles=['top','bottom'].filter(role=>!fixed[role]);
-  const roles=replaceRole?[replaceRole]:mainRoles;
+  const roles=unlockedRolesForVariety(fixed,replaceRole);
   const indices=roles.map(role=>WADA_ROLES.indexOf(role));
   const current=state.currentLook;
   const currentLabs=current?indices.map(i=>wadaLab(current.mapping[WADA_ROLES[i]].color.hex)):[];
@@ -272,6 +276,11 @@ function wadaVisualScore(metrics,context){
 
 function prioritizeVisibleChanges(candidates,context){
   if(!context.currentLabs.length||!context.indices.length)return candidates;
+  // Maximize the number of visibly different roles before any taste or palette tie-break.
+  // Counting per role allows the other two to rotate when just one shade is owned.
+  const changed=c=>context.indices.filter(i=>clearlyChanged(c.colors[i],state.currentLook.mapping[WADA_ROLES[i]].color)).length;
+  const bestCount=Math.max(...candidates.map(changed));
+  candidates=candidates.filter(c=>changed(c)===bestCount);
   const mainReplacement=context.replaceRole&&['top','bottom'].includes(context.replaceRole);
   const desired=context.replaceRole?(mainReplacement ? .085 : .065):LOOK_VARIETY.mainChange;
   // This gate comes before palette recency. A new palette number cannot

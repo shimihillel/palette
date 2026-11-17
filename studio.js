@@ -1,29 +1,14 @@
 'use strict';
 
-const STUDIO_ROLES = ['top','bottom','shoes','accessory'];
-const WINTER_ROLES = ['top','outerwear','bottom','shoes','accessory'];
-const STUDIO_LABELS = {top:'חולצה',outerwear:'ג׳קט',bottom:'מכנסי בד',shoes:'נעליים',accessory:'תיק'};
-const SHOE_LABELS={loafers:'לואפרס',flipflops:'כפכפי אצבע'};
-const FOOT_PATCH={x:358,y:1424,w:310,h:178};
-function shoeStyle(view){
-  return view==='summer' ? 'flipflops' : 'loafers';
+const STUDIO_ROLES = WADA_ROLES;
+const STUDIO_LABELS={top:'חולצת וי',bottom:'מכנסי בד',shoes:'לואפרס'};
+function studioRoleLabel(role,mapping){
+  return role==='bottom' && mapping.bottom.fabric==='denim'?'מכנסי ג׳ינס':STUDIO_LABELS[role];
 }
-const WINTER_PATCH = {x:210,y:245,w:550,h:600};
-function studioView(mapping=state.currentLook?.mapping){
-  return state.seasonMode==='summer' ? 'summer' : state.showJacket && mapping?.outerwear ? 'jacket' : 'sleeves';
+function artSignature(mapping){
+  return [mapping.bottom.fabric||'cloth',...STUDIO_ROLES.map(r=>mapping[r].color.id)].join('|');
 }
-function visibleRoles(view){return view==='jacket' ? WINTER_ROLES : STUDIO_ROLES;}
-function studioRoleLabel(role,mapping,view=studioView()){
-  if(role==='outerwear'&&mapping.outerwear?.fabric==='denim')return 'ג׳קט ג׳ינס';
-  if(role==='shoes')return SHOE_LABELS[shoeStyle(view)];
-  if(role==='top')return view==='summer'?'חולצה קצרה':'חולצה ארוכה';
-  if(role==='bottom'&&mapping.bottom.fabric==='denim')return 'מכנסי ג׳ינס';
-  return STUDIO_LABELS[role];
-}
-function artSignature(mapping,view=studioView()){
-  return [view,view==='jacket'?(mapping.outerwear?.fabric||'cloth'):'',shoeStyle(view),mapping.bottom.fabric||'cloth',...visibleRoles(view).map(r=>mapping[r].color.id)].join('|');
-}
-const CHARACTER_FILES = {base:'assets/shimi-character-art-v190.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-mask-${r}-v190.png`]))};
+const CHARACTER_FILES={base:'assets/shimi-trio-v400.webp',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-mask-${r}-v400.png`]))};
 const STUDIO_ICONS = {
   settings:'<path d="M4 6h6m4 0h6M4 12h10m4 0h2M4 18h2m4 0h10"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',
   zoom:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
@@ -39,8 +24,7 @@ const STUDIO_ICONS = {
 function studioIcon(name){return `<svg viewBox="0 0 24 24" aria-hidden="true">${STUDIO_ICONS[name]||''}</svg>`;}
 function escapeStudio(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function parseCharacterHex(value){const m=String(value||'').match(/^#([0-9a-f]{6})$/i);if(!m)return [128,128,128];const n=parseInt(m[1],16);return [(n>>16)&255,(n>>8)&255,n&255];}
-const characterAssets=new Map();
-let jacketPromise=null;
+let characterAssets;
 let characterPaintSeq=0;
 let studioDetailSeq=0;
 let studioUndo=[];
@@ -48,46 +32,24 @@ let studioExporting=false;
 const studioRasterCache=new Map();
 
 function loadCharacterImage(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('טעינת האיור נכשלה'));img.src=src;});}
-function loadCharacterAssets(view=studioView()){
-  const season=view==='summer'?'summer':'winter';
-  if(!characterAssets.has(season)){
-    characterAssets.set(season,prepareCharacterAssets(season).catch(err=>{
-      characterAssets.delete(season);
-      throw err;
-    }));
-  }
-  return characterAssets.get(season);
+function loadCharacterAssets(){
+  if(!characterAssets)characterAssets=prepareCharacterAssets().catch(err=>{characterAssets=null;throw err;});
+  return characterAssets;
 }
 
-async function prepareCharacterAssets(season){
+async function prepareCharacterAssets(){
   const files=[CHARACTER_FILES.base,...STUDIO_ROLES.map(r=>CHARACTER_FILES[r])];
-  const winter=season==='winter',patch=WINTER_PATCH;
-  if(winter)files.push('assets/long-sleeves-v340.webp','assets/long-sleeves-roles-v340.png');
   const [base,...images]=await Promise.all(files.map(loadCharacterImage));
   const w=base.naturalWidth,h=base.naturalHeight,work=document.createElement('canvas');
   work.width=w;work.height=h;
   const ctx=work.getContext('2d',{willReadFrequently:true});
   ctx.drawImage(base,0,0);
-  let rolePatch;
-  if(winter){
-    ctx.drawImage(images[4],patch.x,patch.y);
-    const patchCanvas=document.createElement('canvas');
-    patchCanvas.width=patch.w;patchCanvas.height=patch.h;
-    const patchCtx=patchCanvas.getContext('2d');
-    patchCtx.drawImage(images[5],0,0);
-    rolePatch=patchCtx.getImageData(0,0,patch.w,patch.h).data;
-  }
   const basePixels=ctx.getImageData(0,0,w,h);
   const pixels={},means={},bounds={},masks={};
   for(let r=0;r<STUDIO_ROLES.length;r++){
     const role=STUDIO_ROLES[r],img=images[r];
     if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error('מידות שכבות האיור אינן תואמות');
     ctx.clearRect(0,0,w,h);ctx.drawImage(img,0,0);const raw=ctx.getImageData(0,0,w,h).data;
-    if(winter){
-      for(let y=0;y<patch.h;y++)for(let x=0;x<patch.w;x++){
-        raw[((y+patch.y)*w+x+patch.x)*4]=rolePatch[(y*patch.w+x)*4]===(r+1)*40?255:0;
-      }
-    }
     const indices=[],light=[],alpha=new Uint8Array(w*h);let sum=0,minX=w,minY=h,maxX=0,maxY=0;
     for(let p=0;p<w*h;p++){
       const i=p*4;
@@ -100,112 +62,7 @@ async function prepareCharacterAssets(season){
     pixels[role]={indices:new Uint32Array(indices),light:new Uint8Array(light)};masks[role]=alpha;means[role]=sum/indices.length;
     bounds[role]={x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
   }
-  return {w,h,basePixels,pixels,means,bounds,masks,season};
-}
-
-function loadJacket(){
-  if(!jacketPromise)jacketPromise=loadCharacterImage('assets/open-jacket-v340.png').then(img=>{
-    const {x,y,w,h}=WINTER_PATCH,work=document.createElement('canvas');work.width=w;work.height=h;
-    const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
-    const data=ctx.getImageData(0,0,w,h).data;
-    const indices=[],light=[],opacity=[];let sum=0;
-    for(let p=0;p<w*h;p++){
-      const i=p*4;
-      if(!data[i+3])continue;
-      indices.push(p);light.push(data[i]);opacity.push(data[i+3]);sum+=data[i];
-    }
-    return {indices:Uint32Array.from(indices),light:Uint8Array.from(light),opacity:Uint8Array.from(opacity),
-      mean:sum/indices.length,bounds:{x,y,w,h}};
-  }).catch(err=>{jacketPromise=null;throw err;});
-  return jacketPromise;
-}
-
-let denimJacketPromise=null;
-function loadDenimJacketWeave(){
-  if(!denimJacketPromise)denimJacketPromise=loadCharacterImage('assets/denim-jacket-v351.png').then(img=>{
-    const {w,h}=WINTER_PATCH,work=document.createElement('canvas');work.width=w;work.height=h;
-    if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error('מידות מרקם הג׳קט אינן תואמות');
-    const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
-    const rgba=ctx.getImageData(0,0,w,h).data,light=new Uint8Array(w*h);
-    for(let p=0;p<light.length;p++)light[p]=rgba[p*4];
-    return light;
-  }).catch(err=>{denimJacketPromise=null;throw err;});
-  return denimJacketPromise;
-}
-
-function paintJacket(bitmap,jacket,table,weave){
-  const {indices,light,opacity,bounds}=jacket;
-  for(let n=0;n<indices.length;n++){
-    const p=indices[n],x=p%bounds.w+bounds.x,y=Math.floor(p/bounds.w)+bounds.y;
-    const i=(y*bitmap.width+x)*4,t=(weave?weave[p]:light[n])*3,a=opacity[n]/255;
-    for(let c=0;c<3;c++)bitmap.data[i+c]+=a*(table[t+c]-bitmap.data[i+c]);
-  }
-}
-
-// Each view has a registered shoulder crop from its own illustration. The
-// left tile stores the foreground contribution of hair and skin. The right
-// tile stores shirt/jacket coverage and cloth luminance at the same pixel.
-const STRAND_PATCH={x:270,y:264,w:175,h:285};
-const appearanceAtlases=new Map();
-function loadAppearanceAtlas(file,patch){
-  if(!appearanceAtlases.has(file)){
-    const asset=loadCharacterImage('assets/'+file).then(img=>{
-      const {w,h}=patch,work=document.createElement('canvas');
-      work.width=2*w;work.height=3*h;
-      if(img.naturalWidth!==work.width||img.naturalHeight!==work.height)throw Error('מידות שכבות האיור אינן תואמות');
-      const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
-      return ctx.getImageData(0,0,work.width,work.height).data;
-    }).catch(err=>{appearanceAtlases.delete(file);throw err;});
-    appearanceAtlases.set(file,asset);
-  }
-  return appearanceAtlases.get(file);
-}
-
-const footwearMeans=new Map();
-function compositeFootwear(bitmap,atlas,style,color,trousers){
-  const patch=FOOT_PATCH,mode=['sneakers','loafers','flipflops'].indexOf(style);
-  if(!footwearMeans.has(style)){
-    let total=0,weight=0;
-    for(let y=0;y<patch.h;y++)for(let x=0;x<patch.w;x++){
-      const meta=((mode*patch.h+y)*2*patch.w+patch.w+x)*4;
-      total+=atlas[meta+1]*atlas[meta];weight+=atlas[meta];
-    }
-    footwearMeans.set(style,total/weight);
-  }
-  const table=garmentShader(color,footwearMeans.get(style),'shoes');
-  for(let y=0;y<patch.h;y++)for(let x=0;x<patch.w;x++){
-    const p=(patch.y+y)*bitmap.width+patch.x+x;
-    if(trousers[p])continue;
-    const i=((mode*patch.h+y)*2*patch.w+x)*4,meta=i+patch.w*4;
-    if(!atlas[meta+2])continue;
-    const alpha=atlas[meta]/255,t=atlas[meta+1]*3;
-    const edge=Math.min(1,x/8,y/8,(patch.w-1-x)/8,(patch.h-1-y)/8);
-    for(let c=0;c<3;c++){
-      const value=atlas[i+c]+alpha*table[t+c];
-      bitmap.data[4*p+c]+=edge*(value-bitmap.data[4*p+c]);
-    }
-  }
-}
-function compositeStrands(bitmap,atlas,view,shader){
-  const patch=STRAND_PATCH,mode=['summer','sleeves','jacket'].indexOf(view);
-  for(let y=0;y<patch.h;y++)for(let x=0;x<patch.w;x++){
-    const i=((mode*patch.h+y)*2*patch.w+x)*4,meta=i+patch.w*4;
-    const dest=((patch.y+y)*bitmap.width+patch.x+x)*4,t=atlas[meta+2]*3;
-    const shirt=atlas[meta]/255,jacket=atlas[meta+1]/255;
-    const jacketTone=jacket&&shader.weave
-      ? shader.weave[(patch.y+y-WINTER_PATCH.y)*WINTER_PATCH.w+patch.x+x-WINTER_PATCH.x]*3 : t;
-    const edge=Math.min(1,x/9,y/9,(patch.w-1-x)/9,(patch.h-1-y)/9);
-    for(let c=0;c<3;c++){
-      const value=atlas[i+c]+shirt*shader.top[t+c]+(jacket?jacket*shader.outerwear[jacketTone+c]:0);
-      bitmap.data[dest+c]+=edge*(value-bitmap.data[dest+c]);
-    }
-  }
-}
-
-function garmentShader(color,mean,role){
-  const target=parseCharacterHex(color.hex),table=new Uint8ClampedArray(768);
-  for(let l=0;l<256;l++)table.set(recolorArtPixel(target,l,mean,role),l*3);
-  return table;
+  return {w,h,basePixels,pixels,means,bounds,masks};
 }
 
 function recolorArtPixel(target,lum,mean,role){
@@ -218,15 +75,14 @@ function recolorArtPixel(target,lum,mean,role){
   const lift=((role==='accessory'?.15:.10)+.29*lightness)*fold;
   return target.map(c=>c+(255-c)*lift);
 }
-async function renderCharacterBitmap(mapping,view=studioView()){
-  const [assets,strands,footwear]=await Promise.all([loadCharacterAssets(view),
-    loadAppearanceAtlas('shoulder-strands-v350.webp',STRAND_PATCH),loadAppearanceAtlas('footwear-v350.webp',FOOT_PATCH)]);
+async function renderCharacterBitmap(mapping){
+  const assets=await loadCharacterAssets();
   const {w,h,basePixels,pixels,means}=assets;
   const denim=mapping.bottom.fabric==='denim'?await loadDenimTexture(assets):null;
   const out=new ImageData(new Uint8ClampedArray(basePixels.data),w,h);
   for(const role of STUDIO_ROLES){
     const jeans=role==='bottom'&&denim;
-    const hex=mapping[role]?.color?.hex||'#888888',key=assets.season+(jeans?'denim':role)+hex;let rgb=studioRasterCache.get(key);
+    const hex=mapping[role]?.color?.hex||'#888888',key=(jeans?'denim':role)+hex;let rgb=studioRasterCache.get(key);
     const {indices}=pixels[role],light=jeans?denim.light:pixels[role].light;
     if(!rgb){
       const target=parseCharacterHex(hex),table=new Uint8ClampedArray(768);rgb=new Uint8ClampedArray(indices.length*3);
@@ -238,15 +94,6 @@ async function renderCharacterBitmap(mapping,view=studioView()){
     }
     for(let n=0;n<indices.length;n++){const i=indices[n]*4,j=n*3;out.data[i]=rgb[j];out.data[i+1]=rgb[j+1];out.data[i+2]=rgb[j+2];}
   }
-  const shader={top:garmentShader(mapping.top.color,means.top,'top')};
-  if(view==='jacket'){
-    const [jacket,weave]=await Promise.all([loadJacket(),mapping.outerwear.fabric==='denim'?loadDenimJacketWeave():null]);
-    shader.weave=weave;
-    shader.outerwear=garmentShader(mapping.outerwear.color,jacket.mean,'outerwear');
-    paintJacket(out,jacket,shader.outerwear,weave);
-  }
-  compositeStrands(out,strands,view,shader);
-  compositeFootwear(out,footwear,shoeStyle(view),mapping.shoes.color,assets.masks.bottom);
   return out;
 }
 
@@ -258,25 +105,25 @@ function loadDenimTexture(assets){
     const work=document.createElement('canvas');work.width=w;work.height=h;
     const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
     const raw=ctx.getImageData(0,0,w,h).data,indices=pixels.bottom.indices,light=new Uint8Array(indices.length);
-    let sum=0;for(let i=0;i<light.length;i++){light[i]=raw[indices[i]*4];sum+=light[i];}
+    let sum=0;for(let i=0;i<light.length;i++){const base=pixels.bottom.light[i],weave=raw[indices[i]*4];light[i]=weave>10?Math.round(base*.3+weave*.7):base;sum+=light[i];}
     return {light,mean:sum/light.length};
   }).catch(err=>{assets.denimTexture=null;throw err;});
   return assets.denimTexture;
 }
 
-async function paintCharacter(canvas,mapping,view=studioView()){
+async function paintCharacter(canvas,mapping){
   if(!canvas||!mapping)return;
   const seq=++characterPaintSeq,frame=canvas.closest('.character-frame'),status=frame?.querySelector('.art-status');
-  canvas.dataset.requested=artSignature(mapping,view);
+  canvas.dataset.requested=artSignature(mapping);
   canvas.dataset.paintSeq=String(seq);
   if(frame)frame.setAttribute('aria-busy','true');
   try{
-    const bitmap=await renderCharacterBitmap(mapping,view);
+    const bitmap=await renderCharacterBitmap(mapping);
     if(canvas.dataset.paintSeq!==String(seq)||!canvas.isConnected)return;
     // Trim only the unused background so the full figure fills a phone screen.
     canvas.width=628;canvas.height=1620;canvas.getContext('2d').putImageData(bitmap,-170,-10);
-    canvas.dataset.painted='true';canvas.dataset.signature=artSignature(mapping,view);
-    canvas.setAttribute('aria-label','איור הלוק: '+visibleRoles(view).map(r=>`${studioRoleLabel(r,mapping,view)} ${mapping[r].color.he}`).join(', '));
+    canvas.dataset.painted='true';canvas.dataset.signature=artSignature(mapping);
+    canvas.setAttribute('aria-label','איור הלוק: '+STUDIO_ROLES.map(r=>`${studioRoleLabel(r,mapping)} ${mapping[r].color.he}`).join(', '));
     if(status)status.hidden=true;
     if(frame)frame.setAttribute('aria-busy','false');
   }catch(err){
@@ -289,15 +136,14 @@ async function paintCharacter(canvas,mapping,view=studioView()){
 }
 
 function renderLookVisual(container,mapping){
-  const view=studioView(mapping);
   if(!container||!mapping)return;
   if(!container.querySelector('[data-character-canvas]')){
-    container.innerHTML=`<div class="character-frame" aria-busy="true"><div class="character-art"><canvas class="character-canvas" data-character-canvas role="img"></canvas><button class="art-inspect" type="button" data-inspect-art aria-label="הגדלת איור הלוק"><span>${studioIcon('zoom')}</span></button><span class="stage-caption" lang="en">The art of getting dressed.</span><div class="art-status" role="status">מכינה את האיור שלך…</div></div></div><div class="character-role-grid" aria-label="צבעי הלוק">${WINTER_ROLES.map(role=>`<article class="character-role" data-role-row="${role}"><button class="role-inspect" data-inspect-role="${role}" type="button"><span class="character-role-dot"></span><span><span class="character-role-label">${STUDIO_LABELS[role]}</span><span class="character-role-name"></span></span></button></article>`).join('')}</div>`;
+    container.innerHTML=`<div class="character-frame" aria-busy="true"><div class="character-art"><canvas class="character-canvas" data-character-canvas role="img"></canvas><button class="art-inspect" type="button" data-inspect-art aria-label="הגדלת איור הלוק"><span>${studioIcon('zoom')}</span></button><div class="art-status" role="status">מכינה את האיור שלך…</div></div></div><div class="character-role-grid" aria-label="צבעי הלוק">${STUDIO_ROLES.map(role=>`<article class="character-role" data-role-row="${role}"><button class="role-inspect" data-inspect-role="${role}" type="button"><span class="character-role-dot"></span><span><span class="character-role-label">${STUDIO_LABELS[role]}</span><span class="character-role-name"></span></span></button></article>`).join('')}<button id="complementBtn" class="complement-swatch" type="button"><span class="character-role-dot"></span><span><span class="character-role-label">צבע להשלמה</span><strong class="character-role-name" aria-live="polite"></strong><small>החלפת גוון ↻</small></span></button></div>`;
   }
   const rail=container.querySelector('.character-role-grid');
-  rail.style.setProperty('--role-count',visibleRoles(view).length);
-  rail.querySelector('[data-role-row="outerwear"]').hidden=view!=='jacket';
-  for(const role of visibleRoles(view)){
+  rail.style.setProperty('--role-count',4);
+  renderComplement();
+  for(const role of STUDIO_ROLES){
     const row=rail.querySelector(`[data-role-row="${role}"]`),color=mapping[role].color;
     row.querySelector('.character-role-label').textContent=studioRoleLabel(role,mapping);
     row.querySelector('.character-role-dot').style.background=color.hex;
@@ -305,7 +151,17 @@ function renderLookVisual(container,mapping){
     row.querySelector('.role-inspect').setAttribute('aria-label',`הגדלת ${studioRoleLabel(role,mapping)} בגוון ${color.he}`);
   }
   const canvas=container.querySelector('[data-character-canvas]');
-  if(canvas.dataset.requested!==artSignature(mapping,view))paintCharacter(canvas,mapping,view);
+  if(canvas.dataset.requested!==artSignature(mapping))paintCharacter(canvas,mapping);
+}
+
+function renderComplement(){
+  const button=$('complementBtn'),color=COLORS[state.currentLook?.complementId];
+  if(!button)return;
+  button.hidden=!color;
+  if(!color)return;
+  button.querySelector('.character-role-dot').style.background=color.hex;
+  button.querySelector('.character-role-name').textContent=color.he;
+  button.setAttribute('aria-label','צבע להשלמה: '+color.he+'. לחצי להצעה נוספת');
 }
 
 function rememberStudioPreview(){
@@ -314,14 +170,8 @@ function rememberStudioPreview(){
   if(studioUndo.length>12)studioUndo.shift();
 }
 function updateStudioActions(){
-  const next=$('nextLookBtn'),toggle=$('jacketToggle'),previous=$('previousLookBtn'),busy=next?.dataset.busy==='1';
+  const next=$('nextLookBtn'),previous=$('previousLookBtn'),busy=next?.dataset.busy==='1';
   if(next){next.disabled=busy;next.setAttribute('aria-busy',String(busy));next.innerHTML=busy?'בוחרת שילוב…':`<span>הלוק הבא</span>${studioIcon('next')}`;}
-  if(toggle){
-    toggle.hidden=state.seasonMode==='summer' || !state.currentLook?.mapping?.outerwear;
-    toggle.disabled=busy;
-    toggle.setAttribute('aria-pressed',String(state.showJacket));
-    toggle.textContent=state.showJacket?'הסתרת ג׳קט':'הצגת ג׳קט';
-  }
   if(previous)previous.disabled=!studioUndo.length||busy;
   if($('sourceTag'))$('sourceTag').textContent=state.currentLook?.wada?`Wada · ${String(state.currentLook.wada.plate).padStart(3,'0')}`:'';
   renderStyleFeedback();
@@ -332,10 +182,15 @@ function bindStudio(){
   on('settingsBtn','click',()=>$('settingsDialog').showModal());
   bindWardrobe();
   on('closeSettingsBtn','click',()=>$('settingsDialog').close());
-  on('jacketToggle','click',()=>{state.showJacket=!state.showJacket;saveState();renderToday();});
+  on('lookVisual','click',event=>{
+    if(!event.target.closest('#complementBtn') || !state.currentLook)return;
+    rotateComplement(state.currentLook);
+    renderComplement();
+    saveState();
+  });
   on('previousLookBtn','click',()=>{
     const snapshot=studioUndo.pop();if(!snapshot)return;
-    state.currentLook=applySeasonToLook(snapshot.look);state.lockedRoles={};saveState();renderToday();animateLookChange();toast('חזרת ללוק הקודם');
+    state.currentLook=withComplement(snapshot.look);state.lockedRoles={};saveState();renderToday();animateLookChange();toast('חזרת ללוק הקודם');
   });
   on('downloadLookBtn','click',downloadStudioLook);
   on('detailDownloadBtn','click',downloadStudioLook);
@@ -352,15 +207,14 @@ function bindStudio(){
 }
 
 async function openStudioDetail(role=null){
-  const view=studioView();
   const seq=++studioDetailSeq,dialog=$('artDialog'),canvas=$('detailCanvas'),mapping=JSON.parse(JSON.stringify(state.currentLook.mapping));
   $('detailTitle').textContent=role?`${studioRoleLabel(role,mapping)} · ${mapping[role].color.he}`:'מבט מקרוב';
   $('detailCaption').textContent=role?'מרקם, קפלים ופרטים קטנים':'איור אופנה בצבעים של הלוק שלך';
   $('detailStatus').textContent='טוענת את האיור…';canvas.hidden=true;if(!dialog.open)dialog.showModal();
   try{
-    const [bitmap,assets]=await Promise.all([renderCharacterBitmap(mapping,view),loadCharacterAssets(view)]);
+    const [bitmap,assets]=await Promise.all([renderCharacterBitmap(mapping),loadCharacterAssets()]);
     if(seq!==studioDetailSeq||!dialog.open)return;
-    const b=role==='shoes'?FOOT_PATCH:role==='outerwear'?WINTER_PATCH:role?assets.bounds[role]:{x:160,y:0,w:650,h:1630},pad=role?30:0;
+    const b=role?assets.bounds[role]:{x:160,y:0,w:650,h:1630},pad=role?30:0;
     const x=Math.max(0,b.x-pad),y=Math.max(0,b.y-pad);
     canvas.width=Math.min(assets.w-x,b.w+pad*2);canvas.height=Math.min(assets.h-y,b.h+pad*2);
     canvas.getContext('2d').putImageData(bitmap,-x,-y);canvas.hidden=false;$('detailStatus').textContent='';
@@ -370,11 +224,11 @@ async function openStudioDetail(role=null){
 
 async function downloadStudioLook(){
   if(studioExporting||!state.currentLook)return;
-  const view=studioView(),roles=visibleRoles(view);
+  const roles=STUDIO_ROLES;
   studioExporting=true;const look=JSON.parse(JSON.stringify(state.currentLook));
   $('downloadLookBtn').disabled=true;$('detailDownloadBtn').disabled=true;
   try{
-    const bitmap=await renderCharacterBitmap(look.mapping,view);
+    const bitmap=await renderCharacterBitmap(look.mapping);
     await document.fonts.ready;
     const out=document.createElement('canvas');out.width=1080;out.height=1920;const ctx=out.getContext('2d');
     ctx.fillStyle='#f7f3ec';ctx.fillRect(0,0,1080,1920);
@@ -386,7 +240,7 @@ async function downloadStudioLook(){
       const slot=980/roles.length;
       const role=roles[i],c=look.mapping[role].color,x=1030-(i+.5)*slot;
       ctx.fillStyle=c.hex;ctx.beginPath();ctx.roundRect(x-74,1710,148,54,9);ctx.fill();
-      ctx.fillStyle='#756356';ctx.font='26px Assistant, sans-serif';ctx.fillText(studioRoleLabel(role,look.mapping,view),x,1801);
+      ctx.fillStyle='#756356';ctx.font='26px Assistant, sans-serif';ctx.fillText(studioRoleLabel(role,look.mapping),x,1801);
       ctx.fillStyle='#34281f';ctx.font='600 27px Assistant, sans-serif';ctx.fillText(c.he,x,1839,slot-12);
     }
     const blob=await new Promise(resolve=>out.toBlob(resolve,'image/png'));if(!blob)throw Error('export');

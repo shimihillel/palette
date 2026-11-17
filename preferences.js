@@ -32,9 +32,9 @@ function normalizeStyleFeedback(raw){
   const unique=new Map();
   const rows=Array.isArray(raw?.ratings)?raw.ratings:[];
   for(const row of rows.slice(-PERSONAL_STYLE.maxRatings*2)){
-    if(!row||![1,-1].includes(row.vote)||!Array.isArray(row.ids)||row.ids.length!==4
+    if(!row||![1,-1].includes(row.vote)||!Array.isArray(row.ids)||![3,4].includes(row.ids.length)
       ||row.ids.some(id=>typeof id!=='string'||!Object.hasOwn(COLORS,id)))continue;
-    const ids=[...row.ids],key=ids.join('|');
+    const ids=row.ids.slice(0,3),key=ids.join('|');
     unique.delete(key);
     unique.set(key,{ids,vote:row.vote,
       reason:row.vote===-1&&Object.hasOwn(FEEDBACK_REASONS,row.reason)?row.reason:null,
@@ -113,14 +113,14 @@ function bindStyleFeedback(){
 
 function personalFeatures(colors){
   const labs=colors.map(c=>wadaLab(c.hex)),chroma=labs.map(wadaChroma);
-  const area=[.36,.46,.08,.10];
+  const area=[.40,.46,.14];
   const light=labs.reduce((sum,lab,i)=>sum+lab[0]*area[i],0);
   const bright=labs.reduce((sum,lab,i)=>sum+area[i]
     *personalClamp((lab[0]-.62)/.25)*personalClamp((chroma[i]-.12)/.12),0);
   const palePair=labs[0][0]>.74&&labs[1][0]>.74;
   const candy=labs.slice(0,2).filter((lab,i)=>lab[0]>.69&&chroma[i]>.075).length;
   let twist=0;
-  for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+  for(let i=0;i<colors.length;i++)for(let j=i+1;j<colors.length;j++){
     if(chroma[i]>.045&&chroma[j]>.045)
       twist=Math.max(twist,personalClamp(wadaHueGap(labs[i],labs[j])/95)
         *personalClamp(Math.min(chroma[i],chroma[j])/.085));
@@ -174,9 +174,8 @@ function personalOutfitSimilarity(labs,other){
   const distances=labs.map((lab,i)=>wadaDistance(lab,other[i])**2);
   const near=distances.map(d=>Math.exp(-d/(2*.11**2)));
   // No standalone color likes/dislikes: both members of a role pair must match.
-  const pairs=near[0]*near[1]*.45+near[0]*near[2]*.12+near[0]*near[3]*.12
-    +near[1]*near[2]*.12+near[1]*near[3]*.12+near[2]*near[3]*.07;
-  const whole=Math.exp(-distances.reduce((sum,d,i)=>sum+d*[.35,.4,.125,.125][i],0)/(2*.12**2));
+  const pairs=near[0]*near[1]*.56+near[0]*near[2]*.22+near[1]*near[2]*.22;
+  const whole=Math.exp(-distances.reduce((sum,d,i)=>sum+d*[.40,.46,.14][i],0)/(2*.12**2));
   return personalClamp((pairs*.5+whole*.5-.30)/.70);
 }
 

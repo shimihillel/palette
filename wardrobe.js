@@ -1,6 +1,6 @@
 'use strict';
 
-const wardrobeRoles = {shoes:'נעליים', top:'חולצות', bottom:'מכנסיים', outerwear:'ג׳קטים', accessory:'תיקים'};
+const wardrobeRoles = {top:'חולצות', bottom:'מכנסיים', shoes:'נעליים'};
 const lightBlueIds = new Set(['powderblue','sky','cloudblue','denimlight','cornflower','capri',
   'arctic','iceblue','robin','babyblue','skyblue','airyblue','horizon']);
 let wardrobeDraft;
@@ -74,7 +74,7 @@ function openWardrobe(){
     role,new Set(WARDROBE_COLOR_IDS.filter(id=>!canUseColorForRole(COLORS[id],role)))
   ]));
   $('wardrobeSearch').value = '';
-  chooseWardrobeRole('shoes');
+  chooseWardrobeRole('top');
   $('wardrobeDialog').showModal();
   if(location.hash === '#wardrobe')history.replaceState(null,'',location.pathname + location.search);
   $('wardrobeRoles').firstElementChild.focus();
@@ -83,7 +83,7 @@ function openWardrobe(){
 function saveWardrobe(){
   const before = state.wardrobeExclusions, beforeRestorations = state.wardrobeRestorations;
   const previousLook = state.currentLook;
-  const exclusions = {}, restorations = {};
+  const exclusions = {...before}, restorations = {...beforeRestorations};
   for(const role of WARDROBE_ROLES){
     const marked = wardrobeDraft[role];
     exclusions[role] = [...marked].filter(id=>catalogAllowsRole(COLORS[id],role));
@@ -97,7 +97,7 @@ function saveWardrobe(){
       state.currentLook = null;
       state.currentLook = selectAvailableStudioLook(previousLook?.mapping.bottom.fabric === 'denim');
     }
-    state.currentLook = applySeasonToLook(state.currentLook);
+    state.currentLook = withComplement(state.currentLook);
     if(!saveState())throw Error('wardrobe storage');
   }catch(error){
     state.wardrobeExclusions = before;
