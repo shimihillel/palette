@@ -8,8 +8,8 @@ function studioRoleLabel(role,mapping){
 function artSignature(mapping){
   return [mapping.bottom.fabric||'cloth',...STUDIO_ROLES.map(r=>mapping[r].color.id)].join('|');
 }
-const CHARACTER_FILES={base:'assets/shimi-personal-v414.png',background:'assets/art-background-v414.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-matte-${r}-v414.png`]))};
-const CHARACTER_CROP={x:204,y:0,w:536,h:1536};
+const CHARACTER_FILES={base:'assets/shimi-personal-v415.png',background:'assets/art-background-v415.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-matte-${r}-v415.png`]))};
+const CHARACTER_CROP={x:200,y:0,w:550,h:1659};
 const CHARACTER_BACKGROUND=[247,243,236];
 const STUDIO_ICONS = {
   settings:'<path d="M4 6h6m4 0h6M4 12h10m4 0h2M4 18h2m4 0h10"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',
@@ -51,11 +51,11 @@ async function prepareCharacterAssets(){
   ctx.clearRect(0,0,w,h);
   ctx.drawImage(base,0,0);
   const basePixels=ctx.getImageData(0,0,w,h);
-  // Retain the selected source exactly; blend only the external white backdrop.
+  // Retain the selected source exactly; blend only the external ivory backdrop.
   for(let p=0;p<w*h;p++){
     const i=p*4,a=backdrop[i]/255;
     if(!a)continue;
-    for(let k=0;k<3;k++)basePixels.data[i+k]=a===1?CHARACTER_BACKGROUND[k]:basePixels.data[i+k]+a*(CHARACTER_BACKGROUND[k]-255);
+    for(let k=0;k<3;k++)basePixels.data[i+k]=basePixels.data[i+k]*(1-a)+a*CHARACTER_BACKGROUND[k];
   }
   const pixels={},means={},bounds={},masks={};
   for(let r=0;r<STUDIO_ROLES.length;r++){
@@ -119,7 +119,7 @@ async function renderCharacterBitmap(mapping){
 // Only the existing trouser mask receives the alternate fabric. Regular looks never load it.
 function loadDenimTexture(assets){
   const {w,h,pixels}=assets;
-  if(!assets.denimTexture)assets.denimTexture=loadCharacterImage('assets/denim-weave-v414.png').then(img=>{
+  if(!assets.denimTexture)assets.denimTexture=loadCharacterImage('assets/denim-weave-v415.png').then(img=>{
     if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error('מידות שכבת הג׳ינס אינן תואמות');
     const work=document.createElement('canvas');work.width=w;work.height=h;
     const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
