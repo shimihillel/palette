@@ -9,6 +9,7 @@ function artSignature(mapping){
   return [mapping.bottom.fabric||'cloth',...STUDIO_ROLES.map(r=>mapping[r].color.id)].join('|');
 }
 const CHARACTER_FILES={base:'assets/shimi-trio-v400.webp',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-mask-${r}-v400.png`]))};
+const SHOULDER={x:268,y:309,width:173,height:235,file:'assets/shoulder-strands-v401.webp'};
 const STUDIO_ICONS = {
   settings:'<path d="M4 6h6m4 0h6M4 12h10m4 0h2M4 18h2m4 0h10"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',
   zoom:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
@@ -39,7 +40,7 @@ function loadCharacterAssets(){
 
 async function prepareCharacterAssets(){
   const files=[CHARACTER_FILES.base,...STUDIO_ROLES.map(r=>CHARACTER_FILES[r])];
-  const [base,...images]=await Promise.all(files.map(loadCharacterImage));
+  const [strands,base,...images]=await Promise.all([SHOULDER.file,...files].map(loadCharacterImage));
   const w=base.naturalWidth,h=base.naturalHeight,work=document.createElement('canvas');
   work.width=w;work.height=h;
   const ctx=work.getContext('2d',{willReadFrequently:true});
@@ -62,7 +63,22 @@ async function prepareCharacterAssets(){
     pixels[role]={indices:new Uint32Array(indices),light:new Uint8Array(light)};masks[role]=alpha;means[role]=sum/indices.length;
     bounds[role]={x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
   }
-  return {w,h,basePixels,pixels,means,bounds,masks};
+  // Each marked pixel stores the strand's premultiplied pigment in the left
+  // tile and the underlying shirt's coverage and luminance in the right tile.
+  const {width,height}=SHOULDER;
+  if(strands.naturalWidth!==width*2||strands.naturalHeight!==height)throw Error('מידות שכבת השיער אינן תואמות');
+  ctx.clearRect(0,0,width*2,height);
+  ctx.drawImage(strands,0,0);
+  const atlas=ctx.getImageData(0,0,width*2,height).data;
+  const shoulder=[];
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+    const ink=(y*width*2+x)*4,cloth=ink+width*4;
+    if(atlas[cloth+2])shoulder.push({
+      dest:((y+SHOULDER.y)*w+x+SHOULDER.x)*4,
+      ink:atlas.subarray(ink,ink+3),coverage:atlas[cloth]/255,shade:atlas[cloth+1]*3
+    });
+  }
+  return {w,h,basePixels,pixels,means,bounds,masks,shoulder};
 }
 
 function recolorArtPixel(target,lum,mean,role){
@@ -82,17 +98,24 @@ async function renderCharacterBitmap(mapping){
   const out=new ImageData(new Uint8ClampedArray(basePixels.data),w,h);
   for(const role of STUDIO_ROLES){
     const jeans=role==='bottom'&&denim;
-    const hex=mapping[role]?.color?.hex||'#888888',key=(jeans?'denim':role)+hex;let rgb=studioRasterCache.get(key);
+    const hex=mapping[role]?.color?.hex||'#888888',key=(jeans?'denim':role)+hex;
+    let pigment=studioRasterCache.get(key);
     const {indices}=pixels[role],light=jeans?denim.light:pixels[role].light;
-    if(!rgb){
-      const target=parseCharacterHex(hex),table=new Uint8ClampedArray(768);rgb=new Uint8ClampedArray(indices.length*3);
+    if(!pigment){
+      const target=parseCharacterHex(hex),table=new Uint8ClampedArray(768),rgb=new Uint8ClampedArray(indices.length*3);
       for(let l=0;l<256;l++)table.set(recolorArtPixel(target,l,jeans?denim.mean:means[role],role),l*3);
       for(let n=0;n<indices.length;n++){const t=light[n]*3,i=n*3;rgb[i]=table[t];rgb[i+1]=table[t+1];rgb[i+2]=table[t+2];}
       // Bound memory on long browsing sessions (roughly 10 MB at most).
       if(studioRasterCache.size>=16)studioRasterCache.delete(studioRasterCache.keys().next().value);
-      studioRasterCache.set(key,rgb);
+      pigment={rgb,table};studioRasterCache.set(key,pigment);
     }
+    const {rgb,table}=pigment;
     for(let n=0;n<indices.length;n++){const i=indices[n]*4,j=n*3;out.data[i]=rgb[j];out.data[i+1]=rgb[j+1];out.data[i+2]=rgb[j+2];}
+    if(role==='top'){
+      for(const {dest,ink,coverage,shade} of assets.shoulder){
+        for(let k=0;k<3;k++)out.data[dest+k]=ink[k]+coverage*table[shade+k];
+      }
+    }
   }
   return out;
 }
