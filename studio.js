@@ -8,8 +8,9 @@ function studioRoleLabel(role,mapping){
 function artSignature(mapping){
   return [mapping.bottom.fabric||'cloth',...STUDIO_ROLES.map(r=>mapping[r].color.id)].join('|');
 }
-const CHARACTER_FILES={base:'assets/shimi-trio-v400.webp',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-mask-${r}-v400.png`]))};
-const SHOULDER={x:268,y:309,width:173,height:235,file:'assets/shoulder-strands-v401.webp'};
+const CHARACTER_FILES={base:'assets/shimi-personal-v410.webp',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-matte-${r}-v410.png`]))};
+const CHARACTER_CROP={x:232,y:0,w:528,h:1448};
+const CHARACTER_BACKGROUND=[247,243,236];
 const STUDIO_ICONS = {
   settings:'<path d="M4 6h6m4 0h6M4 12h10m4 0h2M4 18h2m4 0h10"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',
   zoom:'<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
@@ -40,45 +41,50 @@ function loadCharacterAssets(){
 
 async function prepareCharacterAssets(){
   const files=[CHARACTER_FILES.base,...STUDIO_ROLES.map(r=>CHARACTER_FILES[r])];
-  const [strands,base,...images]=await Promise.all([SHOULDER.file,...files].map(loadCharacterImage));
+  const [silhouette,base,...images]=await Promise.all(['assets/character-coverage-v410.png',...files].map(loadCharacterImage));
   const w=base.naturalWidth,h=base.naturalHeight,work=document.createElement('canvas');
   work.width=w;work.height=h;
   const ctx=work.getContext('2d',{willReadFrequently:true});
   ctx.drawImage(base,0,0);
   const basePixels=ctx.getImageData(0,0,w,h);
+  if(silhouette.naturalWidth!==w||silhouette.naturalHeight!==h)throw Error('מידות שכבת הרקע אינן תואמות');
+  ctx.clearRect(0,0,w,h);ctx.drawImage(silhouette,0,0);
+  const coveragePixels=ctx.getImageData(0,0,w,h).data;
+  // Retain the approved artwork through the generated cutout, removing
+  // the source paper pigment at translucent edges before adding the app background.
+  for(let y=0;y<h;y++){
+    const paper=[0,0,0];
+    for(const x of [190,200,210,800,810,820]){
+      const i=(y*w+x)*4;
+      for(let c=0;c<3;c++)paper[c]+=basePixels.data[i+c]/6;
+    }
+    for(let x=0;x<w;x++){
+      const i=(y*w+x)*4,alpha=coveragePixels[i];
+      if(alpha>=240)continue;
+      const coverage=alpha<=3?0:alpha/240;
+      for(let c=0;c<3;c++){
+        basePixels.data[i+c]=coverage===0?CHARACTER_BACKGROUND[c]:basePixels.data[i+c]+(1-coverage)*(CHARACTER_BACKGROUND[c]-paper[c]);
+      }
+    }
+  }
   const pixels={},means={},bounds={},masks={};
   for(let r=0;r<STUDIO_ROLES.length;r++){
     const role=STUDIO_ROLES[r],img=images[r];
     if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error('מידות שכבות האיור אינן תואמות');
     ctx.clearRect(0,0,w,h);ctx.drawImage(img,0,0);const raw=ctx.getImageData(0,0,w,h).data;
-    const indices=[],light=[],alpha=new Uint8Array(w*h);let sum=0,minX=w,minY=h,maxX=0,maxY=0;
+    const indices=[],light=[],coverage=[],source=[],alpha=new Uint8Array(w*h);let sum=0,minX=w,minY=h,maxX=0,maxY=0;
     for(let p=0;p<w*h;p++){
       const i=p*4;
-      if(!raw[i])continue;
-      const lum=.2126*basePixels.data[i]+.7152*basePixels.data[i+1]+.0722*basePixels.data[i+2];
-      indices.push(p);light.push(Math.round(lum));alpha[p]=raw[i];sum+=lum;
+      if(!raw[i+3]||coveragePixels[i]<=3)continue;
+      const lum=.2126*raw[i]+.7152*raw[i+1]+.0722*raw[i+2];
+      indices.push(p);light.push(Math.round(lum));alpha[p]=raw[i+3];coverage.push(raw[i+3]/255);source.push(raw[i],raw[i+1],raw[i+2]);sum+=lum;
       const x=p%w,y=Math.floor(p/w);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
     }
     if(!indices.length)throw Error('שכבת צבע ריקה');
-    pixels[role]={indices:new Uint32Array(indices),light:new Uint8Array(light)};masks[role]=alpha;means[role]=sum/indices.length;
+    pixels[role]={indices:new Uint32Array(indices),light:new Uint8Array(light),coverage:new Float32Array(coverage),source:new Uint8ClampedArray(source)};masks[role]=alpha;means[role]=sum/indices.length;
     bounds[role]={x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1};
   }
-  // Each marked pixel stores the strand's premultiplied pigment in the left
-  // tile and the underlying shirt's coverage and luminance in the right tile.
-  const {width,height}=SHOULDER;
-  if(strands.naturalWidth!==width*2||strands.naturalHeight!==height)throw Error('מידות שכבת השיער אינן תואמות');
-  ctx.clearRect(0,0,width*2,height);
-  ctx.drawImage(strands,0,0);
-  const atlas=ctx.getImageData(0,0,width*2,height).data;
-  const shoulder=[];
-  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
-    const ink=(y*width*2+x)*4,cloth=ink+width*4;
-    if(atlas[cloth+2])shoulder.push({
-      dest:((y+SHOULDER.y)*w+x+SHOULDER.x)*4,
-      ink:atlas.subarray(ink,ink+3),coverage:atlas[cloth]/255,shade:atlas[cloth+1]*3
-    });
-  }
-  return {w,h,basePixels,pixels,means,bounds,masks,shoulder};
+  return {w,h,basePixels,pixels,means,bounds,masks};
 }
 
 function recolorArtPixel(target,lum,mean,role){
@@ -99,22 +105,22 @@ async function renderCharacterBitmap(mapping){
   for(const role of STUDIO_ROLES){
     const jeans=role==='bottom'&&denim;
     const hex=mapping[role]?.color?.hex||'#888888',key=(jeans?'denim':role)+hex;
-    let pigment=studioRasterCache.get(key);
-    const {indices}=pixels[role],light=jeans?denim.light:pixels[role].light;
-    if(!pigment){
-      const target=parseCharacterHex(hex),table=new Uint8ClampedArray(768),rgb=new Uint8ClampedArray(indices.length*3);
+    let rgb=studioRasterCache.get(key);
+    const {indices,coverage,source}=pixels[role],light=jeans?denim.light:pixels[role].light;
+    if(!rgb){
+      const target=parseCharacterHex(hex),table=new Uint8ClampedArray(768);
+      rgb=new Uint8ClampedArray(indices.length*3);
       for(let l=0;l<256;l++)table.set(recolorArtPixel(target,l,jeans?denim.mean:means[role],role),l*3);
       for(let n=0;n<indices.length;n++){const t=light[n]*3,i=n*3;rgb[i]=table[t];rgb[i+1]=table[t+1];rgb[i+2]=table[t+2];}
       // Bound memory on long browsing sessions (roughly 10 MB at most).
       if(studioRasterCache.size>=16)studioRasterCache.delete(studioRasterCache.keys().next().value);
-      pigment={rgb,table};studioRasterCache.set(key,pigment);
+      studioRasterCache.set(key,rgb);
     }
-    const {rgb,table}=pigment;
-    for(let n=0;n<indices.length;n++){const i=indices[n]*4,j=n*3;out.data[i]=rgb[j];out.data[i+1]=rgb[j+1];out.data[i+2]=rgb[j+2];}
-    if(role==='top'){
-      for(const {dest,ink,coverage,shade} of assets.shoulder){
-        for(let k=0;k<3;k++)out.data[dest+k]=ink[k]+coverage*table[shade+k];
-      }
+    // Remove the source cloth pigment before adding the selected color.
+    // Fractional coverage retains individual curls and antialiased garment edges.
+    for(let n=0;n<indices.length;n++){
+      const i=indices[n]*4,j=n*3;
+      for(let k=0;k<3;k++)out.data[i+k]=basePixels.data[i+k]+coverage[n]*(rgb[j+k]-source[j+k]);
     }
   }
   return out;
@@ -123,7 +129,7 @@ async function renderCharacterBitmap(mapping){
 // Only the existing trouser mask receives the alternate fabric. Regular looks never load it.
 function loadDenimTexture(assets){
   const {w,h,pixels}=assets;
-  if(!assets.denimTexture)assets.denimTexture=loadCharacterImage('assets/denim-weave-v330.png').then(img=>{
+  if(!assets.denimTexture)assets.denimTexture=loadCharacterImage('assets/denim-weave-v410.png').then(img=>{
     if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error('מידות שכבת הג׳ינס אינן תואמות');
     const work=document.createElement('canvas');work.width=w;work.height=h;
     const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
@@ -144,7 +150,7 @@ async function paintCharacter(canvas,mapping){
     const bitmap=await renderCharacterBitmap(mapping);
     if(canvas.dataset.paintSeq!==String(seq)||!canvas.isConnected)return;
     // Trim only the unused background so the full figure fills a phone screen.
-    canvas.width=628;canvas.height=1620;canvas.getContext('2d').putImageData(bitmap,-170,-10);
+    canvas.width=CHARACTER_CROP.w;canvas.height=CHARACTER_CROP.h;canvas.getContext('2d').putImageData(bitmap,-CHARACTER_CROP.x,-CHARACTER_CROP.y);
     canvas.dataset.painted='true';canvas.dataset.signature=artSignature(mapping);
     canvas.setAttribute('aria-label','איור הלוק: '+STUDIO_ROLES.map(r=>`${studioRoleLabel(r,mapping)} ${mapping[r].color.he}`).join(', '));
     if(status)status.hidden=true;
@@ -237,7 +243,7 @@ async function openStudioDetail(role=null){
   try{
     const [bitmap,assets]=await Promise.all([renderCharacterBitmap(mapping),loadCharacterAssets()]);
     if(seq!==studioDetailSeq||!dialog.open)return;
-    const b=role?assets.bounds[role]:{x:160,y:0,w:650,h:1630},pad=role?30:0;
+    const b=role?assets.bounds[role]:CHARACTER_CROP,pad=role?30:0;
     const x=Math.max(0,b.x-pad),y=Math.max(0,b.y-pad);
     canvas.width=Math.min(assets.w-x,b.w+pad*2);canvas.height=Math.min(assets.h-y,b.h+pad*2);
     canvas.getContext('2d').putImageData(bitmap,-x,-y);canvas.hidden=false;$('detailStatus').textContent='';
@@ -257,7 +263,8 @@ async function downloadStudioLook(){
     ctx.fillStyle='#f7f3ec';ctx.fillRect(0,0,1080,1920);
     ctx.textAlign='center';ctx.fillStyle='#34281f';ctx.font='600 55px "Cormorant Garamond", Georgia';ctx.fillText('SHIMI LOOKS',540,91);
     const figure=document.createElement('canvas');figure.width=bitmap.width;figure.height=bitmap.height;figure.getContext('2d').putImageData(bitmap,0,0);
-    ctx.drawImage(figure,170,0,628,1630,253,125,574,1490);
+    const crop=CHARACTER_CROP,figureWidth=1490*crop.w/crop.h;
+    ctx.drawImage(figure,crop.x,crop.y,crop.w,crop.h,(1080-figureWidth)/2,125,figureWidth,1490);
     ctx.direction='rtl';ctx.font='600 35px Assistant, sans-serif';ctx.fillText(look.title,540,1668,940);
     for(let i=0;i<roles.length;i++){
       const slot=980/roles.length;
