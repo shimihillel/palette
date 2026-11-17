@@ -8,8 +8,8 @@ function studioRoleLabel(role,mapping){
 function artSignature(mapping){
   return [mapping.bottom.fabric||'cloth',...STUDIO_ROLES.map(r=>mapping[r].color.id)].join('|');
 }
-const CHARACTER_FILES={base:'assets/shimi-personal-v410.webp',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-matte-${r}-v410.png`]))};
-const CHARACTER_CROP={x:232,y:0,w:528,h:1448};
+const CHARACTER_FILES={base:'assets/shimi-personal-v412.jpg',background:'assets/art-background-v412.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-matte-${r}-v412.png`]))};
+const CHARACTER_CROP={x:170,y:0,w:446,h:1280};
 const CHARACTER_BACKGROUND=[247,243,236];
 const STUDIO_ICONS = {
   settings:'<path d="M4 6h6m4 0h6M4 12h10m4 0h2M4 18h2m4 0h10"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',
@@ -40,32 +40,22 @@ function loadCharacterAssets(){
 }
 
 async function prepareCharacterAssets(){
-  const files=[CHARACTER_FILES.base,...STUDIO_ROLES.map(r=>CHARACTER_FILES[r])];
-  const [silhouette,base,...images]=await Promise.all(['assets/character-coverage-v410.png',...files].map(loadCharacterImage));
+  const files=[CHARACTER_FILES.base,CHARACTER_FILES.background,...STUDIO_ROLES.map(r=>CHARACTER_FILES[r])];
+  const [base,background,...images]=await Promise.all(files.map(loadCharacterImage));
   const w=base.naturalWidth,h=base.naturalHeight,work=document.createElement('canvas');
   work.width=w;work.height=h;
   const ctx=work.getContext('2d',{willReadFrequently:true});
+  if(background.naturalWidth!==w||background.naturalHeight!==h)throw Error('מידות רקע האיור אינן תואמות');
+  ctx.drawImage(background,0,0);
+  const backdrop=ctx.getImageData(0,0,w,h).data;
+  ctx.clearRect(0,0,w,h);
   ctx.drawImage(base,0,0);
   const basePixels=ctx.getImageData(0,0,w,h);
-  if(silhouette.naturalWidth!==w||silhouette.naturalHeight!==h)throw Error('מידות שכבת הרקע אינן תואמות');
-  ctx.clearRect(0,0,w,h);ctx.drawImage(silhouette,0,0);
-  const coveragePixels=ctx.getImageData(0,0,w,h).data;
-  // Retain the approved artwork through the generated cutout, removing
-  // the source paper pigment at translucent edges before adding the app background.
-  for(let y=0;y<h;y++){
-    const paper=[0,0,0];
-    for(const x of [190,200,210,800,810,820]){
-      const i=(y*w+x)*4;
-      for(let c=0;c<3;c++)paper[c]+=basePixels.data[i+c]/6;
-    }
-    for(let x=0;x<w;x++){
-      const i=(y*w+x)*4,alpha=coveragePixels[i];
-      if(alpha>=240)continue;
-      const coverage=alpha<=3?0:alpha/240;
-      for(let c=0;c<3;c++){
-        basePixels.data[i+c]=coverage===0?CHARACTER_BACKGROUND[c]:basePixels.data[i+c]+(1-coverage)*(CHARACTER_BACKGROUND[c]-paper[c]);
-      }
-    }
+  // Retain the selected source exactly; blend only the external white backdrop.
+  for(let p=0;p<w*h;p++){
+    const i=p*4,a=backdrop[i]/255;
+    if(!a)continue;
+    for(let k=0;k<3;k++)basePixels.data[i+k]=a===1?CHARACTER_BACKGROUND[k]:basePixels.data[i+k]+a*(CHARACTER_BACKGROUND[k]-255);
   }
   const pixels={},means={},bounds={},masks={};
   for(let r=0;r<STUDIO_ROLES.length;r++){
@@ -75,7 +65,7 @@ async function prepareCharacterAssets(){
     const indices=[],light=[],coverage=[],source=[],alpha=new Uint8Array(w*h);let sum=0,minX=w,minY=h,maxX=0,maxY=0;
     for(let p=0;p<w*h;p++){
       const i=p*4;
-      if(!raw[i+3]||coveragePixels[i]<=3)continue;
+      if(!raw[i+3])continue;
       const lum=.2126*raw[i]+.7152*raw[i+1]+.0722*raw[i+2];
       indices.push(p);light.push(Math.round(lum));alpha[p]=raw[i+3];coverage.push(raw[i+3]/255);source.push(raw[i],raw[i+1],raw[i+2]);sum+=lum;
       const x=p%w,y=Math.floor(p/w);minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);
@@ -129,7 +119,7 @@ async function renderCharacterBitmap(mapping){
 // Only the existing trouser mask receives the alternate fabric. Regular looks never load it.
 function loadDenimTexture(assets){
   const {w,h,pixels}=assets;
-  if(!assets.denimTexture)assets.denimTexture=loadCharacterImage('assets/denim-weave-v410.png').then(img=>{
+  if(!assets.denimTexture)assets.denimTexture=loadCharacterImage('assets/denim-weave-v412.png').then(img=>{
     if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error('מידות שכבת הג׳ינס אינן תואמות');
     const work=document.createElement('canvas');work.width=w;work.height=h;
     const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
