@@ -8,8 +8,8 @@ function studioRoleLabel(role,mapping){
 function artSignature(mapping){
   return [mapping.bottom.fabric||'cloth',...STUDIO_ROLES.map(r=>mapping[r].color.id)].join('|');
 }
-const CHARACTER_FILES={base:'assets/shimi-personal-v412.jpg',background:'assets/art-background-v412.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-matte-${r}-v412.png`]))};
-const CHARACTER_CROP={x:170,y:0,w:446,h:1280};
+const CHARACTER_FILES={base:'assets/shimi-personal-v413.png',background:'assets/art-background-v413.png',...Object.fromEntries(STUDIO_ROLES.map(r=>[r,`assets/art-matte-${r}-v413.png`]))};
+const CHARACTER_CROP={x:204,y:0,w:536,h:1536};
 const CHARACTER_BACKGROUND=[247,243,236];
 const STUDIO_ICONS = {
   settings:'<path d="M4 6h6m4 0h6M4 12h10m4 0h2M4 18h2m4 0h10"/><circle cx="12" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>',
@@ -119,7 +119,7 @@ async function renderCharacterBitmap(mapping){
 // Only the existing trouser mask receives the alternate fabric. Regular looks never load it.
 function loadDenimTexture(assets){
   const {w,h,pixels}=assets;
-  if(!assets.denimTexture)assets.denimTexture=loadCharacterImage('assets/denim-weave-v412.png').then(img=>{
+  if(!assets.denimTexture)assets.denimTexture=loadCharacterImage('assets/denim-weave-v413.png').then(img=>{
     if(img.naturalWidth!==w||img.naturalHeight!==h)throw Error('מידות שכבת הג׳ינס אינן תואמות');
     const work=document.createElement('canvas');work.width=w;work.height=h;
     const ctx=work.getContext('2d');ctx.drawImage(img,0,0);
